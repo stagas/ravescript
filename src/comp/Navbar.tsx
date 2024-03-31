@@ -93,11 +93,11 @@ export function Navbar(props: { sequencer: Sequencer }) {
         }}>
           {isPlaying
             ?
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-[27px] w-5" preserveAspectRatio="xMidYMid slice" viewBox="-2 -1 34 35">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-[27px] w-[23px]" preserveAspectRatio="xMidYMid slice" viewBox="-2 -1 34 35">
               <path fill={() => screen.info.colors.secondary} d="M12 8v16H8V8zm0-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2m12 2v16h-4V8zm0-2h-4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2" />
             </svg>
             :
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-[27px] w-5" preserveAspectRatio="xMidYMid slice" viewBox="0 0 24 24">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-[27px] w-[23px]" preserveAspectRatio="xMidYMid slice" viewBox="0 0 24 24">
               <path fill="none" stroke={() => screen.info.colors.primary} stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M7 17.259V6.741a1 1 0 0 1 1.504-.864l9.015 5.26a1 1 0 0 1 0 1.727l-9.015 5.259A1 1 0 0 1 7 17.259" />
             </svg>
           }

@@ -7,6 +7,7 @@ import { screen } from '../screen.tsx'
 import { log } from '../state.ts'
 import { toHex } from '../util/rgb.ts'
 import { Canvas } from './Canvas.tsx'
+import { services } from '../services.ts'
 
 const DEBUG = true
 
@@ -94,6 +95,7 @@ export function Minimap(grid: Grid) {
     const { left, width, rows } = boxes.info
     const { colors } = screen.info
     const { pr, w, h } = view
+    const { timeNowLerp: t } = services.audio.info
     $()
     Matrix.viewBox(matrix, view, {
       x: left,
@@ -117,6 +119,17 @@ export function Minimap(grid: Grid) {
       c.fillStyle = '#' + (color ?? 0x0).toString(16).padStart(6, '0')
       c.fill()
     }
+
+    {
+      const x = t + .5 / matrix.a
+      c.beginPath()
+      c.moveTo(x, 0)
+      c.lineTo(x, view.h)
+      c.lineWidth = 1.5 / matrix.a
+      c.strokeStyle = toHex(colors['primary'])
+      c.stroke()
+    }
+
     c.restore()
   })
 
@@ -128,8 +141,10 @@ export function Minimap(grid: Grid) {
     const { boxes } = $.of(info)
     const { left } = boxes.info
     const { colors } = screen.info
+    const { timeNow } = services.audio.info
 
     $()
+
     const c = hc
 
     c.save()
@@ -137,35 +152,28 @@ export function Minimap(grid: Grid) {
     handleView.clear(c)
     c.translate(.5, 2.5)
 
-    const padX = 0
-    const x = -((e - padX + left * a) / a / pr) * matrix.a
+    const x = -((e + left * a) / a / pr) * matrix.a
     const y = -((f) / d / pr) * matrix.d
-    const w = ((vw - padX - 5) / a / pr) * matrix.a + 9
+    const w = ((vw - 5) / a / pr) * matrix.a + 9
     const h = (vh / d / pr) * matrix.d + 2
 
     c.beginPath()
     c.rect(x, y, w, h)
-    // c.moveTo(x + w, y)
-    // c.lineTo(x + w, y + h)
-    // c.lineTo(x, y + h)
     const color = toHex(colors['base-content'])
     c.fillStyle = color + '22'
     c.fill()
-    // c.strokeStyle = color
-    // c.lineWidth = 2.1
-    // c.stroke()
 
-    // c.beginPath()
-    // c.moveTo(x, y + h)
-    // c.lineTo(x, y)
-    // // c.lineTo(x + w, y)
-    // c.fillStyle = '#fff1'
-    // c.fill()
-    // c.strokeStyle = '#fff'
-    // c.lineWidth = 2.1
-    // c.stroke()
-
-
+    // {
+    //   const time = timeNow - boxes.info.left
+    //   const aPos = time / boxes.info.width
+    //   const x = ((aPos * (vw - 5) / pr)) + 4.5
+    //   c.beginPath()
+    //   c.moveTo(x, y)
+    //   c.lineTo(x, y + h)
+    //   c.lineWidth = 1
+    //   c.strokeStyle = toHex(colors['primary'])
+    //   c.stroke()
+    // }
     c.restore()
   })
 
