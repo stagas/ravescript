@@ -1,5 +1,5 @@
 import { Signal } from 'signal-jsx'
-import { Point, Rect } from 'std'
+import { Matrix, Point, Rect } from 'std'
 import { MouseButtons, clamp, dom } from 'utils'
 import { ShapeOpts } from '../../as/assembly/gfx/sketch-shared.ts'
 import { Grid } from '../draws/grid.ts'
@@ -17,6 +17,8 @@ import { Canvas } from './Canvas.tsx'
 
 const DEBUG = true
 
+const SCALE_X = 16
+
 export type Preview = ReturnType<typeof Preview>
 
 export function Preview(grid: Grid) {
@@ -31,6 +33,11 @@ export function Preview(grid: Grid) {
     }),
   ), {
     pr: screen.info.$.pr
+  })
+
+  const limits = $({
+    min: 0.001,
+    max: 1_000_000
   })
 
   const info = $({
@@ -72,6 +79,14 @@ export function Preview(grid: Grid) {
   webgl.add($, sketch)
 
   const viewMatrix = $(new LerpMatrix)
+  const intentMatrix = $(new Matrix)
+
+  $.fx(() => {
+    const { a, e } = intentMatrix
+    $()
+    viewMatrix.a = viewMatrix.dest.a = a
+    viewMatrix.e = viewMatrix.dest.e = e
+  })
 
   const shapes = Shapes(view, viewMatrix)
   sketch.scene.add(shapes)
@@ -99,8 +114,8 @@ export function Preview(grid: Grid) {
     const { trackBox } = $.of(info)
     const { length } = trackBox.data
     $()
-    viewMatrix.a = (w / length) + 1
-    viewMatrix.d = h
+    limits.min = intentMatrix.a = viewMatrix.a = (w / length) + 1
+    intentMatrix.d = viewMatrix.d = h
     rect.w = length
     shapes.info.needUpdate = true
   })
@@ -188,7 +203,7 @@ export function Preview(grid: Grid) {
     let { x, y } = mouse.screenPos
     // x -= hoveringBox.rect.x
     // y = (y - hoveringBox.rect.y) //* (1 / NOTES_HEIGHT_NORMAL)
-    notePos.x = x * 16
+    notePos.x = x * SCALE_X
     notePos.y = y
 
     const { scale } = info
@@ -214,13 +229,14 @@ export function Preview(grid: Grid) {
 
     const { trackBox: box, scale } = info
     if (!box || !scale) return
+
     const { notes } = box.track.info
 
     // if (isZooming) {
     //   info.hoveringNote = null
     //   return
     // }
-    const resizeWidth = 10 / (view.w / (16 * box.data.length))
+    const resizeWidth = 10 / (view.w / (SCALE_X * box.data.length))
 
     let found = false
     for (let i = notes.length - 1; i >= 0; i--) {
@@ -256,16 +272,58 @@ export function Preview(grid: Grid) {
     updateHoveringNote()
   }
 
+  function maybeScale(v: number, delta: number, limits: { min: number, max: number }) {
+    let scale = (v + (delta * v ** 0.9)) / v
+    const newScale = v * scale
+    const clamped = clamp(limits.min, limits.max, newScale)
+    if (clamped !== newScale) {
+      scale = clamped / v
+    }
+    return scale
+  }
+
+  function handleWheelScaleX(ev: WheelEvent) {
+    let { x, y } = mouse.screenPos
+
+    const { trackBox } = info
+    if (!trackBox) return
+    const { length } = trackBox.data
+
+    const m = intentMatrix
+    const { a } = m
+
+    const delta = -ev.deltaY * 0.003
+
+    // if (lockedZoom.x && delta > 0) return
+
+    const scale = maybeScale(a, delta, limits)
+    if (scale === 1) return
+
+    x = Math.floor((x / length) * SCALE_X) * length / SCALE_X
+    x = Math.max(0, x)
+    m.translate(x, y)
+    m.scale(scale, 1)
+    m.translate(-x, -y)
+
+    m.e = Math.min(0, m.e)
+
+    shapes.info.needUpdate = true
+    info.redraw++
+  }
+
   function onWheel(e: WheelEvent) {
     info.isWheeling = true
     updateMousePos(e)
     updateHoveringNote()
-    if (info.hoveringNote) {
+    if (state.mode === 'notes' && info.hoveringNote) {
       info.hoveringNote.info.vel = clamp(0, 1,
         info.hoveringNote.info.vel + e.deltaY * 0.001
       )
       shapes.info.needUpdate = true
       grid.info.redraw++
+    }
+    else {
+      handleWheelScaleX(e)
     }
   }
 

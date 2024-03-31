@@ -210,8 +210,12 @@ export function Track(dsp: DspService, trackData: TrackData, y: number) {
       }
       return count
     },
+    _color: -1,
     get color() {
-      return Math.floor(palette[this.y % palette.length])
+      if (this._color < 0) {
+        this._color = Math.floor(palette[this.y % palette.length])
+      }
+      return this._color
     },
     get colors() {
       const { y, color } = this

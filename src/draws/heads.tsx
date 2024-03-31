@@ -30,6 +30,7 @@ export function Heads(surface: Surface, grid: Grid) {
 
   const info = $({
     hoveringTrack: null as Track | null,
+    contextMenuTrack: null as Track | null,
   })
 
   function Colors() {
@@ -43,17 +44,19 @@ export function Heads(surface: Surface, grid: Grid) {
   const contextmenu = <div class="w-fit fixed z-50 bg-base-100 text-base-content py-1">
     <div class="w-[280px]">
       {[
-        <div class="flex flex-row flex-nowrap items-center justify-between"><div>Change color</div> <Colors /></div>,
-        <div class="flex flex-row flex-nowrap items-center justify-between"><div>Duplicate as</div> <Colors /></div>,
-        <div class="flex flex-row flex-nowrap items-center justify-between"><div>Insert as</div> <Colors /></div>,
-        <div class="flex flex-row flex-nowrap items-center justify-between">
+        [<div class="flex flex-row flex-nowrap items-center justify-between"><div>Change color</div> <Colors /></div>],
+        [<div class="flex flex-row flex-nowrap items-center justify-between"><div>Duplicate as</div> <Colors /></div>],
+        [<div class="flex flex-row flex-nowrap items-center justify-between"><div>Insert as</div> <Colors /></div>],
+        [<div class="flex flex-row flex-nowrap items-center justify-between">
           Remove
           <div class="w-4 h-4 mr-1" style={() => ({
             background: info.hoveringTrack?.info.colors?.hexColor ?? '#fff'
           })} />
-        </div>
-      ].map(label =>
-        <button class="w-full pl-4 pr-3 h-8 text-sm box-border text-left hover:bg-primary hover:text-primary-content cursor-default">
+        </div>, () => {
+          if (info.contextMenuTrack) lib.project?.removeTrack(info.contextMenuTrack)
+        }]
+      ].map(([label, onclick]) =>
+        <button onclick={onclick} class="w-full pl-4 pr-3 h-8 text-sm box-border text-left hover:bg-primary hover:text-primary-content cursor-default">
           {label}
         </button>
       )}
@@ -76,14 +79,25 @@ export function Heads(surface: Surface, grid: Grid) {
     contextMenuOpen = false
     handleHover(e)
     contextMenuOpen = true
+    info.contextMenuTrack = info.hoveringTrack
     contextmenu.style.left = e.pageX + 'px'
     contextmenu.style.top = e.pageY + 'px'
     dom.body.append(contextmenu)
     dom.on(window, 'pointerdown', e => {
-      e.preventDefault()
-      e.stopPropagation()
-      contextMenuOpen = false
-      contextmenu.remove()
+      if (!e.composedPath().includes(contextmenu)) {
+        e.preventDefault()
+        e.stopPropagation()
+        contextMenuOpen = false
+        contextmenu.remove()
+      }
+      else {
+        dom.on(window, 'pointerup', e => {
+          requestAnimationFrame(() => {
+            contextMenuOpen = false
+            contextmenu.remove()
+          })
+        }, { capture: true, once: true })
+      }
     }, { capture: true, once: true })
   }))
 

@@ -171,7 +171,16 @@ export function Project(data: ProjectData, isSaved: boolean = true) {
     $.flush()
   }
 
-  const project = { info, addNewTrack }
+  function removeTrack(track: Track) {
+    info.data.tracks = info.data.tracks.filter(t => t !== track.data)
+    track.destroy()
+    $.flush()
+    for (const [y, t] of info.tracks.entries()) {
+      t.info.y = y
+    }
+  }
+
+  const project = { info, addNewTrack, removeTrack }
 
   return project
 }
