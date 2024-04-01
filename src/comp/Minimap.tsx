@@ -65,7 +65,7 @@ export function Minimap(grid: Grid) {
       const boxes = grid.info.boxes
       if (!boxes) return
 
-      const x = (e.pageX - rect.left) / view.w
+      const x = (e.pageX - rect.left) / (view.w + 10)
       const y = (e.pageY - rect.top) / view.h
 
       const { left, width } = boxes.info
@@ -89,6 +89,7 @@ export function Minimap(grid: Grid) {
   const c = canvas.getContext('2d', { alpha: true })!
   const hc = handle.getContext('2d', { alpha: true })!
   const matrix = new Matrix()
+
   $.fx(() => {
     const { info } = grid
     const { boxes } = $.of(info)
@@ -96,7 +97,9 @@ export function Minimap(grid: Grid) {
     const { colors } = screen.info
     const { pr, w, h } = view
     const { timeNowLerp: t } = services.audio.info
+
     $()
+
     Matrix.viewBox(matrix, view, {
       x: left,
       y: 0,
@@ -134,14 +137,13 @@ export function Minimap(grid: Grid) {
   })
 
   $.fx(() => {
-    const { a, b, c: mc, d, e, f } = grid.intentMatrix
+    const { a, b, c: mc, d, e, f } = grid.viewMatrix
     const { w: vw, h: vh } = grid.view
     const { pr } = handleView
     const { info } = grid
     const { boxes } = $.of(info)
     const { left } = boxes.info
     const { colors } = screen.info
-    const { timeNow } = services.audio.info
 
     $()
 
@@ -154,26 +156,15 @@ export function Minimap(grid: Grid) {
 
     const x = -((e + left * a) / a / pr) * matrix.a
     const y = -((f) / d / pr) * matrix.d
-    const w = ((vw - 5) / a / pr) * matrix.a + 9
+    const w = ((vw - 5) / a / pr) * matrix.a + 7.5
     const h = (vh / d / pr) * matrix.d + 2
 
     c.beginPath()
     c.rect(x, y, w, h)
     const color = toHex(colors['base-content'])
-    c.fillStyle = color + '22'
-    c.fill()
+    c.strokeStyle = color //+ '52'
+    c.stroke()
 
-    // {
-    //   const time = timeNow - boxes.info.left
-    //   const aPos = time / boxes.info.width
-    //   const x = ((aPos * (vw - 5) / pr)) + 4.5
-    //   c.beginPath()
-    //   c.moveTo(x, y)
-    //   c.lineTo(x, y + h)
-    //   c.lineWidth = 1
-    //   c.strokeStyle = toHex(colors['primary'])
-    //   c.stroke()
-    // }
     c.restore()
   })
 

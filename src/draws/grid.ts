@@ -1275,6 +1275,7 @@ export function Grid(surface: Surface) {
     mouse,
     mousePos,
     intentMatrix,
+    viewMatrix,
     handleZoom,
     handleWheelScaleX,
     updateHoveringBox,
