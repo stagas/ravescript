@@ -63,7 +63,7 @@ const worker = {
 
       clock.time = 0
       clock.barTime = 0
-      clock.bpm = 144
+      clock.bpm ||= 144
 
       wasmDsp.updateClock(clock.ptr)
 

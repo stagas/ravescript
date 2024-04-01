@@ -11,6 +11,7 @@ import { Code } from './Code.tsx'
 import { Minimap } from './Minimap.tsx'
 import { Preview } from './Preview.tsx'
 import { Time } from './Time.tsx'
+import { Bpm } from './Bpm.tsx'
 
 const DEBUG = true
 
@@ -25,6 +26,7 @@ export function Sequencer() {
   const grid = Grid(surface)
   const minimap = Minimap(grid)
   const time = Time(grid)
+  const bpm = Bpm()
   // const textDraw = TextDraw(surface, grid, view)
   const heads = Heads(surface, grid)
   const code = Code()
@@ -64,5 +66,5 @@ export function Sequencer() {
     {vertSep}
   </div>
 
-  return { el, grid, minimap, time, code }
+  return { el, grid, minimap, time, bpm, code }
 }

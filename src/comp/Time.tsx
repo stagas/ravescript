@@ -14,6 +14,7 @@ export function Time(grid: Grid) {
   using $ = Signal()
 
   const WIDTH = 128
+
   const view = $(new Rect($(new Point, {
     x: WIDTH,
     y: 34,
@@ -26,7 +27,7 @@ export function Time(grid: Grid) {
   })
 
   const canvas = <Canvas actual view={view} class="-mb-[1px]" /> as Canvas
-  const el = <div class="relative m-1.5 h-8">{canvas}</div>
+  const el = <div class="relative">{canvas}</div>
 
   $.fx(() => dom.on(canvas, 'contextmenu', e => {
     e.preventDefault()

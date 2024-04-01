@@ -21,16 +21,19 @@ export function Audio() {
     info.timeNow = info.timeNowLerp = player.clock.barTime
   }
 
-  function setBpm(bpm: number) {
-    player.clock.bpm = bpm
-    wasm.updateClock(player.clock.ptr)
-  }
-
-  setBpm(144)
-
   const info = $({
+    bpm: 144,
     timeNow: 0,
     timeNowLerp: 0,
+  })
+
+  $.fx(() => {
+    const { clock } = $.of(dsp.info)
+    const { bpm } = info
+    $()
+    clock.bpm = player.clock.bpm = bpm
+    wasm.updateClock(clock.ptr)
+    wasm.updateClock(player.clock.ptr)
   })
 
   let initial = true

@@ -126,6 +126,8 @@ export function Navbar(props: { sequencer: Sequencer }) {
         </Btn>
       </div>
       ,
+      props.sequencer.bpm.el
+      ,
       props.sequencer.time.el
       ,
       props.sequencer.minimap.el
