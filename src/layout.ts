@@ -6,7 +6,7 @@ export function Layout() {
   using $ = Signal()
   const info = $({
     get minimapWidth() {
-      return this.codeWidth - 50 * 3 - 15
+      return this.codeWidth - 50 * 3 - 15 - 145
     },
     get minimapHandleWidth() {
       return this.minimapWidth + 10

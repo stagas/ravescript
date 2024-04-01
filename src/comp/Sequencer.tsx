@@ -10,6 +10,7 @@ import { Surface } from '../surface.tsx'
 import { Code } from './Code.tsx'
 import { Minimap } from './Minimap.tsx'
 import { Preview } from './Preview.tsx'
+import { Time } from './Time.tsx'
 
 const DEBUG = true
 
@@ -23,6 +24,7 @@ export function Sequencer() {
   const surface = Surface(view, state.matrix, state.viewMatrix, true)
   const grid = Grid(surface)
   const minimap = Minimap(grid)
+  const time = Time(grid)
   // const textDraw = TextDraw(surface, grid, view)
   const heads = Heads(surface, grid)
   const code = Code()
@@ -62,5 +64,5 @@ export function Sequencer() {
     {vertSep}
   </div>
 
-  return { el, grid, minimap, code }
+  return { el, grid, minimap, time, code }
 }

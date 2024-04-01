@@ -1,6 +1,6 @@
 import { Signal } from 'signal-jsx'
 import { Point, Rect } from 'std'
-import { dom } from 'utils'
+import { dom, fract } from 'utils'
 import { Grid } from '../draws/grid.ts'
 import { screen } from '../screen.tsx'
 import { services } from '../services.ts'
@@ -21,6 +21,10 @@ export function Time(grid: Grid) {
     pr: screen.info.$.pr
   })
 
+  const info = $({
+    text: '-'
+  })
+
   const canvas = <Canvas actual view={view} class="-mb-[1px]" /> as Canvas
   const el = <div class="relative m-1.5 h-8">{canvas}</div>
 
@@ -31,22 +35,38 @@ export function Time(grid: Grid) {
   const c = canvas.getContext('2d', { alpha: true })!
 
   $.fx(() => {
-    const { info } = grid
-    const { boxes } = $.of(info)
-    const { left, width, rows } = boxes.info
-    const { colors } = screen.info
-    const { pr, w, h } = view
+    const { boxes } = $.of(grid.info)
+    const { left } = boxes.info
     const { timeNowLerp: t } = services.audio.info
 
     $()
 
+    const time = t - left
+    const bars = Math.floor(time) + 1
+    const frac = fract(time)
+    const fourths = Math.floor(frac * 4) + 1
+    const secs = Math.floor((time / services.audio.player.clock.coeff))
+    const mins = Math.floor(secs / 60)
+    info.text = `${bars}.${fourths} ${mins}:${(secs % 60).toString().padStart(2, '0')}`
+  })
+
+  $.fx(() => {
+    const { text } = info
+    const { pr, w, h } = view
+
+    $()
+
+    c.save()
+    c.scale(pr, pr)
     view.clear(c)
     c.textAlign = 'center'
     c.textBaseline = 'middle'
-    c.fillStyle = screen.info.colors['secondary']
-    c.fillText(`${t}`, 0, h / 2, w)
+    c.fillStyle = screen.info.colors['base-content']
+    c.font = '19.5px Mono'
 
-    // c.restore()
+    c.fillText(text, w / 2, h / 2 + 2.5, w)
+
+    c.restore()
   })
 
   return { el, canvas }
