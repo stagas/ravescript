@@ -38,16 +38,15 @@ export enum ZoomState {
 export type Grid = ReturnType<typeof Grid>
 
 export function Grid(surface: Surface) {
+  type GridBox = ReturnType<typeof GridBox>
+  type GridNotes = ReturnType<typeof Notes>
+
   using $ = Signal()
 
   const { anim, mouse, keyboard, view, intentMatrix, viewMatrix, sketch } = surface
   const { targetMatrix } = state
 
   sketch.scene.clear()
-
-  const targetView = $(new Rect(view.size))
-  const brushes = new Map<Track, GridBox>()
-  const lastFocusedBoxes = new Map<Track, GridBox | null>()
 
   const info = $({
     redraw: 0,
@@ -83,7 +82,6 @@ export function Grid(surface: Surface) {
   })
 
   const max = MAX_ZOOM
-
   const limits = $({
     get x() {
       const min = !info.boxes ? view.w : view.w / Math.max(view.w, info.boxes.info.width)
@@ -94,12 +92,17 @@ export function Grid(surface: Surface) {
       return { min, max }
     },
   })
-
+  const targetView = $(new Rect(view.size))
+  const brushes = new Map<Track, GridBox>()
+  const lastFocusedBoxes = new Map<Track, GridBox | null>()
   const gridInfo = info
   const r = { x: 0, y: 0, w: 0, h: 0 }
   const notePos = { x: -1, y: -1 }
   const mousePos = { x: 0, y: 0 }
   const snap = { x: true, y: true }
+  const overlayMatrix = $(new Matrix, { d: intentMatrix.$.d })
+  const overlay = Shapes(view, overlayMatrix)
+  sketch.scene.add(overlay)
 
   let pianoroll: ReturnType<typeof Pianoroll> | undefined
   let isWheelHoriz = false
@@ -108,6 +111,12 @@ export function Grid(surface: Surface) {
   let brush: GridBox | null | undefined
   let orientChangeScore = 0
   let clicks = 0
+
+  const rulerNow = overlay.Line(
+    $({ x: 0, y: 0 }),
+    $({ x: 0, get y() { return lib.project?.info.tracks.length ?? 0 } })
+  )
+  rulerNow.view.opts |= ShapeOpts.InfY
 
   function getInitialMatrixValues() {
     const boxes = info.boxes
@@ -121,39 +130,21 @@ export function Grid(surface: Surface) {
     return { a, d, e, f }
   }
 
-  const offInitialScale = $.fx(function apply_initial_scale() {
-    const { project } = $.of(lib)
-    const { boxes } = $.of(info)
-    const { width } = boxes.info
-    $()
-    if (!width) return
-    if (intentMatrix.a === 1) {
-      const m = getInitialMatrixValues()
-      viewMatrix.a = intentMatrix.a = m.a
-      viewMatrix.d = intentMatrix.d = m.d
-      viewMatrix.e = intentMatrix.e = m.e
-    }
-    queueMicrotask(() => offInitialScale())
-  })
-
   function fitHeight() {
     const { d } = getInitialMatrixValues()
     intentMatrix.d = d
   }
 
-  $.fx(() => {
-    const { project } = $.of(lib)
-    const { tracks } = project.info
-    $()
-    brushes.clear()
-    info.boxes = Boxes(tracks)
-    fitHeight()
-    return info.boxes.$.dispose
-  })
+  function updateMousePos() {
+    const { x, y } = mouse.screenPos
+    mousePos.x = x
+    mousePos.y = y
+    $.flush()
+  }
 
-  //
-  // interaction
-  //
+  function applyBoxMatrix(m: Matrix, box: GridBox) {
+    Matrix.viewBox(m, targetView, box.rect)
+  }
 
   function maybeScale(v: number, delta: number, limits: { min: number, max: number }) {
     let scale = (v + (delta * v ** 0.9)) / v
@@ -197,6 +188,15 @@ export function Grid(surface: Surface) {
     m.translate(x, y)
     m.scale(scale, 1)
     m.translate(-x, -y)
+  }
+
+  function handleZoom(e: WheelEvent) {
+    updateMousePos()
+    // console.log(intentMatrix.a, intentMatrix.d)
+    handleWheelScaleX(e)
+    if (intentMatrix.a > 400 || intentMatrix.d > limits.y.min) {
+      handleWheelScaleY(e)
+    }
   }
 
   function unhoverBox() {
@@ -369,300 +369,12 @@ export function Grid(surface: Surface) {
     log('hover note', hn, x, y)
   }
 
-  function handleZoom(e: WheelEvent) {
-    updateMousePos()
-    // console.log(intentMatrix.a, intentMatrix.d)
-    handleWheelScaleX(e)
-    if (intentMatrix.a > 400 || intentMatrix.d > limits.y.min) {
-      handleWheelScaleY(e)
-    }
-  }
-
   function handleDraggingNoteMove() {
     if (!info.draggingNote) return
 
     updateHoveringNoteN()
     info.draggingNote.info.n = info.hoveringNoteN
   }
-
-  function updateMousePos() {
-    const { x, y } = mouse.screenPos
-    mousePos.x = x
-    mousePos.y = y
-    $.flush()
-  }
-
-  function applyBoxMatrix(m: Matrix, box: GridBox) {
-    Matrix.viewBox(m, targetView, box.rect)
-  }
-
-  const zoomBox = $.fn(function zoomBox(box: GridBox) {
-    isWheelHoriz = false
-    state.zoomState = ZoomState.In
-    viewMatrix.isRunning = true
-    viewMatrix.speed = ZOOM_SPEED_SLOW
-    applyBoxMatrix(intentMatrix, box)
-  })
-
-  const zoomFull = $.fn(function zoomFull() {
-    isWheelHoriz = false
-    state.zoomState = ZoomState.Out
-    viewMatrix.isRunning = true
-    viewMatrix.speed = ZOOM_SPEED_SLOW
-    const m = getInitialMatrixValues()
-    intentMatrix.a = m.a
-    intentMatrix.d = m.d
-    intentMatrix.e = m.e
-    intentMatrix.f = m.f
-  })
-
-  const zoomFar = $.fn(function zoomFar() {
-    if (!info.draggingNote) {
-      info.hoveringNote = null
-      info.focusedBox = null
-    }
-    viewMatrix.speed = ZOOM_SPEED_NORMAL
-    state.zoomState = ZoomState.Out
-  })
-
-  //
-  // interaction
-  //
-
-  const debounceClearClicks = debounce(CLICK_MS, () => {
-    clicks = 0
-  })
-
-  mouse.targets.add(ev => {
-    if (screen.info.overlay) return
-
-    isZooming = false
-    if (ev.type === 'mouseout' || ev.type === 'mouseleave') {
-      unhoverBox()
-      if (brush) {
-        brush.hide()
-        brush = null
-      }
-      return
-    }
-    else if (ev.type === 'mouseup') {
-      if (info.isDeletingBoxesTrack) {
-        info.isDeletingBoxesTrack = null
-        $.flush()
-        brush?.show()
-      }
-      if (info.drawingBox) {
-        info.drawingBox = null
-        return
-      }
-      if (info.resizingBox) {
-        info.resizingBox = null
-        return
-      }
-      if (info.movingBox) {
-        info.movingBox = null
-        info.hoverBoxMode = 'select'
-        return
-      }
-    }
-    else if (ev.type === 'mousedown') {
-      updateMousePos()
-      debounceClearClicks()
-      if (info.hoveringBox) {
-        if (ev.buttons & MouseButtons.Right) {
-          info.isDeletingBoxesTrack = info.hoveringBox.trackBox.track
-          brush?.hide()
-          $.flush()
-        }
-        else {
-          ++clicks
-          if (info.hoveringBox?.dimmed) {
-            info.hoveringBox.trackBox.track.addBox(
-              info.hoveringBox.trackBox.info.source,
-              $({
-                ...info.hoveringBox.trackBox.data,
-                time: info.hoveringBox.rect.x,
-                length: info.hoveringBox.rect.w,
-              }),
-            )
-            clicks = 0
-            info.drawingBox = info.hoveringBox
-            $.flush()
-          }
-          else if (clicks >= 2) {
-            info.focusedBox = info.hoveringBox
-            zoomBox(info.hoveringBox)
-            return
-          }
-          else if (info.focusedBox === info.hoveringBox && info.hoveringNote) {
-            info.draggingNote = info.hoveringNote
-            dom.on(window, 'mouseup', $.fn((e: MouseEvent): void => {
-              info.hoveringNoteN = -1
-              info.hoveringNote = null
-              info.draggingNote = null
-              requestAnimationFrame(() => {
-                updateMousePos()
-                handleHoveringNote()
-              })
-            }), { once: true })
-            return
-          }
-          else if (clicks === 1) {
-            if (info.hoverBoxMode === 'resize') {
-              info.focusedBox =
-                info.resizingBox = info.hoveringBox
-              return
-            }
-            else {
-              if (fract(mouse.screenPos.y) >= NOTES_HEIGHT_NORMAL) {
-                info.focusedBox = null
-                info.hoverBoxMode = 'move'
-                info.movingBox = info.hoveringBox
-                lastFocusedBoxes.set(info.movingBox.trackBox.track, info.movingBox)
-                info.movingBoxOffsetX = Math.floor(mouse.screenPos.x - info.movingBox.rect.x)
-                return
-              }
-              else {
-                info.focusedBox = info.hoveringBox
-              }
-            }
-          }
-        }
-      }
-      else {
-        ++clicks
-        if (clicks >= 2) {
-          zoomFull()
-        }
-        else if (clicks === 1) {
-          info.focusedBox = null
-        }
-      }
-    }
-    else if (ev.type === 'mousemove' || ev.type === 'mouseenter') {
-      mouse.matrix = viewMatrix
-      updateMousePos()
-      if (!info.boxes) return
-
-      if (info.draggingNote) {
-        handleDraggingNoteMove()
-        return
-      }
-      else if (info.drawingBox) {
-        const { data, info: { source }, track, track: { info: { y } } } = info.drawingBox.trackBox
-        const x = Math.floor(mouse.screenPos.x)
-        if (!info.boxes.overlaps(y, x, data.length)) {
-          track.addBox(
-            source,
-            $({
-              ...data,
-              time: x,
-              length: data.length,
-            }),
-          )
-          $.flush()
-        }
-        else {
-          return
-        }
-      }
-      else if (info.resizingBox) {
-        const x = Math.round(mouse.screenPos.x)
-        const w = Math.max(1, x - info.resizingBox.rect.x)
-        info.resizingBox.trackBox.data.length = w
-        const brush = brushes.get(info.resizingBox.trackBox.track)
-        if (brush) brush.rect.w = w
-        return
-      }
-      else if (info.movingBox) {
-        const { data, track: { info: { y } } } = info.movingBox.trackBox
-        const x = Math.floor(Math.floor(mouse.screenPos.x) - info.movingBoxOffsetX)
-        if (!info.boxes.overlaps(y, x, data.length, info.movingBox)) {
-          data.time = x
-        }
-        return
-      }
-    }
-    else if (ev.type === 'wheel') {
-      const e = ev as WheelEvent
-
-      mouse.matrix = viewMatrix
-
-      const isHoriz =
-        Math.abs(e.deltaX) * (isWheelHoriz ? 3 : 3) >
-        Math.abs(e.deltaY) * (isWheelHoriz ? .5 : 1)
-
-      if (isHoriz !== isWheelHoriz) {
-        if (orientChangeScore++ > (isWheelHoriz ? 3 : 2)) {
-          orientChangeScore = 0
-          updateMousePos()
-          isWheelHoriz = isHoriz
-        }
-        else {
-          return
-        }
-      }
-      else {
-        orientChangeScore = 0
-      }
-
-      if (isHoriz || e.altKey) {
-        mouse.matrix = viewMatrix
-        if (e.shiftKey) {
-          const df = -(e.deltaX - (e.altKey ? e.deltaY : 0)) * 2.5 * 0.08 * (intentMatrix.d ** 0.18)
-          snap.y = false
-          intentMatrix.f -= df
-        }
-        else {
-          const de = (e.deltaX - (e.altKey ? e.deltaY : 0)) * 2.5 * 0.08 * (intentMatrix.a ** 0.18)
-          snap.x = false
-          intentMatrix.e -= de
-        }
-      }
-      else {
-        if (e.ctrlKey || e.shiftKey) {
-          intentMatrix.set(viewMatrix.dest)
-          updateMousePos()
-        }
-        if (e.ctrlKey) {
-          snap.x = false
-          handleWheelScaleX(e)
-        }
-        if (e.shiftKey) {
-          snap.y = false
-          handleWheelScaleY(e)
-        }
-        if (!e.ctrlKey && !e.shiftKey) {
-          snap.x = snap.y = true
-          isZooming = true
-          if (e.deltaY > 0) {
-            intentMatrix.set(viewMatrix.dest)
-          }
-          handleZoom(e)
-        }
-      }
-    }
-
-    if (info.draggingNote) return
-
-    handleHoveringBox()
-    handleHoveringNote()
-  })
-
-  keyboard.targets.add(ev => {
-    if (ev.type === 'keydown') {
-      log(ev.key)
-      if (ev.key === 'Escape') {
-        if (info.focusedBox) {
-          info.hoveringNote = null
-          info.focusedBox = null
-        }
-        else {
-          zoomFull()
-        }
-      }
-    }
-  })
 
   //
   // drawings
@@ -677,19 +389,6 @@ export function Grid(surface: Surface) {
     shapes?.update()
     info.redraw++
   }
-
-  type GridBox = ReturnType<typeof GridBox>
-  type GridNotes = ReturnType<typeof Notes>
-
-  const overlayMatrix = $(new Matrix, { d: intentMatrix.$.d })
-  const overlay = Shapes(view, overlayMatrix)
-  sketch.scene.add(overlay)
-
-  const rulerNow = overlay.Line(
-    $({ x: 0, y: 0 }),
-    $({ x: 0, get y() { return lib.project?.info.tracks.length ?? 0 } })
-  )
-  rulerNow.view.opts |= ShapeOpts.InfY
 
   function GridBox(boxes: Shapes, waveformShapes: Shapes, trackBox: TrackBox, dimmed: boolean = false) {
     using $ = Signal()
@@ -1019,6 +718,270 @@ export function Grid(surface: Surface) {
     return { info, shapes, notesShape }
   }
 
+  const zoomBox = $.fn(function zoomBox(box: GridBox) {
+    isWheelHoriz = false
+    state.zoomState = ZoomState.In
+    viewMatrix.isRunning = true
+    viewMatrix.speed = ZOOM_SPEED_SLOW
+    applyBoxMatrix(intentMatrix, box)
+  })
+
+  const zoomFull = $.fn(function zoomFull() {
+    isWheelHoriz = false
+    state.zoomState = ZoomState.Out
+    viewMatrix.isRunning = true
+    viewMatrix.speed = ZOOM_SPEED_SLOW
+    const m = getInitialMatrixValues()
+    intentMatrix.a = m.a
+    intentMatrix.d = m.d
+    intentMatrix.e = m.e
+    intentMatrix.f = m.f
+  })
+
+  const zoomFar = $.fn(function zoomFar() {
+    if (!info.draggingNote) {
+      info.hoveringNote = null
+      info.focusedBox = null
+    }
+    viewMatrix.speed = ZOOM_SPEED_NORMAL
+    state.zoomState = ZoomState.Out
+  })
+
+  const debounceClearClicks = debounce(CLICK_MS, () => {
+    clicks = 0
+  })
+
+  mouse.targets.add(ev => {
+    if (screen.info.overlay) return
+
+    isZooming = false
+    if (ev.type === 'mouseout' || ev.type === 'mouseleave') {
+      unhoverBox()
+      if (brush) {
+        brush.hide()
+        brush = null
+      }
+      return
+    }
+    else if (ev.type === 'mouseup') {
+      if (info.isDeletingBoxesTrack) {
+        info.isDeletingBoxesTrack = null
+        $.flush()
+        brush?.show()
+      }
+      if (info.drawingBox) {
+        info.drawingBox = null
+        return
+      }
+      if (info.resizingBox) {
+        info.resizingBox = null
+        return
+      }
+      if (info.movingBox) {
+        info.movingBox = null
+        info.hoverBoxMode = 'select'
+        return
+      }
+    }
+    else if (ev.type === 'mousedown') {
+      updateMousePos()
+      debounceClearClicks()
+      if (info.hoveringBox) {
+        if (ev.buttons & MouseButtons.Right) {
+          info.isDeletingBoxesTrack = info.hoveringBox.trackBox.track
+          brush?.hide()
+          $.flush()
+        }
+        else {
+          ++clicks
+          if (info.hoveringBox?.dimmed) {
+            info.hoveringBox.trackBox.track.addBox(
+              info.hoveringBox.trackBox.info.source,
+              $({
+                ...info.hoveringBox.trackBox.data,
+                time: info.hoveringBox.rect.x,
+                length: info.hoveringBox.rect.w,
+              }),
+            )
+            clicks = 0
+            info.drawingBox = info.hoveringBox
+            $.flush()
+          }
+          else if (clicks >= 2) {
+            info.focusedBox = info.hoveringBox
+            zoomBox(info.hoveringBox)
+            return
+          }
+          else if (info.focusedBox === info.hoveringBox && info.hoveringNote) {
+            info.draggingNote = info.hoveringNote
+            dom.on(window, 'mouseup', $.fn((e: MouseEvent): void => {
+              info.hoveringNoteN = -1
+              info.hoveringNote = null
+              info.draggingNote = null
+              requestAnimationFrame(() => {
+                updateMousePos()
+                handleHoveringNote()
+              })
+            }), { once: true })
+            return
+          }
+          else if (clicks === 1) {
+            if (info.hoverBoxMode === 'resize') {
+              info.focusedBox =
+                info.resizingBox = info.hoveringBox
+              return
+            }
+            else {
+              if (fract(mouse.screenPos.y) >= NOTES_HEIGHT_NORMAL) {
+                info.focusedBox = null
+                info.hoverBoxMode = 'move'
+                info.movingBox = info.hoveringBox
+                lastFocusedBoxes.set(info.movingBox.trackBox.track, info.movingBox)
+                info.movingBoxOffsetX = Math.floor(mouse.screenPos.x - info.movingBox.rect.x)
+                return
+              }
+              else {
+                info.focusedBox = info.hoveringBox
+              }
+            }
+          }
+        }
+      }
+      else {
+        ++clicks
+        if (clicks >= 2) {
+          zoomFull()
+        }
+        else if (clicks === 1) {
+          info.focusedBox = null
+        }
+      }
+    }
+    else if (ev.type === 'mousemove' || ev.type === 'mouseenter') {
+      mouse.matrix = viewMatrix
+      updateMousePos()
+      if (!info.boxes) return
+
+      if (info.draggingNote) {
+        handleDraggingNoteMove()
+        return
+      }
+      else if (info.drawingBox) {
+        const { data, info: { source }, track, track: { info: { y } } } = info.drawingBox.trackBox
+        const x = Math.floor(mouse.screenPos.x)
+        if (!info.boxes.overlaps(y, x, data.length)) {
+          track.addBox(
+            source,
+            $({
+              ...data,
+              time: x,
+              length: data.length,
+            }),
+          )
+          $.flush()
+        }
+        else {
+          return
+        }
+      }
+      else if (info.resizingBox) {
+        const x = Math.round(mouse.screenPos.x)
+        const w = Math.max(1, x - info.resizingBox.rect.x)
+        info.resizingBox.trackBox.data.length = w
+        const brush = brushes.get(info.resizingBox.trackBox.track)
+        if (brush) brush.rect.w = w
+        return
+      }
+      else if (info.movingBox) {
+        const { data, track: { info: { y } } } = info.movingBox.trackBox
+        const x = Math.floor(Math.floor(mouse.screenPos.x) - info.movingBoxOffsetX)
+        if (!info.boxes.overlaps(y, x, data.length, info.movingBox)) {
+          data.time = x
+        }
+        return
+      }
+    }
+    else if (ev.type === 'wheel') {
+      const e = ev as WheelEvent
+
+      mouse.matrix = viewMatrix
+
+      const isHoriz =
+        Math.abs(e.deltaX) * (isWheelHoriz ? 3 : 3) >
+        Math.abs(e.deltaY) * (isWheelHoriz ? .5 : 1)
+
+      if (isHoriz !== isWheelHoriz) {
+        if (orientChangeScore++ > (isWheelHoriz ? 3 : 2)) {
+          orientChangeScore = 0
+          updateMousePos()
+          isWheelHoriz = isHoriz
+        }
+        else {
+          return
+        }
+      }
+      else {
+        orientChangeScore = 0
+      }
+
+      if (isHoriz || e.altKey) {
+        mouse.matrix = viewMatrix
+        if (e.shiftKey) {
+          const df = -(e.deltaX - (e.altKey ? e.deltaY : 0)) * 2.5 * 0.08 * (intentMatrix.d ** 0.18)
+          snap.y = false
+          intentMatrix.f -= df
+        }
+        else {
+          const de = (e.deltaX - (e.altKey ? e.deltaY : 0)) * 2.5 * 0.08 * (intentMatrix.a ** 0.18)
+          snap.x = false
+          intentMatrix.e -= de
+        }
+      }
+      else {
+        if (e.ctrlKey || e.shiftKey) {
+          intentMatrix.set(viewMatrix.dest)
+          updateMousePos()
+        }
+        if (e.ctrlKey) {
+          snap.x = false
+          handleWheelScaleX(e)
+        }
+        if (e.shiftKey) {
+          snap.y = false
+          handleWheelScaleY(e)
+        }
+        if (!e.ctrlKey && !e.shiftKey) {
+          snap.x = snap.y = true
+          isZooming = true
+          if (e.deltaY > 0) {
+            intentMatrix.set(viewMatrix.dest)
+          }
+          handleZoom(e)
+        }
+      }
+    }
+
+    if (info.draggingNote) return
+
+    handleHoveringBox()
+    handleHoveringNote()
+  })
+
+  keyboard.targets.add(ev => {
+    if (ev.type === 'keydown') {
+      log(ev.key)
+      if (ev.key === 'Escape') {
+        if (info.focusedBox) {
+          info.hoveringNote = null
+          info.focusedBox = null
+        }
+        else {
+          zoomFull()
+        }
+      }
+    }
+  })
+
   $.fx(function apply_wasm_matrix() {
     const { a, b, c, d, e, f } = intentMatrix
     $()
@@ -1237,6 +1200,31 @@ export function Grid(surface: Surface) {
     $()
     toFront(overlay)
     anim.info.epoch++
+  })
+
+  const offInitialScale = $.fx(function apply_initial_scale() {
+    const { project } = $.of(lib)
+    const { boxes } = $.of(info)
+    const { width } = boxes.info
+    $()
+    if (!width) return
+    if (intentMatrix.a === 1) {
+      const m = getInitialMatrixValues()
+      viewMatrix.a = intentMatrix.a = m.a
+      viewMatrix.d = intentMatrix.d = m.d
+      viewMatrix.e = intentMatrix.e = m.e
+    }
+    queueMicrotask(() => offInitialScale())
+  })
+
+  $.fx(() => {
+    const { project } = $.of(lib)
+    const { tracks } = project.info
+    $()
+    brushes.clear()
+    info.boxes = Boxes(tracks)
+    fitHeight()
+    return info.boxes.$.dispose
   })
 
   const grid = {
