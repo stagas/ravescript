@@ -81,6 +81,18 @@ export function Project(data: ProjectData, isSaved: boolean = true) {
   })
 
   $.fx(() => {
+    const { bpm } = info.data
+    $()
+    services.audio.info.bpm = bpm || 144
+  })
+
+  $.fx(() => {
+    const { bpm } = services.audio.info
+    $()
+    info.data.bpm = bpm
+  })
+
+  $.fx(() => {
     const { isLoaded } = $.of(info)
     if (!isLoaded) return
 

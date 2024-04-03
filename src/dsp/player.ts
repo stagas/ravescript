@@ -145,10 +145,10 @@ export function Player(ctx: AudioContext) {
   })
 
   function updateInfo() {
-    requestAnimationFrame(() => {
+    // requestAnimationFrame(() => {
       info.isPlaying = info.node?.isPlaying ?? false
       info.isPaused = info.node?.isPaused ?? false
-    })
+    // })
   }
 
   function stop() {

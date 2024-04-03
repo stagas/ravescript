@@ -2,6 +2,7 @@ import { Signal } from 'signal-jsx'
 import { Matrix, Rect } from 'std'
 import { MouseButtons, clamp, debounce, dom, fract } from 'utils'
 import { ShapeOpts } from '../../as/assembly/gfx/sketch-shared.ts'
+import { HEADS_WIDTH } from '../constants.ts'
 import { Track, TrackBox } from '../dsp/track.ts'
 import { Shapes } from '../gl/sketch.ts'
 import { lib } from '../lib.ts'
@@ -10,10 +11,7 @@ import { services } from '../services.ts'
 import { log, state } from '../state.ts'
 import { Surface } from '../surface.ts'
 import { transformMatrixRect } from '../util/geometry.ts'
-import { BLACK_KEYS, BoxNote, MAX_NOTE, getNotesScale } from '../util/notes.ts'
-import { HEADS_WIDTH } from '../constants.ts'
-import { Source } from '../source.ts'
-import { tokenize } from '../lang/tokenize.ts'
+import { BoxNote, MAX_NOTE, getNotesScale } from '../util/notes.ts'
 
 const DEBUG = true
 const SCALE_X = 1 / 16
@@ -22,6 +20,15 @@ const WAVES_HEIGHT_NORMAL = 1 - NOTES_HEIGHT_NORMAL
 const WAVES_MARGIN_NORMAL = 0.0775
 const OFFSCREEN_X = -100_000
 const RESIZE_HANDLE_WIDTH = 7
+
+const ZOOM_SPEED_SLOW = 0.2
+const ZOOM_SPEED_NORMAL = 0.3
+
+const CLICK_MS = 300
+const OFFSET_X = 1
+
+const SCALE_SPEED = 0.003
+const MAX_ZOOM = 64000
 
 export enum ZoomState {
   In,
@@ -39,9 +46,7 @@ export function Grid(surface: Surface) {
   sketch.scene.clear()
 
   const targetView = $(new Rect(view.size))
-
   const brushes = new Map<Track, GridBox>()
-
   const lastFocusedBoxes = new Map<Track, GridBox | null>()
 
   const info = $({
@@ -77,7 +82,8 @@ export function Grid(surface: Surface) {
     },
   })
 
-  const max = 64000
+  const max = MAX_ZOOM
+
   const limits = $({
     get x() {
       const min = !info.boxes ? view.w : view.w / Math.max(view.w, info.boxes.info.width)
@@ -90,10 +96,19 @@ export function Grid(surface: Surface) {
   })
 
   const gridInfo = info
+  const r = { x: 0, y: 0, w: 0, h: 0 }
+  const notePos = { x: -1, y: -1 }
+  const mousePos = { x: 0, y: 0 }
+  const snap = { x: true, y: true }
 
   let pianoroll: ReturnType<typeof Pianoroll> | undefined
+  let isWheelHoriz = false
+  let isZooming = false
+  let lastHoveringBox: GridBox | null = null
+  let brush: GridBox | null | undefined
+  let orientChangeScore = 0
+  let clicks = 0
 
-  const OFFSET_X = 1
   function getInitialMatrixValues() {
     const boxes = info.boxes
     const left = boxes?.info.left || 0
@@ -106,7 +121,7 @@ export function Grid(surface: Surface) {
     return { a, d, e, f }
   }
 
-  const offInitialScale = $.fx(function initial_scale() {
+  const offInitialScale = $.fx(function apply_initial_scale() {
     const { project } = $.of(lib)
     const { boxes } = $.of(info)
     const { width } = boxes.info
@@ -136,91 +151,9 @@ export function Grid(surface: Surface) {
     return info.boxes.$.dispose
   })
 
-
   //
   // interaction
   //
-
-  let isWheelHoriz = false
-  let isZooming = false
-
-  const r = { x: 0, y: 0, w: 0, h: 0 }
-  let mousePos = { x: window.innerWidth, y: 0 }
-  mouse.pos.x = mousePos.x
-
-  const snap = { x: true, y: true }
-  // const lockedZoom = { x: false, y: false }
-  let lastHoveringBox: GridBox | null = null
-  $.fx(function apply_wasm_matrix() {
-    const { a, b, c, d, e, f } = intentMatrix
-    $()
-    const { isPlaying } = services.audio.player.info
-    const m = viewMatrix.dest
-    m.set(intentMatrix)
-
-    if (isPlaying) {
-      snap.x = false
-    }
-
-    if (info.hoveringBox) {
-      lastHoveringBox = info.hoveringBox
-    }
-    if (lastHoveringBox) {
-      const { rect } = lastHoveringBox
-      if (snap.y && snap.x) {
-        transformMatrixRect(m, rect, r)
-        if (r.x < 0) {
-          m.e -= r.x
-        }
-        transformMatrixRect(m, rect, r)
-        if (r.x + r.w > view.w) {
-          m.e -= r.x + r.w - view.w
-          transformMatrixRect(m, rect, r)
-          if (r.x < 0) {
-            m.a = (view.w / rect.w)
-            m.e = -rect.x * m.a
-          }
-        }
-      }
-
-      if (snap.y) {
-        transformMatrixRect(m, rect, r)
-        if (r.y < 0) {
-          m.f -= r.y
-        }
-        transformMatrixRect(m, rect, r)
-        if (r.y + r.h > view.h) {
-          m.f -= r.y + r.h - view.h
-          transformMatrixRect(m, rect, r)
-          if (r.y < 0) {
-            m.d = (view.h / rect.h)
-            m.f = -rect.y * m.d
-          }
-        }
-      }
-    }
-
-    if (Math.ceil(m.f + m.d * info.rowsCount) < view.h) {
-      m.f = 0
-      m.d = limits.y.min
-      intentMatrix.d = m.d
-      intentMatrix.f = m.f
-    }
-    if (m.d < limits.y.min) {
-      m.d = limits.y.min
-      intentMatrix.d = m.d
-    }
-    if (m.f > 0) {
-      m.f = 0
-      intentMatrix.f = m.f
-    }
-
-    // if (isPlaying) {
-    //   viewMatrix.set(m)
-    // }
-  })
-
-  const scaleSpeed = 0.003
 
   function maybeScale(v: number, delta: number, limits: { min: number, max: number }) {
     let scale = (v + (delta * v ** 0.9)) / v
@@ -237,7 +170,7 @@ export function Grid(surface: Surface) {
 
     const m = intentMatrix
     const { d } = m
-    const delta = -ev.deltaY * scaleSpeed
+    const delta = -ev.deltaY * SCALE_SPEED
     // if (lockedZoom.y && delta > 0) return
 
     const scale = maybeScale(d, delta, limits.y)
@@ -254,7 +187,7 @@ export function Grid(surface: Surface) {
 
     const m = intentMatrix
     const { a } = m
-    const delta = -ev.deltaY * scaleSpeed
+    const delta = -ev.deltaY * SCALE_SPEED
     // if (lockedZoom.x && delta > 0) return
 
     const scale = maybeScale(a, delta, limits.x)
@@ -273,8 +206,6 @@ export function Grid(surface: Surface) {
       info.hoveringBox = null
     }
   }
-
-  let brush: GridBox | null | undefined
 
   function updateHoveringBox(box?: GridBox | null) {
     if (info.draggingNote) return
@@ -365,33 +296,6 @@ export function Grid(surface: Surface) {
     }
   }
 
-  $.fx(() => {
-    const { hoveringBox, hoverBoxMode } = info
-    $()
-    if (hoveringBox) {
-      if (hoverBoxMode === 'resize') {
-        screen.info.cursor = 'ew-resize'
-      }
-      else if (hoverBoxMode === 'move') {
-        screen.info.cursor = 'grabbing'
-      }
-      else {
-        screen.info.cursor = 'default'
-      }
-    }
-    else {
-      screen.info.cursor = 'default'
-    }
-  })
-
-  $.fx(() => {
-    const { a, b, c, d, e, f } = viewMatrix
-    $()
-    handleHoveringBox()
-  })
-
-  const notePos = { x: -1, y: -1 }
-
   function updateHoveringNoteN() {
     const { hoveringBox } = info
     if (!hoveringBox?.info.notes) {
@@ -465,14 +369,6 @@ export function Grid(surface: Surface) {
     log('hover note', hn, x, y)
   }
 
-  const minScale = {
-    x: 0.01,
-    y: 0.01,
-  }
-  const maxScale = {
-    x: 64000,
-    y: 64000,
-  }
   function handleZoom(e: WheelEvent) {
     updateMousePos()
     // console.log(intentMatrix.a, intentMatrix.d)
@@ -495,19 +391,6 @@ export function Grid(surface: Surface) {
     mousePos.y = y
     $.flush()
   }
-
-  const ZOOM_SPEED_SLOW = 0.2
-  const ZOOM_SPEED_NORMAL = 0.3
-
-  $.fx(function update_zoom_speed() {
-    const { isRunning } = viewMatrix
-    $()
-    if (!isRunning) {
-      if (viewMatrix.speed === ZOOM_SPEED_SLOW) {
-        viewMatrix.speed = ZOOM_SPEED_NORMAL
-      }
-    }
-  })
 
   function applyBoxMatrix(m: Matrix, box: GridBox) {
     Matrix.viewBox(m, targetView, box.rect)
@@ -542,28 +425,10 @@ export function Grid(surface: Surface) {
     state.zoomState = ZoomState.Out
   })
 
-  keyboard.targets.add(ev => {
-    if (ev.type === 'keydown') {
-      log(ev.key)
-      if (ev.key === 'Escape') {
-        if (info.focusedBox) {
-          info.hoveringNote = null
-          info.focusedBox = null
-        }
-        else {
-          zoomFull()
-        }
-      }
-    }
-  })
-
   //
-  // mouse
+  // interaction
   //
 
-  let orientChangeScore = 0
-  let clicks = 0
-  const CLICK_MS = 300
   const debounceClearClicks = debounce(CLICK_MS, () => {
     clicks = 0
   })
@@ -755,16 +620,16 @@ export function Grid(surface: Surface) {
         }
       }
       else {
-        if (e.ctrlKey) {
-          snap.x = false
+        if (e.ctrlKey || e.shiftKey) {
           intentMatrix.set(viewMatrix.dest)
           updateMousePos()
+        }
+        if (e.ctrlKey) {
+          snap.x = false
           handleWheelScaleX(e)
         }
         if (e.shiftKey) {
           snap.y = false
-          intentMatrix.set(viewMatrix.dest)
-          updateMousePos()
           handleWheelScaleY(e)
         }
         if (!e.ctrlKey && !e.shiftKey) {
@@ -784,12 +649,47 @@ export function Grid(surface: Surface) {
     handleHoveringNote()
   })
 
+  keyboard.targets.add(ev => {
+    if (ev.type === 'keydown') {
+      log(ev.key)
+      if (ev.key === 'Escape') {
+        if (info.focusedBox) {
+          info.hoveringNote = null
+          info.focusedBox = null
+        }
+        else {
+          zoomFull()
+        }
+      }
+    }
+  })
+
   //
   // drawings
   //
 
+  function toFront(shapes: Shapes) {
+    sketch.scene.delete(shapes)
+    sketch.scene.add(shapes)
+  }
+
+  function redraw(shapes?: Shapes) {
+    shapes?.update()
+    info.redraw++
+  }
+
   type GridBox = ReturnType<typeof GridBox>
   type GridNotes = ReturnType<typeof Notes>
+
+  const overlayMatrix = $(new Matrix, { d: intentMatrix.$.d })
+  const overlay = Shapes(view, overlayMatrix)
+  sketch.scene.add(overlay)
+
+  const rulerNow = overlay.Line(
+    $({ x: 0, y: 0 }),
+    $({ x: 0, get y() { return lib.project?.info.tracks.length ?? 0 } })
+  )
+  rulerNow.view.opts |= ShapeOpts.InfY
 
   function GridBox(boxes: Shapes, waveformShapes: Shapes, trackBox: TrackBox, dimmed: boolean = false) {
     using $ = Signal()
@@ -886,11 +786,6 @@ export function Grid(surface: Surface) {
     })
 
     return { rect, trackBox, info, box, dimmed, remove, hide, show }
-  }
-
-  function toFront(shapes: Shapes) {
-    sketch.scene.delete(shapes)
-    sketch.scene.add(shapes)
   }
 
   function Boxes(tracks: Track[]) {
@@ -1124,65 +1019,146 @@ export function Grid(surface: Surface) {
     return { info, shapes, notesShape }
   }
 
-  const overlayMatrix = $(new Matrix, { d: intentMatrix.$.d })
-  const overlay = Shapes(view, overlayMatrix)
+  $.fx(function apply_wasm_matrix() {
+    const { a, b, c, d, e, f } = intentMatrix
+    $()
+    const { isPlaying } = services.audio.player.info
+    const m = viewMatrix.dest
+    m.set(intentMatrix)
 
-  const rulerNow = overlay.Line(
-    $({ x: 0, y: 0 }),
-    $({ x: 0, get y() { return lib.project?.info.tracks.length ?? 0 } })
-  )
-  rulerNow.view.opts |= ShapeOpts.InfY
-  $.fx(() => {
+    if (isPlaying) {
+      snap.x = false
+    }
+
+    if (info.hoveringBox) {
+      lastHoveringBox = info.hoveringBox
+    }
+    if (lastHoveringBox) {
+      const { rect } = lastHoveringBox
+      if (snap.y && snap.x) {
+        transformMatrixRect(m, rect, r)
+        if (r.x < 0) {
+          m.e -= r.x
+        }
+        transformMatrixRect(m, rect, r)
+        if (r.x + r.w > view.w) {
+          m.e -= r.x + r.w - view.w
+          transformMatrixRect(m, rect, r)
+          if (r.x < 0) {
+            m.a = (view.w / rect.w)
+            m.e = -rect.x * m.a
+          }
+        }
+      }
+
+      if (snap.y) {
+        transformMatrixRect(m, rect, r)
+        if (r.y < 0) {
+          m.f -= r.y
+        }
+        transformMatrixRect(m, rect, r)
+        if (r.y + r.h > view.h) {
+          m.f -= r.y + r.h - view.h
+          transformMatrixRect(m, rect, r)
+          if (r.y < 0) {
+            m.d = (view.h / rect.h)
+            m.f = -rect.y * m.d
+          }
+        }
+      }
+    }
+
+    if (Math.ceil(m.f + m.d * info.rowsCount) < view.h) {
+      m.f = 0
+      m.d = limits.y.min
+      intentMatrix.d = m.d
+      intentMatrix.f = m.f
+    }
+    if (m.d < limits.y.min) {
+      m.d = limits.y.min
+      intentMatrix.d = m.d
+    }
+    if (m.f > 0) {
+      m.f = 0
+      intentMatrix.f = m.f
+    }
+
+    // if (isPlaying) {
+    //   viewMatrix.set(m)
+    // }
+  })
+
+  $.fx(function update_zoom_speed() {
+    const { isRunning } = viewMatrix
+    $()
+    if (!isRunning) {
+      if (viewMatrix.speed === ZOOM_SPEED_SLOW) {
+        viewMatrix.speed = ZOOM_SPEED_NORMAL
+      }
+    }
+  })
+
+  $.fx(function update_cursor() {
+    const { hoveringBox, hoverBoxMode } = info
+    $()
+    if (hoveringBox) {
+      if (hoverBoxMode === 'resize') {
+        screen.info.cursor = 'ew-resize'
+      }
+      else if (hoverBoxMode === 'move') {
+        screen.info.cursor = 'grabbing'
+      }
+      else {
+        screen.info.cursor = 'default'
+      }
+    }
+    else {
+      screen.info.cursor = 'default'
+    }
+  })
+
+  $.fx(function handleHoveringBox_on_viewMatrix() {
+    const { a, b, c, d, e, f } = viewMatrix
+    $()
+    handleHoveringBox()
+  })
+
+  $.fx(function update_rulerNow_color() {
     rulerNow.view.color = screen.info.primaryColorInt
   })
-  sketch.scene.add(overlay)
-  // overlay.update()
 
-  $.fx(() => {
+  $.fx(function redraw_on_timeNow() {
     const { timeNow } = services.audio.info
     $()
     redraw(overlay)
   })
 
-  // $.fx(() => {
-  //   const { boxes } = $.of(info)
-  //   const {
-  //     info: { timeNow: x },
-  //     player: { info: { isPlaying, didPlay } }
-  //   } = services.audio
-  //   $()
-  //   if (!didPlay) return
-  //   if (info.isHandling) return
-  //   const m = intentMatrix
-  //   const HALF = view.w / 2 - HEADS_WIDTH / 2
-  //   intentMatrix.e = -boxes.info.left * m.a + HALF
-  // })
-
-  $.fx(() => {
-    const { boxes } = $.of(info)
+  $.fx(function autoscroll_on_playing() {
     const {
       info: { timeNow: x, timeNowLerp: xl },
       player: { info: { isPlaying } }
     } = services.audio
+
     const m = isPlaying ? intentMatrix : viewMatrix
+
     if (isPlaying) {
       const { a } = m
     }
     else {
       const { a, e } = m
     }
+
     $()
-    if (isPlaying && !info.isHandling) {
-      overlayMatrix.a = 1
-      overlayMatrix.e = 0
+    overlayMatrix.a = 1
+    overlayMatrix.e = 0
 
-      const HALF = view.w / 2 - HEADS_WIDTH / 2
+    const HALF = view.w / 2 - HEADS_WIDTH / 2
 
-      rulerNow.p0.x =
-        rulerNow.p1.x = HALF
+    rulerNow.p0.x =
+      rulerNow.p1.x = HALF
 
+    if (isPlaying) {
       intentMatrix.e = -x * m.a + HALF
-
       snap.x = false
     }
     else {
@@ -1193,18 +1169,13 @@ export function Grid(surface: Surface) {
     }
   })
 
-  $.fx(() => {
+  $.fx(function redraw_on_isPlaying() {
     const { isPlaying } = services.audio.player.info
     $()
     surface?.anim.ticks.add(services.audio.tick)
     services.audio.tick()
     info.redraw++
   })
-
-  function redraw(shapes?: Shapes) {
-    shapes?.update()
-    info.redraw++
-  }
 
   $.fx(function clear_clicks_when_hovering_other() {
     const { hoveringBox } = info
@@ -1261,7 +1232,7 @@ export function Grid(surface: Surface) {
     }
   })
 
-  $.fx(function redraw() {
+  $.fx(function trigger_anim_on_redraw() {
     const { redraw } = $.of(info)
     $()
     toFront(overlay)
