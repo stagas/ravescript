@@ -32,6 +32,9 @@ export function Screen() {
     get primaryColorInt() {
       return hexToInt(toHex(this.colors.primary))
     },
+    get secondaryColorInt() {
+      return hexToInt(toHex(this.colors.secondary))
+    },
   })
 
   $.fx(() => dom.on(window, 'resize', $.fn(() => {

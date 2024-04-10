@@ -10,13 +10,15 @@ import { AstNode } from '../lang/interpreter.ts'
 import { Token, tokenize } from '../lang/tokenize.ts'
 import { Note } from '../util/notes-shared.ts'
 import { Dsp, Sound } from './dsp'
+import { ParamValue } from '../util/params-shared.ts'
 
 export type DspWorker = typeof worker
 
 const sounds = new Map<number, Sound>()
 
 const getFloats = Lru(20, (key: string, length: number) => wasmDsp.alloc(Float32Array, length), item => item.fill(0), item => item.free())
-const getNotes = Lru(20, (length: number) => wasmDsp.alloc(Float32Array, length), item => item.fill(0), item => item.free())
+const getBuffer = Lru(20, (length: number) => wasmDsp.alloc(Float32Array, length), item => item.fill(0), item => item.free())
+const getPointers = Lru(20, (length: number) => wasmDsp.alloc(Uint32Array, length), item => item.fill(0), item => item.free())
 
 const worker = {
   dsp: null as null | Dsp,
@@ -39,7 +41,15 @@ const worker = {
     sounds.set(+sound.sound$, sound)
     return +sound.sound$ as number
   },
-  async renderSource(sound$: number, audioLength: number, code: string, voicesCount: number, hasMidiIn: boolean, notes: Note[]) {
+  async renderSource(
+    sound$: number,
+    audioLength: number,
+    code: string,
+    voicesCount: number,
+    hasMidiIn: boolean,
+    notes: Note[],
+    params: ParamValue[][],
+  ) {
     const dsp = this.dsp
     if (!dsp) {
       throw new Error('Dsp not ready.')
@@ -67,7 +77,12 @@ const worker = {
 
       wasmDsp.updateClock(clock.ptr)
 
-      const { program, out } = sound.process(tokens, voicesCount, hasMidiIn)
+      const { program, out } = sound.process(
+        tokens,
+        voicesCount,
+        hasMidiIn,
+        params.length,
+      )
 
       if (!out.LR) {
         return { error: 'No audio in the stack.' }
@@ -79,21 +94,45 @@ const worker = {
 
       const key = `${sound$}:${length}`
       const floats = getFloats(key, length)
-      const notesData = getNotes(notes.length * 4) // * 4 elements: n, time, length, vel
 
-      let i = 0
-      for (const note of notes) {
-        const p = (i++) * 4
-        notesData[p] = note.n
-        notesData[p + 1] = note.time
-        notesData[p + 2] = note.length
-        notesData[p + 3] = note.vel
+      const notesData = getBuffer(notes.length * 4) // * 4 elements: n, time, length, vel
+      {
+        let i = 0
+        for (const note of notes) {
+          const p = (i++) * 4
+          notesData[p] = note.n
+          notesData[p + 1] = note.time
+          notesData[p + 2] = note.length
+          notesData[p + 3] = note.vel
+        }
+      }
+
+      const paramsData = getPointers(params.length * 2) // * 1 el: ptr, length
+      {
+        let i = 0
+        for (const values of params) {
+          const data = getBuffer(values.length * 4)
+          const p = (i++) * 2
+          paramsData[p] = data.ptr
+          paramsData[p + 1] = values.length
+
+          let j = 0
+          for (const value of values) {
+            const p = (j++) * 4
+            data[p] = value.time
+            data[p + 1] = value.length
+            data[p + 2] = value.slope
+            data[p + 3] = value.amt
+          }
+        }
       }
 
       wasmDsp.fillSound(sound.sound$,
         sound.ops.ptr,
         notesData.ptr,
         notes.length,
+        paramsData.ptr,
+        params.length,
         out.LR.getAudio(),
         0,
         floats.length,

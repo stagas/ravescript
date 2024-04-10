@@ -18,7 +18,7 @@ function parse(timestamp: number, text: string) {
     tracks,
   ] = json
 
-// console.log(json)
+  // console.log(json)
 
   const project = Project({
     id,
@@ -28,7 +28,7 @@ function parse(timestamp: number, text: string) {
     remix_of,
     bpm,
     pitch,
-    tracks: tracks.map(([sources, notes, boxes], y) => ({
+    tracks: tracks.map(([sources, notes, boxes, params], y) => ({
       sources: sources.map(code => ({ code })),
       notes: notes.map(([n, time, length, vel]) => ({
         n,
@@ -36,21 +36,30 @@ function parse(timestamp: number, text: string) {
         length,
         vel,
       })),
-      boxes: boxes.map(([source_id, time, length, pitch, params]) => ({
+      boxes: boxes.map(([source_id, time, length, pitch]) => ({
         source_id,
         time: time + 1024,
         length,
         pitch,
-        params: (params ?? []).map(([name, values]) => ({
-          name,
-          values: (values ?? []).map(([time, length, slope, amt]) => ({
-            time,
-            length,
-            slope,
-            amt,
-          }))
-        })),
-      }))
+      })),
+      params: [
+        {
+          name: 'P0', values: [
+            { time: 0, length: 1, slope: 1, amt:  1 },
+            { time: 1, length: 1, slope: 1, amt: -1 },
+            { time: 2, length: 1, slope: 1, amt:  0 },
+          ]
+        },
+      ],
+      // (params ?? []).map(([name, values]) => ({
+      //   name,
+      //   values: (values ?? []).map(([time, length, slope, amt]) => ({
+      //     time,
+      //     length,
+      //     slope,
+      //     amt,
+      //   }))
+      // })),
     })),
     comments: []
   })
@@ -81,16 +90,16 @@ class Lib {
           b.time - 1024,
           b.length,
           b.pitch,
-          ...(!b.params.length ? [] : [b.params.map(p => [
-            p.name,
-            ...(!p.values.length ? [] : [p.values.map(v => [
-              v.time,
-              v.length,
-              v.slope,
-              v.amt,
-            ] as const)])
-          ] as const)]),
-        ] as const)
+        ] as const),
+        t.params.map(p => [
+          p.name,
+          p.values.map(v => [
+            v.time,
+            v.length,
+            v.slope,
+            v.amt,
+          ] as const)
+        ] as const),
       ] as const)
     ] as const
 
@@ -142,10 +151,10 @@ class Lib {
             'length',
             'pitch',
           ]),
-          params: b.data.params.map(p => ({
-            ...p,
-            values: p.values.map(v => ({ ...v }))
-          }))
+        })),
+        params: t.data.params.map(p => ({
+          ...p,
+          values: p.values.map(v => ({ ...v }))
         }))
       })),
       comments: []
@@ -184,37 +193,37 @@ class Lib {
     lib.project = parse(Date.now(), demo_p)
 
     return
-    const sources = [
-      lib.cool_bass_source,
-      lib.demo_source_kick,
-      lib.demo_source_hihat,
-      lib.demo_source_eyo,
-      lib.demo_source_radio_signals,
-    ]
+    // const sources = [
+    //   lib.cool_bass_source,
+    //   lib.demo_source_kick,
+    //   lib.demo_source_hihat,
+    //   lib.demo_source_eyo,
+    //   lib.demo_source_radio_signals,
+    // ]
 
-    let count = 4
-    const length = 2
-    lib.project = Project({
-      id: 0,
-      timestamp: 0,
-      title: '',
-      creator: '',
-      remix_of: 0,
-      bpm: 144,
-      pitch: 0,
-      tracks: Array.from(sources, (source, y) => ({
-        sources: [source],
-        notes: [],
-        boxes: Array.from({ length: count }, (_, x) => ({
-          source_id: getSourceId(source),
-          time: 1024 + (x * length),
-          length,
-          pitch: 0,
-          params: []
-        })),
-      })),
-      comments: []
-    })
+    // let count = 4
+    // const length = 2
+    // lib.project = Project({
+    //   id: 0,
+    //   timestamp: 0,
+    //   title: '',
+    //   creator: '',
+    //   remix_of: 0,
+    //   bpm: 144,
+    //   pitch: 0,
+    //   tracks: Array.from(sources, (source, y) => ({
+    //     sources: [source],
+    //     notes: [],
+    //     boxes: Array.from({ length: count }, (_, x) => ({
+    //       source_id: getSourceId(source),
+    //       time: 1024 + (x * length),
+    //       length,
+    //       pitch: 0,
+    //       params: []
+    //     })),
+    //   })),
+    //   comments: []
+    // })
   }
 
   project?: Project
@@ -410,7 +419,7 @@ env 190^ * .5*
   }
 
   demo_antilogos = {
-    code:`;antilogos
+    code: `;antilogos
 { n= f= nt= v=
 [adsr 200.5 800 .01 10 nt] env=
 

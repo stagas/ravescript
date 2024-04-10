@@ -24,13 +24,14 @@ export interface BoxData {
   time: number
   length: number
   pitch: number
-  params: ParamData[]
+  track?: TrackData
 }
 
 export interface TrackData {
   sources: SourceData[]
   notes: Note[]
   boxes: BoxData[]
+  params: ParamData[]
 }
 
 interface CommentData {
@@ -68,9 +69,9 @@ export function Project(data: ProjectData, isSaved: boolean = true) {
         notes: track.notes.map(note => $(note)),
         boxes: track.boxes.map(box => $(box, {
           track,
-          params: box.params.map(param => $(param, {
-            values: param.values.map(value => $(value)),
-          })),
+        })),
+        params: track.params.map(param => $(param, {
+          values: param.values.map(value => $(value)),
         })),
       })),
       comments: data.comments.map(comment => $(comment)),
@@ -178,6 +179,7 @@ export function Project(data: ProjectData, isSaved: boolean = true) {
         sources: [{ code: '' }],
         boxes: [],
         notes: [],
+        params: [],
       })
     ]
     $.flush()

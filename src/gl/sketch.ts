@@ -3,7 +3,7 @@ import { GL } from 'gl-util'
 import { Signal } from 'signal-jsx'
 import { Matrix, Rect, RectLike } from 'std'
 import { PointLike, Struct } from 'utils'
-import { Box, Line, MAX_GL_INSTANCES, ShapeOpts, VertOpts, Wave, type Notes } from '../../as/assembly/gfx/sketch-shared.ts'
+import { Box, Line, MAX_GL_INSTANCES, ShapeOpts, VertOpts, Wave, type Notes, Params } from '../../as/assembly/gfx/sketch-shared.ts'
 import { MeshInfo } from '../mesh-info.ts'
 import { log } from '../state.ts'
 import { WasmMatrix } from '../util/wasm-matrix.ts'
@@ -101,9 +101,7 @@ void main() {
 `
 
 export namespace Shape {
-  //
   // Box
-  //
   export const Box = Struct({
     opts: 'f32',
 
@@ -128,9 +126,7 @@ export namespace Shape {
     alpha: number,
   ]
 
-  //
   // Cols
-  //
   export const Cols = Struct({
     opts: 'f32',
 
@@ -155,9 +151,7 @@ export namespace Shape {
     alpha: number,
   ]
 
-  //
   // Notes
-  //
   export const Notes = Struct({
     opts: 'f32',
 
@@ -198,9 +192,40 @@ export namespace Shape {
     max: number,
   ]
 
-  //
+  // Params
+  export const Params = Struct({
+    opts: 'f32',
+
+    x: 'f32',
+    y: 'f32',
+    w: 'f32',
+    h: 'f32',
+
+    color: 'f32',
+    alpha: 'f32',
+
+    params$: 'f32',
+    hoveringParam$: 'f32',
+    hoverColor: 'f32',
+  })
+
+  export type Params = [
+    opts: ShapeOpts.Params,
+
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+
+    color: number,
+    alpha: number,
+
+    params$: number,
+    hoveringParam$: number,
+    hoverColor: number,
+  ]
+
   // Line
-  //
   export const Line = Struct({
     opts: 'f32',
 
@@ -229,9 +254,7 @@ export namespace Shape {
     lw: number,
   ]
 
-  //
   // Wave
-  //
   export const Wave = Struct({
     opts: 'f32',
 
@@ -399,6 +422,46 @@ export function Shapes(view: Rect, matrix: Matrix) {
     return shape
   }
 
+  function Params(rect: RectLike) {
+    using $ = Signal()
+
+    const view = Shape.Params(wasm.memory.buffer, wasm.createParams()) satisfies Params
+
+    view.opts = ShapeOpts.Params
+    view.alpha = 1.0
+
+    $.fx(() => {
+      const { x, y, w, h } = rect
+      $()
+      view.x = x
+      view.y = y
+      view.w = w
+      view.h = h
+      info.needUpdate = true
+    })
+
+    const shape = $({
+      visible: true,
+      rect,
+      view,
+      remove() {
+        $.dispose()
+        shapes.delete(shape)
+        info.needUpdate = true
+      }
+    })
+
+    $.fx(() => {
+      const { visible } = shape
+      $()
+      info.needUpdate = true
+    })
+
+    shapes.add(shape)
+
+    return shape
+  }
+
   function Line(p0: PointLike, p1: PointLike) {
     using $ = Signal()
 
@@ -491,7 +554,7 @@ export function Shapes(view: Rect, matrix: Matrix) {
 
   return {
     info, mat2d, view, shapes, clear, update,
-    Box, Line, Wave, Notes,
+    Box, Line, Wave, Notes, Params,
   }
 }
 

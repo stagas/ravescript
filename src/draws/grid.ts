@@ -79,6 +79,8 @@ export function Grid(surface: Surface) {
     get rowsCount() {
       return this.boxes?.info.rows.length ?? 1
     },
+
+    focusedParams: null as null | Uint32Array,
   })
 
   const max = MAX_ZOOM
@@ -506,6 +508,7 @@ export function Grid(surface: Surface) {
 
     const info = $({
       rows: [] as GridBox[][],
+      params: null as null | ReturnType<typeof Params>,
       get width() {
         return this.right - this.left
       },
@@ -575,6 +578,9 @@ export function Grid(surface: Surface) {
           gridBox.hide()
           brushes.set(track, gridBox)
         })
+
+        const params = info.params = Params(track)
+        sketch.scene.add(params.shapes)
 
         return gridBoxes
       })
@@ -716,6 +722,77 @@ export function Grid(surface: Surface) {
     })
 
     return { info, shapes, notesShape }
+  }
+
+  function Params(track: Track) {
+    using $ = Signal()
+
+    const shapes = Shapes(view, viewMatrix)
+
+    const info = $({
+      update: 0,
+      track,
+    })
+
+    const rect = $({
+      x: 1024,
+      get y() { return track.info.y },
+      get w() { return track.info.width },
+      h: 1,
+    })
+
+    // paramsShape.view.alpha = 1.0 //dimmed ? 0.5 : 1.0
+    // $.fx(() => {
+    //   const { track, info: { isFocused } } = trackBox
+    //   const { colors } = track.info
+    //   const { primaryColorInt } = screen.info
+    //   $()
+    // })
+
+    $.fx(() => {
+      // const { track, info: { isFocused } } = trackBox
+      // const { colors } = track.info
+      const { primaryColorInt, secondaryColorInt } = screen.info
+      const { paramsData } = track.info
+      let { focusedParams } = grid.info
+      $()
+      shapes.clear()
+      for (const params of paramsData) {
+        if (!focusedParams && track.info.y === 3) {
+          grid.info.focusedParams = params
+        }
+
+        const isFocused = focusedParams === params
+
+        const paramsShape = shapes.Params(rect)
+
+        if (isFocused) paramsShape.view.opts |= ShapeOpts.Shadow
+        paramsShape.view.color = isFocused ? 0xffff00 : 0xffffff //0xffff00 //0x77eeff //secondaryColorInt
+        paramsShape.view.alpha = isFocused ? 1.0 : 0.2
+        // paramsShape.view.hoverColor = primaryColorInt
+        paramsShape.view.params$ = params.ptr
+      }
+      redraw(shapes)
+      // TODO: dispose?
+    })
+
+    // $.fx(() => {
+    //   const { isFocused } = trackBox.info
+    //   $()
+    //   // notesShape.view.isFocused = Number(Boolean(isFocused))
+    //   if (isFocused) {
+    //     return $.fx(() => {
+    //       const { hoveringNote } = gridInfo
+    //       $()
+    //       notesShape.view.hoveringNote$ = hoveringNote?.data.ptr ?? 0
+    //       return () => {
+    //         notesShape.view.hoveringNote$ = 0
+    //       }
+    //     })
+    //   }
+    // })
+
+    return { info, shapes }
   }
 
   const zoomBox = $.fn(function zoomBox(box: GridBox) {

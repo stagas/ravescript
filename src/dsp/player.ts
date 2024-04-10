@@ -146,8 +146,8 @@ export function Player(ctx: AudioContext) {
 
   function updateInfo() {
     // requestAnimationFrame(() => {
-      info.isPlaying = info.node?.isPlaying ?? false
-      info.isPaused = info.node?.isPaused ?? false
+    info.isPlaying = info.node?.isPlaying ?? false
+    info.isPaused = info.node?.isPaused ?? false
     // })
   }
 

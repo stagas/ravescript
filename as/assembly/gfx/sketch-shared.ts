@@ -13,12 +13,14 @@ export enum ShapeOpts {
   Line /*     */ = 0b0000_0000_0000_0010,
   Wave /*     */ = 0b0000_0000_0000_0100,
   Notes /*    */ = 0b0000_0000_0000_1000,
+  Params /*   */ = 0b0000_0000_0001_0000,
   // flags
   Collapse /* */ = 0b0000_0001_0000_0000,
   NoMargin /* */ = 0b0000_0010_0000_0000,
   Join /*     */ = 0b0000_0100_0000_0000,
   Cols /*     */ = 0b0000_1000_0000_0000,
   InfY /*     */ = 0b0001_0000_0000_0000,
+  Shadow /*   */ = 0b0010_0000_0000_0000,
 }
 
 export const WAVE_MIPMAPS = 13
@@ -68,6 +70,31 @@ export class Note {
   time: f32 = 0
   length: f32 = 0
   vel: f32 = 0
+}
+
+@unmanaged
+export class Params {
+  opts: f32 = f32(ShapeOpts.Params)
+
+  x: f32 = 0
+  y: f32 = 0
+  w: f32 = 0
+  h: f32 = 0
+
+  color: f32 = 0x0
+  alpha: f32 = 1.0
+
+  params$: f32 = 0
+  hoveringParam$: f32 = 0
+  hoverColor: f32 = 0
+}
+
+@unmanaged
+export class ParamValue {
+  time: f32 = 0
+  length: f32 = 0
+  slope: f32 = 0
+  amt: f32 = 0
 }
 
 @unmanaged

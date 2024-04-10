@@ -17,6 +17,7 @@ import { hexToInt, intToHex, toHex } from '../util/rgb.ts'
 import { DspService } from './dsp-service.ts'
 import { BarBox, PlayerTrack } from './player-shared.ts'
 import type { BoxData, Project, ProjectData, TrackData } from './project.ts'
+import { createParamValue } from '../util/params.ts'
 
 const DEBUG = true
 
@@ -162,7 +163,7 @@ export function Track(dsp: DspService, trackData: TrackData, y: number) {
         0
       )
     },
-    waveLength: 1, // computed during effect update_audio_buffer
+    waveLength: 1, // computed in renderSource
     get audioBuffer() {
       return services.audio.ctx.createBuffer(1, this.waveLength, services.audio.ctx.sampleRate)
     },
@@ -176,6 +177,14 @@ export function Track(dsp: DspService, trackData: TrackData, y: number) {
       note.length,
       note.vel,
     )),
+    paramsValues: trackData.params.map(params =>
+      params.values.map(v => createParamValue(
+        v.time,
+        v.length,
+        v.slope,
+        v.amt,
+      ))
+    ),
     get notesJson() {
       const { notes } = this
       return notes.map(({ info: note }) => ({
@@ -193,6 +202,29 @@ export function Track(dsp: DspService, trackData: TrackData, y: number) {
         data[i] = notes[i].data.ptr
       }
       return data
+    },
+    get paramsJson() {
+      const { paramsValues } = this
+      return paramsValues.map(values =>
+        values.map(({ info: v }) => ({
+          time: v.time,
+          length: v.length,
+          slope: v.slope,
+          amt: v.amt,
+        }))
+      )
+    },
+    get paramsData() {
+      const { paramsValues } = this
+      $()
+      const allData = paramsValues.map(values => {
+        const data = wasmGfx.alloc(Uint32Array, values.length + 1)
+        for (let i = 0; i < values.length; i++) {
+          data[i] = values[i].data.ptr
+        }
+        return data
+      })
+      return allData
     },
     get voicesCount() {
       const { notes } = this
@@ -273,7 +305,7 @@ export function Track(dsp: DspService, trackData: TrackData, y: number) {
     const { sound$, audioLength } = info
     if (!sound$ || !audioLength) return
 
-    const { voicesCount, notesJson } = info
+    const { voicesCount, notesJson, paramsJson } = info
 
     isRendering = true
     try {
@@ -284,6 +316,7 @@ export function Track(dsp: DspService, trackData: TrackData, y: number) {
         voicesCount,
         source.tokens.some(t => t.text === 'midi_in'),
         notesJson,
+        paramsJson,
       )
 
       if (error || !dspFloats) {
@@ -405,7 +438,6 @@ export function Track(dsp: DspService, trackData: TrackData, y: number) {
   function stop() {
     bufferSourcesPlaying.forEach(buf => buf.stop())
   }
-
 
   function destroy() {
     stop()

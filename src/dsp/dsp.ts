@@ -76,8 +76,8 @@ export function Dsp({ sampleRate, core$ }: {
       // some builtin procedures
       + ` { .5* .5+ } norm= `
       + ` { at= p= sp= 1 [inc sp co* at] clip - p^ } dec= `
-      // + `{ n= p= sp= 1 [inc sp co* t n*] clip - p^ } decay=`
-      // + ` { t= p= sp= 1 [inc sp co* t] clip - p^ } down= `
+    // + `{ n= p= sp= 1 [inc sp co* t n*] clip - p^ } decay=`
+    // + ` { t= p= sp= 1 [inc sp co* t] clip - p^ } down= `
   })]
 
   function Sound() {
@@ -401,6 +401,13 @@ export function Dsp({ sampleRate, core$ }: {
       n5f: Value.Scalar
       n5t: Value.Scalar
       n5v: Value.Scalar
+
+      p0: Value.Scalar
+      p1: Value.Scalar
+      p2: Value.Scalar
+      p3: Value.Scalar
+      p4: Value.Scalar
+      p5: Value.Scalar
     }
 
     const api = {
@@ -458,7 +465,7 @@ export function Dsp({ sampleRate, core$ }: {
 
     let prevHashId: any
 
-    function process(tokens: Token[], voicesCount: number, hasMidiIn: boolean) {
+    function process(tokens: Token[], voicesCount: number, hasMidiIn: boolean, paramsCount: number) {
       const scope = {} as any
       const literals: AstNode[] = []
 
@@ -522,12 +529,18 @@ export function Dsp({ sampleRate, core$ }: {
       scope.rt = new AstNode(AstNode.Type.Result, { value: rt })
       scope.co = new AstNode(AstNode.Type.Result, { value: co })
 
-      for (let i = 0; i < voicesCount; i++) {
+      for (let i = 0; i < 6; i++) {
         for (const p of 'nftv') {
           const name = `n${i}${p}`
           const value = (globals as any)[name] = sound.Value.Scalar.create()
           scope[name] = new AstNode(AstNode.Type.Result, { value })
         }
+      }
+
+      for (let i = 0; i < 6; i++) {
+        const name = `p${i}`
+        const value = (globals as any)[name] = sound.Value.Scalar.create()
+        scope[name] = new AstNode(AstNode.Type.Result, { value })
       }
 
       const program = interpret(sound, scope, tokensCopy)

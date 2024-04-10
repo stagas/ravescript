@@ -1,6 +1,6 @@
 import { logf, logf2, logf3, logf4, logf6, logi } from '../env'
 import { Sketch } from './sketch'
-import { Box, Line, Matrix, Notes, Shape, ShapeOpts, WAVE_MIPMAPS, Wave, Note } from './sketch-shared'
+import { Box, Line, Matrix, Notes, Shape, ShapeOpts, WAVE_MIPMAPS, Wave, Note, Params, ParamValue } from './sketch-shared'
 import { lineIntersectsRect } from './util'
 
 const MAX_ZOOM: f32 = 0.5
@@ -34,6 +34,7 @@ export function draw(
   let line: Line
   let wave: Wave
   let notes: Notes
+  let params: Params
 
   const x_gap: f32 = ma > 5 ? 1 : 0
 
@@ -262,6 +263,117 @@ export function draw(
           x1, y1,
           line.color, line.alpha,
           line.lw,
+        )
+
+        continue
+      }
+
+      //
+      // Params
+      //
+      case ShapeOpts.Params: {
+        params = changetype<Params>(ptr)
+
+        const x = f32(params.x * ma + me)
+        const y = f32(params.y * md + mf)
+        const w = f32(params.w * ma - x_gap)
+        const h = f32(params.h * md - 1)
+
+        // check if visible
+        if (x > width
+          || y > height
+          || x + w < 0
+          || y + h < 0
+        ) continue
+
+        const paramsPtrs = changetype<StaticArray<usize>>(usize(params.params$))
+        let paramValue: ParamValue
+        let paramValue$: usize
+
+        let x0: f32 = 0
+        let y0: f32 = 0
+        let x1: f32 = 0
+        let y1: f32 = 0
+
+        let lastAmt: f32 = 0
+
+        const hh: f32 = h / 2.0
+        const hhs: f32 = hh * 0.65
+
+        const HAS_SHADOW = opts & ShapeOpts.Shadow
+
+        paramValue$ = unchecked(paramsPtrs[0])
+        if (paramValue$) {
+          paramValue = changetype<ParamValue>(paramValue$)
+
+          const time = paramValue.time
+          const length = paramValue.length
+          const slope = paramValue.slope
+          const amt = paramValue.amt
+
+          x0 = 0
+          x1 = x + f32(time * ma)
+          y1 = y + amt * hhs + hhs
+          y0 = y1
+
+          if (HAS_SHADOW) sketch.drawLine(
+            x0 + 1, y0 + 1,
+            x1 + 1, y1 + 1,
+            0x0, 1.0,
+            1.0
+          )
+
+          sketch.drawLine(
+            x0, y0,
+            x1, y1,
+            params.color, params.alpha,
+            1.0
+          )
+
+          lastAmt = amt
+        }
+
+        let i: i32 = 0
+        while (paramValue$ = unchecked(paramsPtrs[i++])) {
+          paramValue = changetype<ParamValue>(paramValue$)
+
+          const time = paramValue.time
+          const length = paramValue.length
+          const slope = paramValue.slope
+          const amt = paramValue.amt
+
+          x0 = x + f32(time * ma)
+          y0 = y + lastAmt * hhs + hhs
+          x1 = x + f32((time + length) * ma)
+          y1 = y + amt * hhs + hhs
+
+          if (HAS_SHADOW) sketch.drawLine(
+            x0 + 1, y0 + 1,
+            x1 + 1, y1 + 1,
+            0x0, 1.0,
+            1.0
+          )
+          sketch.drawLine(
+            x0, y0,
+            x1, y1,
+            params.color, params.alpha,
+            1.0
+          )
+
+          lastAmt = amt
+        }
+
+        if (HAS_SHADOW) sketch.drawLine(
+          x1 + 1, y1 + 1,
+          width + 1, y1 + 1,
+          0x0, 1.0,
+          1.0
+        )
+        sketch.drawLine(
+          x1, y1,
+          width, y1,
+          params.color, params.alpha,
+          1.0
         )
 
         continue
