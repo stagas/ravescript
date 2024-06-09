@@ -21,6 +21,8 @@ import { createParamValue } from '../util/params.ts'
 
 const DEBUG = true
 
+const SCALE_X = 1 / 16
+
 export const palette = [
   0xff5555,
   0x1188ff,

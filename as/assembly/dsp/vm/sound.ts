@@ -1,6 +1,7 @@
 import { run as dspRun } from '../../../../generated/assembly/dsp-runner'
-import { logf } from '../../env'
+import { logf, logf2 } from '../../env'
 import { Note, ParamValue } from '../../gfx/sketch-shared'
+import { clamp } from '../../util'
 import { BUFFER_SIZE, MAX_FLOATS, MAX_LISTS, MAX_LITERALS, MAX_SCALARS } from '../constants'
 import { Clock } from '../core/clock'
 import { Engine } from '../core/engine'
@@ -116,7 +117,19 @@ export class Sound {
       if (a) {
         const param = Params.p0 + y
         y++
-        const amt = f32(1.0)
+        let amt = f32(1.0)
+        if (b) {
+          if (a.time === b.time) {
+            amt = b.amt
+          }
+          else {
+            const diff: f32 = Mathf.max(0, start - a.time)
+            const width: f32 = b.time - a.time
+            const alpha = Mathf.min(width, diff) / width
+            amt = clamp(-1.0, 1.0, 0.0, a.amt + (b.amt - a.amt) * alpha)
+            // logf2(start, amt)
+          }
+        }
         this.scalars[param] = amt
         // logf(6667)
       }

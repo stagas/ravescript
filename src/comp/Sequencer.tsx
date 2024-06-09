@@ -1,5 +1,5 @@
 import { Signal } from 'signal-jsx'
-import { Rect } from 'std'
+import { Point, Rect } from 'std'
 import { HEADER_HEIGHT, HEADS_WIDTH } from '../constants.ts'
 import { Grid } from '../draws/grid.ts'
 import { Heads } from '../draws/heads.tsx'
@@ -29,7 +29,18 @@ export function Sequencer() {
   const bpm = Bpm()
   // const textDraw = TextDraw(surface, grid, view)
   const heads = Heads(surface, grid)
-  const code = Code()
+  const codeView = $(new Rect(
+    $(new Point, {
+      x: layout.info.$.codeWidth,
+      y: layout.info.$.codeHeight
+    }),
+    $(new Point, {
+      y: layout.info.$.mainYBottom
+    }),
+  ), {
+    pr: screen.info.$.pr,
+  })
+  const code = Code(codeView)
   const preview = Preview(grid)
   const vertSep = <div class="fixed left-0 top-0 w-[2px] bg-black z-30" /> as HTMLDivElement
 

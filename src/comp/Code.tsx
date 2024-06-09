@@ -12,8 +12,9 @@ import { screen } from '../screen.tsx'
 import { state } from '../state.ts'
 import { toHex } from '../util/rgb.ts'
 import { Canvas } from './Canvas.tsx'
+import { dspGens } from '../../generated/typescript/dsp-gens.ts'
 
-export function Code() {
+export function Code(view: Rect) {
   using $ = Signal()
 
   const info = $({
@@ -27,18 +28,6 @@ export function Code() {
 
     fontSize: '14px',
     lineHeight: 16,
-  })
-
-  const view = $(new Rect(
-    $(new Point, {
-      x: layout.info.$.codeWidth,
-      y: layout.info.$.codeHeight
-    }),
-    $(new Point, {
-      y: layout.info.$.mainYBottom
-    }),
-  ), {
-    pr: screen.info.$.pr,
   })
 
   const editorView = $(new Rect)
@@ -254,6 +243,7 @@ export function Code() {
 
       brand: '#ff381f',
       brand2: '#6838ff',
+      brand3: '#88ff88',
 
       get TokenColors() {
         return {
@@ -270,6 +260,9 @@ export function Code() {
           t: this.brand2,
           rt: this.brand2,
           co: this.brand2,
+          ...Object.fromEntries(Object.keys(dspGens).map(key => [
+            key, this.brand3,
+          ]))
         } as any
       }
     })

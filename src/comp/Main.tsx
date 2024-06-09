@@ -18,7 +18,7 @@ export function Main() {
   const sidebar = <aside />
   const article = <article />
 
-  const bench = Bench()
+  // const bench = Bench()
 
   // bench.add('Math.sin()', () => {
   //   let i = 0
