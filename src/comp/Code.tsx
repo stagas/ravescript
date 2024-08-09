@@ -248,9 +248,9 @@ export function Code(view: Rect) {
       get TokenColors() {
         return {
           [Token.Type.Op]: toHex(screen.info.colors['primary']),
-          [Token.Type.Id]: this.brand,
+          [Token.Type.Id]: toHex(screen.info.colors['base-content']),
           [Token.Type.Keyword]: this.brand2,
-          [Token.Type.Number]: toHex(screen.info.colors['base-content']),
+          [Token.Type.Number]: toHex(screen.info.colors['secondary']),
           [Token.Type.Comment]: toHex(screen.info.colors['base-content']) + '66',
         } as any
       },
@@ -260,9 +260,9 @@ export function Code(view: Rect) {
           t: this.brand2,
           rt: this.brand2,
           co: this.brand2,
-          ...Object.fromEntries(Object.keys(dspGens).map(key => [
-            key, this.brand3,
-          ]))
+          ...Object.fromEntries(Object.keys(dspGens).map(key =>
+            [key, this.brand2]
+          ))
         } as any
       }
     })

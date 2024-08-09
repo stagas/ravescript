@@ -5,37 +5,6 @@ import { getAllPropsReverse } from '../dsp/util.ts'
 import { Token } from './tokenize.ts'
 import { parseNumber } from './util.ts'
 
-// namespace Value {
-//   export enum Type {
-//     Proc = 'Proc',
-//     Result = 'Result',
-//   }
-//   export enum ProcKind {
-//     Native = 'Native',
-//   }
-// }
-
-// namespace Block {
-//   export enum Type {
-//     ProcCall = 'ProcCall',
-//     Procedure = 'Procedure',
-//     List = 'List',
-//   }
-// }
-
-// const Blocks = {
-//   '[': Block.Type.ProcCall,
-//   '{': Block.Type.Procedure,
-//   '(': Block.Type.List,
-// }
-
-// const Procs = {
-//   sin: ['hz'],
-//   slp: ['cut', 'q', 'in'],
-// }
-
-// const source = { code: '[sin 333 [sin 3] 20*+]' }
-
 export class AstNode {
   constructor(
     public type: AstNode.Type,
@@ -225,20 +194,6 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
   }
 
   const root = createContext(tokens)
-  // function accept(type: Token.Type) {
-  //   if (peek()?.type === type) {
-  //     return true
-  //   }
-  // }
-  // function expect(type: Token.Type, text?: string) {
-  //   if (peek()?.type !== type) {
-  //     throw new SyntaxError('Expected type ' + type, { cause: { nodes: [peek()] } })
-  //   }
-  //   if (text && peek()?.text !== text) {
-  //     throw new SyntaxError('Expected text ' + text, { cause: { nodes: [peek()] } })
-  //   }
-  //   return next()
-  // }
 
   function processProcCall(node: AstNode) {
     const proc: AstNode | undefined = node.scope.stack.shift()
