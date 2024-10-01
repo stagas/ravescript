@@ -1,5 +1,5 @@
 import type { Rpc } from '../api/routes/rpc.ts'
-import { env } from './env.ts'
+import { env } from '../src/env.ts'
 
 export type RpcFn<T extends (...args: never[]) => unknown> =
   T extends (first: never, ...rest: infer U) => infer V

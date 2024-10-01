@@ -9,21 +9,11 @@ import { state } from '../state.ts'
 export function App() {
   using $ = Sigui()
 
-  console.log(state.url)
-
-  if (
-    location.pathname === '/logout' &&
-    location.origin !== env.VITE_API_URL
-  ) {
-    location.href = env.VITE_API_URL + '/logout'
-    throw 'unreachable'
-  }
+  whoami().then(session => state.session = session)
 
   // `info` holds our reactive data
   const info = $({
-    greet: '',
     bg: 'transparent',
-    shuffle: 0,
   })
 
   return <main

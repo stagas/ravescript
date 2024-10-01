@@ -1,6 +1,7 @@
 import { Sigui } from 'sigui'
-import { login, loginUser } from '../rpc/login-register.ts'
 import { UserLogin } from '../../api/schemas/user.ts'
+import { login, loginUser } from '../rpc/login-register.ts'
+import { parseForm } from '../util/parse-form.ts'
 
 export function Login() {
   using $ = Sigui()
@@ -9,11 +10,9 @@ export function Login() {
     error: ''
   })
 
-  function onSubmit(ev: Event) {
+  function onSubmit(ev: Event & { target: HTMLFormElement }) {
     ev.preventDefault()
-    const form = new FormData(ev.target as HTMLFormElement)
-    const data = UserLogin.parse(Object.fromEntries(form.entries()))
-    login(data)
+    login(parseForm(ev.target, UserLogin))
       .then(loginUser)
       .catch(err => info.error = err.message)
     return false

@@ -1,9 +1,9 @@
 {
   "include": [
+    "admin",
+    "lib",
     "src",
-    "vendor",
-    "web",
-    "admin"
+    "vendor"
   ],
   "compilerOptions": {
     "rootDir": ".",

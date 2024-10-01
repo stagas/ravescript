@@ -5,7 +5,7 @@ import type {
   whoami as whoamiAction
 } from '../../api/actions/login-register.ts'
 import type { UserSession } from '../../api/schemas/user.ts'
-import { rpcAction } from '../rpc-action.ts'
+import { rpcAction } from '../../lib/rpc-action.ts'
 import { state } from '../state.ts'
 
 export const login = rpcAction<typeof loginAction>('login')

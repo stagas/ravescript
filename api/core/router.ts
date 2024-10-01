@@ -40,8 +40,8 @@ function toResponse(x: string | Response) {
 }
 
 async function parseForm<T extends z.AnyZodObject>(this: Context, schema: T) {
-  const formData = await this.request.formData()
-  const data = Object.fromEntries(formData.entries())
+  const form = await this.request.formData()
+  const data = Object.fromEntries(form.entries())
   return schema.parse(data) as z.infer<T>
 }
 
