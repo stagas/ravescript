@@ -3,49 +3,72 @@ import { Sigui } from 'sigui'
 import { icon } from '../lib/icon.ts'
 import { Logout } from '../src/comp/Logout.tsx'
 import { whoami } from '../src/rpc/login-register.ts'
-import { clearSessions, clearUsers, listSessions, listUsers } from './rpc/admin.ts'
+import * as actions from './rpc/admin.ts'
 import { state } from './state.ts'
 
 const EDITABLE = new Set(['nick', 'email'])
 
-function Table<T extends Record<string, unknown>>({
+function Table<T extends readonly [string, Record<string, unknown>]>({
   name,
-  items,
+  list,
+  del,
   clear,
 }: {
   name: string,
-  items: T[] | Error | undefined,
+  list: () => Promise<T[] | Error | undefined>,
+  del: (key: string) => any,
   clear: (...args: any[]) => any,
 }) {
+  using $ = Sigui()
+
+  const info = $({
+    items: [] as T[] | Error | undefined
+  })
+
+  async function refresh() {
+    try {
+      info.items = await list()
+    }
+    catch (error) {
+      if (error instanceof Error) {
+        info.items = error
+      }
+    }
+  }
+
+  refresh()
+
   return <div>
     {() =>
-      items instanceof Error
-        ? <div>Error! {items.message}</div>
-        : items?.length
+      info.items instanceof Error
+        ? <div>Error! {info.items.message}</div>
+        : info.items?.length
           ? <div>
             <h3>{name}</h3>
             <table class="text-nowrap">
               <tr>
                 <th>
-                  <button onclick={() => clear()}>Clear {name}</button>
+                  <button onclick={() => confirm(`Clear ${name}?`) && clear().then(refresh)}>Clear {name}</button>
                 </th>
-                {Object.keys(items[0])
+                <th>key</th>
+                {Object.keys(info.items[0][1])
                   .map(k =>
                     <th>{k}</th>
                   )}
               </tr>
-              {items.map(item =>
+              {info.items.map(([key, item]) =>
                 <tr>
                   <td>
                     <button class="p-1">{icon(Save, { size: 16, 'stroke-width': 1.5 })}</button>
-                    <button class="p-1">{icon(Trash, { size: 16, 'stroke-width': 1.5 })}</button>
+                    <button class="p-1" onclick={() => confirm(`Delete ${key}?`) && del(key).then(refresh)}>{icon(Trash, { size: 16, 'stroke-width': 1.5 })}</button>
                   </td>
+                  <td>{key}</td>
                   {Object.entries(item).map(([key, value]) =>
                     <td>
                       {EDITABLE.has(key)
                         ? <input type="text" value={value} spellcheck="false" />
                         : typeof value === 'boolean'
-                          ? value ? '✓' : '✗'
+                          ? value ? '✓' : ''
                           : value}
                     </td>
                   )}
@@ -61,12 +84,10 @@ function Table<T extends Record<string, unknown>>({
 export function Admin() {
   using $ = Sigui()
 
-  const info = $({
-    users: $.unwrap(listUsers),
-    sessions: $.unwrap(listSessions),
+  whoami().then(user => {
+    if (!user) location.href = '/'
+    else state.user = user
   })
-
-  whoami().then(user => state.user = user)
 
   return <div class="p-2">
     Welcome {() => state.user?.nick} <Logout then={() => location.href = '/'} /> <a href="/">Home</a>
@@ -74,19 +95,17 @@ export function Admin() {
     {() =>
       <Table
         name="Users"
-        items={info.users}
-        clear={() => confirm('Clear users?') && clearUsers().then(() => {
-          info.users = []
-        })}
+        list={actions.listUsers}
+        del={actions.deleteUser}
+        clear={actions.clearUsers}
       />}
 
     {() =>
       <Table
         name="Sessions"
-        items={info.sessions}
-        clear={() => confirm('Clear sessions?') && clearSessions().then(() => {
-          info.sessions = []
-        })}
+        list={actions.listSessions}
+        del={actions.deleteSession}
+        clear={actions.clearSessions}
       />}
   </div>
 }

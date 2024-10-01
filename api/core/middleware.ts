@@ -1,11 +1,12 @@
 import * as media from 'jsr:@std/media-types'
 import * as path from 'jsr:@std/path'
+import { getUserByNick } from '../actions/login-register.ts'
+import { UserSession } from '../schemas/user.ts'
 import { kv } from './app.ts'
 import type { Handler } from './router.ts'
-import { UserSession } from '../schemas/user.ts'
 import { sessions } from './sessions.ts'
 
-const DEBUG = false
+const DEBUG = true
 
 export const watcher: Handler = () => {
   const body = new ReadableStream()
@@ -38,7 +39,8 @@ export const session: Handler = async ctx => {
     if (entry.value) {
       const session = UserSession.parse(entry.value)
       if (session.expires.getTime() > Date.now()) {
-        sessions.set(ctx, session)
+        const user = await getUserByNick(session.nick)
+        if (user) sessions.set(ctx, session)
       }
     }
   }

@@ -1,6 +1,5 @@
 import { timeMs } from 'utils'
-import { logger, session } from './middleware.ts'
-import { create } from './router.ts'
+import { Router } from './router.ts'
 
 function log(...args: unknown[]) {
   const now = new Date()
@@ -8,7 +7,4 @@ function log(...args: unknown[]) {
 }
 
 export const kv = await Deno.openKv()
-export const app = create({ log })
-
-app.use(null, [logger])
-app.use(null, [session])
+export const app = Router({ log })

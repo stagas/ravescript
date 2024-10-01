@@ -50,7 +50,8 @@ async function parseJson<T extends z.AnyZodObject>(this: Context, schema: T) {
   return schema.parse(data) as z.infer<T>
 }
 
-export function create({ log = console.log }: { log?: typeof console.log } = {}) {
+export type Router = ReturnType<typeof Router>
+export function Router({ log = console.log }: { log?: typeof console.log } = {}) {
   const routes: Route[] = []
 
   async function handler(req: Request, info: Deno.ServeHandlerInfo) {

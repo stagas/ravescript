@@ -1,6 +1,6 @@
 // deno-lint-ignore-file require-await
 import { hash } from 'jsr:@denorg/scrypt@4.4.4'
-import { createCookie, parseCookie, randomHash } from 'utils'
+import { createCookie, randomHash } from 'utils'
 import { kv } from '../core/app.ts'
 import { SALT as salt } from '../core/constants.ts'
 import { Context } from '../core/router.ts'
@@ -24,7 +24,7 @@ class UnableToRegisterError extends RpcError {
   constructor() { super(500, 'Unable to register') }
 }
 
-async function getUserByNick(nick: string) {
+export async function getUserByNick(nick: string) {
   return await db
     .selectFrom('user')
     .selectAll()
@@ -32,7 +32,7 @@ async function getUserByNick(nick: string) {
     .executeTakeFirst()
 }
 
-async function getUserByEmail(email: string) {
+export async function getUserByEmail(email: string) {
   return await db
     .selectFrom('user')
     .selectAll()
@@ -40,7 +40,7 @@ async function getUserByEmail(email: string) {
     .executeTakeFirst()
 }
 
-async function getUser(nickOrEmail: string) {
+export async function getUser(nickOrEmail: string) {
   return await getUserByNick(nickOrEmail) || await getUserByEmail(nickOrEmail)
 }
 
@@ -52,8 +52,8 @@ async function loginUser(ctx: Context, nick: string) {
 
   const now = new Date()
   const expires = new Date(now)
-  expires.setMinutes(expires.getMinutes() + 1)
-  // expires.setUTCFullYear(expires.getUTCFullYear() + 1)
+  // expires.setMinutes(expires.getMinutes() + 1)
+  expires.setUTCFullYear(expires.getUTCFullYear() + 1)
 
   const isAdmin = ADMINS.includes(nick)
   const session: UserSession = { nick, expires, isAdmin }
