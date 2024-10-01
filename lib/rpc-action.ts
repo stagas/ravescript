@@ -12,14 +12,12 @@ type RpcResponse = {
 
 export function rpcAction<T extends (...args: any[]) => any>(fn: string) {
   return async function (...args: any[]) {
+    const body: Rpc = { fn, args }
     const res = await fetch(env.VITE_API_URL + '/rpc', {
-      method: 'POST',
       credentials: 'include',
+      method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        fn,
-        args,
-      } satisfies Rpc),
+      body: JSON.stringify(body),
     })
     const json = await res.json() as RpcResponse
     if (json.error) {
