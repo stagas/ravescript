@@ -7,7 +7,7 @@ import { Home } from './Home.tsx'
 export function App() {
   using $ = Sigui()
 
-  whoami().then(session => state.session = session)
+  whoami().then(user => state.user = user)
 
   // `info` holds our reactive data
   const info = $({
@@ -30,5 +30,5 @@ export function App() {
           return <About />
       }
     }}
-  </main >
+  </main>
 }

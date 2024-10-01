@@ -10,7 +10,9 @@
       "jsr:@std/encoding@^0.222.1": "jsr:@std/encoding@0.222.1",
       "jsr:@std/fmt@^0.222.1": "jsr:@std/fmt@0.222.1",
       "jsr:@std/media-types": "jsr:@std/media-types@1.0.3",
-      "jsr:@std/path": "jsr:@std/path@1.0.6"
+      "jsr:@std/path": "jsr:@std/path@1.0.6",
+      "npm:kysely@^0.27.4": "npm:kysely@0.27.4",
+      "npm:pg-pool": "npm:pg-pool@3.7.0_pg@8.13.0"
     },
     "jsr": {
       "@denorg/scrypt@4.4.4": {
@@ -46,6 +48,87 @@
       "@std/path@1.0.6": {
         "integrity": "ab2c55f902b380cf28e0eec501b4906e4c1960d13f00e11cfbcd21de15f18fed"
       }
+    },
+    "npm": {
+      "kysely@0.27.4": {
+        "integrity": "sha512-dyNKv2KRvYOQPLCAOCjjQuCk4YFd33BvGdf/o5bC7FiW+BB6snA81Zt+2wT9QDFzKqxKa5rrOmvlK/anehCcgA==",
+        "dependencies": {}
+      },
+      "pg-cloudflare@1.1.1": {
+        "integrity": "sha512-xWPagP/4B6BgFO+EKz3JONXv3YDgvkbVrGw2mTo3D6tVDQRh1e7cqVGvyR3BE+eQgAvx1XhW/iEASj4/jCWl3Q==",
+        "dependencies": {}
+      },
+      "pg-connection-string@2.7.0": {
+        "integrity": "sha512-PI2W9mv53rXJQEOb8xNR8lH7Hr+EKa6oJa38zsK0S/ky2er16ios1wLKhZyxzD7jUReiWokc9WK5nxSnC7W1TA==",
+        "dependencies": {}
+      },
+      "pg-int8@1.0.1": {
+        "integrity": "sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==",
+        "dependencies": {}
+      },
+      "pg-pool@3.7.0_pg@8.13.0": {
+        "integrity": "sha512-ZOBQForurqh4zZWjrgSwwAtzJ7QiRX0ovFkZr2klsen3Nm0aoh33Ls0fzfv3imeH/nw/O27cjdz5kzYJfeGp/g==",
+        "dependencies": {
+          "pg": "pg@8.13.0"
+        }
+      },
+      "pg-protocol@1.7.0": {
+        "integrity": "sha512-hTK/mE36i8fDDhgDFjy6xNOG+LCorxLG3WO17tku+ij6sVHXh1jQUJ8hYAnRhNla4QVD2H8er/FOjc/+EgC6yQ==",
+        "dependencies": {}
+      },
+      "pg-types@2.2.0": {
+        "integrity": "sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==",
+        "dependencies": {
+          "pg-int8": "pg-int8@1.0.1",
+          "postgres-array": "postgres-array@2.0.0",
+          "postgres-bytea": "postgres-bytea@1.0.0",
+          "postgres-date": "postgres-date@1.0.7",
+          "postgres-interval": "postgres-interval@1.2.0"
+        }
+      },
+      "pg@8.13.0": {
+        "integrity": "sha512-34wkUTh3SxTClfoHB3pQ7bIMvw9dpFU1audQQeZG837fmHfHpr14n/AELVDoOYVDW2h5RDWU78tFjkD+erSBsw==",
+        "dependencies": {
+          "pg-cloudflare": "pg-cloudflare@1.1.1",
+          "pg-connection-string": "pg-connection-string@2.7.0",
+          "pg-pool": "pg-pool@3.7.0_pg@8.13.0",
+          "pg-protocol": "pg-protocol@1.7.0",
+          "pg-types": "pg-types@2.2.0",
+          "pgpass": "pgpass@1.0.5"
+        }
+      },
+      "pgpass@1.0.5": {
+        "integrity": "sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==",
+        "dependencies": {
+          "split2": "split2@4.2.0"
+        }
+      },
+      "postgres-array@2.0.0": {
+        "integrity": "sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==",
+        "dependencies": {}
+      },
+      "postgres-bytea@1.0.0": {
+        "integrity": "sha512-xy3pmLuQqRBZBXDULy7KbaitYqLcmxigw14Q5sj8QBVLqEwXfeybIKVWiqAXTlcvdvb0+xkOtDbfQMOf4lST1w==",
+        "dependencies": {}
+      },
+      "postgres-date@1.0.7": {
+        "integrity": "sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q==",
+        "dependencies": {}
+      },
+      "postgres-interval@1.2.0": {
+        "integrity": "sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==",
+        "dependencies": {
+          "xtend": "xtend@4.0.2"
+        }
+      },
+      "split2@4.2.0": {
+        "integrity": "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==",
+        "dependencies": {}
+      },
+      "xtend@4.0.2": {
+        "integrity": "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==",
+        "dependencies": {}
+      }
     }
   },
   "remote": {
@@ -80,5 +163,12 @@
     "https://deno.land/x/zod@v3.23.8/locales/en.ts": "a7a25cd23563ccb5e0eed214d9b31846305ddbcdb9c5c8f508b108943366ab4c",
     "https://deno.land/x/zod@v3.23.8/mod.ts": "ec6e2b1255c1a350b80188f97bd0a6bac45801bb46fc48f50b9763aa66046039",
     "https://deno.land/x/zod@v3.23.8/types.ts": "1b172c90782b1eaa837100ebb6abd726d79d6c1ec336350c8e851e0fd706bf5c"
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:kysely@^0.27.4",
+      "npm:pg",
+      "npm:pg-pool"
+    ]
   }
 }

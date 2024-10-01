@@ -6,9 +6,9 @@ import { Link } from '../ui/Link.tsx'
 
 export function Home() {
   return <div>
-    {() => state.session
+    {() => state.user
       ? [<div>
-        Hello {state.session.nick} <Logout /> {state.session.isAdmin ? <a href="/admin/">Admin</a> : <></>} <Link href="/about">About</Link>
+        Hello {state.user.nick} <Logout /> {state.user.isAdmin ? <a href="/admin/">Admin</a> : <></>} <Link href="/about">About</Link>
       </div>]
       : [<div>
         <Login />

@@ -8,15 +8,21 @@
   "main": "src/client.tsx",
   "scripts": {
     "build": "vite build",
-    "dev": "npm run dev:api & npm run dev:web",
-    "dev:web": "vite",
+    "dev": "pnpm dev:db & pnpm dev:api & pnpm dev:web",
+    "dev:db": "docker compose up",
     "dev:api": "deno --watch --unstable-kv -A api/core/server.ts",
+    "dev:web": "vite",
+    "kysely": "kysely",
+    "models": "kysely-zod-codegen --env-file=.env.development --camel-case --out-file=api/models.ts",
     "postinstall": "link-local"
   },
   "devDependencies": {
+    "@maktouch/kysely-zod-codegen": "^0.5.2",
     "@types/node": "^22.7.4",
     "ambient-dts": "github:stagas/ambient-dts",
     "autoprefixer": "^10.4.20",
+    "kysely": "^0.27.4",
+    "kysely-ctl": "^0.9.0",
     "open-in-editor": "^2.2.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
@@ -25,6 +31,10 @@
     "vitest": "^2.1.1"
   },
   "dependencies": {
+    "@types/pg": "^8.11.10",
+    "dotenv": "^16.4.5",
+    "lucide": "^0.446.0",
+    "pg": "^8.13.0",
     "sigui": "github:stagas/sigui",
     "zod": "^3.23.8"
   }

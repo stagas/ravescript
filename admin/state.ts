@@ -2,7 +2,7 @@ import { $ } from 'sigui'
 import type { UserSession } from '../api/schemas/user.ts'
 
 export let state = $({
-  session: null as undefined | null | UserSession,
+  user: null as undefined | null | UserSession,
   url: new URL(location.href),
 })
 

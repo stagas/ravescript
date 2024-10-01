@@ -1,56 +1,92 @@
+import { Save, Trash } from 'lucide'
 import { Sigui } from 'sigui'
+import { icon } from '../lib/icon.ts'
 import { Logout } from '../src/comp/Logout.tsx'
 import { whoami } from '../src/rpc/login-register.ts'
-import { listUsers } from './rpc/admin.ts'
+import { clearSessions, clearUsers, listSessions, listUsers } from './rpc/admin.ts'
 import { state } from './state.ts'
 
 const EDITABLE = new Set(['nick', 'email'])
 
-export function Admin() {
-  using $ = Sigui()
-
-  const info = $({
-    users: $.unwrap(listUsers)
-  })
-
-  whoami().then(session => state.session = session)
-
+function Table<T extends Record<string, unknown>>({
+  name,
+  items,
+  clear,
+}: {
+  name: string,
+  items: T[] | Error | undefined,
+  clear: (...args: any[]) => any,
+}) {
   return <div>
     {() =>
-      info.users instanceof Error
-        ? <div>Error! {info.users.message}</div>
-        : info.users?.length
+      items instanceof Error
+        ? <div>Error! {items.message}</div>
+        : items?.length
           ? <div>
-            Welcome {() => state.session?.nick} <Logout then={() => location.href = '/'} /> <a href="/">Home</a>
-            <h3>Users</h3>
-            <table>
+            <h3>{name}</h3>
+            <table class="text-nowrap">
               <tr>
                 <th>
-                  <button>Delete All Users</button>
+                  <button onclick={() => clear()}>Clear {name}</button>
                 </th>
-                {Object.keys(info.users[0])
+                {Object.keys(items[0])
                   .map(k =>
                     <th>{k}</th>
                   )}
               </tr>
-              {info.users.map(user =>
+              {items.map(item =>
                 <tr>
                   <td>
-                    <button>update</button>
-                    <button>delete</button>
+                    <button class="p-1">{icon(Save, { size: 16, 'stroke-width': 1.5 })}</button>
+                    <button class="p-1">{icon(Trash, { size: 16, 'stroke-width': 1.5 })}</button>
                   </td>
-                  {Object.entries(user).map(([key, value]) =>
+                  {Object.entries(item).map(([key, value]) =>
                     <td>
                       {EDITABLE.has(key)
                         ? <input type="text" value={value} spellcheck="false" />
-                        : value}
+                        : typeof value === 'boolean'
+                          ? value ? '✓' : '✗'
+                          : value}
                     </td>
                   )}
                 </tr>
               )}
             </table>
           </div>
-          : <div>Loading users...</div>
+          : <div>Loading {name}...</div>
     }
+  </div>
+}
+
+export function Admin() {
+  using $ = Sigui()
+
+  const info = $({
+    users: $.unwrap(listUsers),
+    sessions: $.unwrap(listSessions),
+  })
+
+  whoami().then(user => state.user = user)
+
+  return <div class="p-2">
+    Welcome {() => state.user?.nick} <Logout then={() => location.href = '/'} /> <a href="/">Home</a>
+
+    {() =>
+      <Table
+        name="Users"
+        items={info.users}
+        clear={() => confirm('Clear users?') && clearUsers().then(() => {
+          info.users = []
+        })}
+      />}
+
+    {() =>
+      <Table
+        name="Sessions"
+        items={info.sessions}
+        clear={() => confirm('Clear sessions?') && clearSessions().then(() => {
+          info.sessions = []
+        })}
+      />}
   </div>
 }

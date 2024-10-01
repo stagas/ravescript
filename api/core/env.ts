@@ -5,6 +5,7 @@ import { IS_DEV } from './constants.ts'
 const Env = z.object({
   VITE_API_URL: z.string(),
   WEB_URL: z.string(),
+  DATABASE_URL: z.string(),
 })
 
 export const env = Env.parse(await load({

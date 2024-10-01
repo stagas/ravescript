@@ -9,5 +9,5 @@ export const register = rpcAction<typeof actions.register>('register')
 export const whoami = rpcAction<typeof actions.whoami>('whoami')
 
 export function loginUser(session: UserSession) {
-  state.session = session
+  state.user = session
 }

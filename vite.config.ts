@@ -37,6 +37,7 @@ export default ({ mode }) => {
     esbuild: {
       jsx: 'automatic',
       target: 'esnext',
+      treeShaking: true
     },
     plugins: [
       ViteUsing(),
