@@ -47,8 +47,8 @@ app.post('/rpc', [async ctx => {
   args.unshift(ctx)
 
   try {
-    const result = (await action.apply(null, args)) ?? {}
-    return new Response(JSON.stringify(result), {
+    const result = await action.apply(null, args)
+    return new Response(JSON.stringify(result ?? null), {
       headers
     })
   }

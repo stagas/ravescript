@@ -16,7 +16,10 @@
   "devDependencies": {
     "@types/node": "^22.7.4",
     "ambient-dts": "github:stagas/ambient-dts",
+    "autoprefixer": "^10.4.20",
     "open-in-editor": "^2.2.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
     "utils": "github:stagas/utils",
     "vite": "^5.4.8",
     "vitest": "^2.1.1"

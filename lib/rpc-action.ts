@@ -8,7 +8,7 @@ export type RpcFn<T extends (...args: never[]) => unknown> =
 
 type RpcResponse = {
   error?: string
-}
+} | null | undefined
 
 export function rpcAction<T extends (...args: any[]) => any>(fn: string) {
   return async function (...args: any[]) {
@@ -20,7 +20,7 @@ export function rpcAction<T extends (...args: any[]) => any>(fn: string) {
       body: JSON.stringify(body),
     })
     const json = await res.json() as RpcResponse
-    if (json.error) {
+    if (json?.error) {
       throw new Error(json.error)
     }
     return json as never
