@@ -1,0 +1,78 @@
+import * as media from 'jsr:@std/media-types'
+import * as path from 'jsr:@std/path'
+import { kv } from './app.ts'
+import type { Handler } from './router.ts'
+import { UserSession } from '../schemas/user.ts'
+import { sessions } from './sessions.ts'
+
+const DEBUG = false
+
+export const watcher: Handler = () => {
+  const body = new ReadableStream()
+  return new Response(body, {
+    headers: {
+      'content-type': 'text/event-stream',
+    },
+  })
+}
+
+export const logger: Handler = ctx => {
+  const before = new Date()
+  ctx.done.then(res => {
+    const now = new Date()
+    const sec = ((now.getTime() - before.getTime()) * 0.001).toFixed(3)
+    const session = sessions.get(ctx)
+    ctx.log(
+      res.status,
+      `\x1b[01m${ctx.request.method} ${ctx.url.pathname}\x1b[0m`,
+      `\x1b[34m${sec}\x1b[0m`,
+      session?.nick ?? 'guest',
+    )
+  })
+}
+
+export const session: Handler = async ctx => {
+  if (ctx.cookies.session) {
+    DEBUG && ctx.log('Get session:', ctx.cookies.session)
+    const entry = await kv.get(['session', ctx.cookies.session])
+    if (entry.value) {
+      const session = UserSession.parse(entry.value)
+      if (session.expires.getTime() > Date.now()) {
+        sessions.set(ctx, session)
+      }
+    }
+  }
+}
+
+export const files = (root: string): Handler => async ctx => {
+  const { pathname } = ctx.url
+  let file
+  let filepath
+  out:
+  try {
+    filepath = path.join(pathname, 'index.html')
+    file = await Deno.open(`${root}${filepath}`, { read: true })
+    DEBUG && ctx.log('Serve:', filepath)
+  }
+  catch {
+    try {
+      filepath = pathname
+      file = await Deno.open(`${root}${filepath}`, { read: true })
+      DEBUG && ctx.log('Serve:', filepath)
+      break out
+    }
+    catch (e) {
+      ctx.log('Error serving:', filepath, e)
+      if (e instanceof Deno.errors.NotFound) {
+        return
+      }
+    }
+    return new Response(null, { status: 500 })
+  }
+
+  return new Response(file.readable, {
+    headers: {
+      'content-type': media.typeByExtension(path.extname(filepath)) ?? 'text/plain'
+    }
+  })
+}

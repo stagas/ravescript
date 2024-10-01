@@ -1,0 +1,10 @@
+{
+  "fmt": {
+    "singleQuote": true,
+    "semiColons": false
+  },
+  "imports": {
+    "utils": "../node_modules/utils/src/index.ts",
+    "zod": "https://deno.land/x/zod@v3.23.8/mod.ts"
+  }
+}

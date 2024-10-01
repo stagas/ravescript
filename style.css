@@ -1,0 +1,37 @@
+body {
+  background: #222;
+  color: #aaa;
+  font-family: sans-serif;
+}
+button, input {
+  background: #444;
+  color: #ccc;
+}
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-box-shadow: 0 0 0 30px #666 inset !important;
+  -webkit-text-fill-color: #ccc !important;
+}
+a {
+  color: #47f;
+  &:hover {
+    color: #7af;
+  }
+}
+table {
+  border-collapse: collapse;
+  font-family: sans-serif;
+  font-size: 9pt;
+}
+td, th {
+  padding: 5px;
+  border: 1px solid #444;
+}
+tr:nth-child(even) td {
+  background: #333;
+}
+th {
+  background: #111;
+}

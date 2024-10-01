@@ -1,0 +1,43 @@
+{
+  "include": [
+    "src",
+    "vendor",
+    "web",
+    "admin"
+  ],
+  "compilerOptions": {
+    "rootDir": ".",
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "noEmit": true,
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "sigui",
+    "useDefineForClassFields": true,
+    "exactOptionalPropertyTypes": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "noErrorTruncation": true,
+    "noImplicitThis": true,
+    // "noUncheckedIndexedAccess": true,
+    // "isolatedModules": true,
+    // "inlineSources": true,
+    // "declaration": true,
+    // "noUnusedLocals": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "allowJs": true,
+    "strict": true
+  }
+}

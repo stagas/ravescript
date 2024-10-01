@@ -1,0 +1,28 @@
+{
+  "name": "vasi",
+  "author": "stagas",
+  "version": "1.0.0",
+  "description": "Vasi is a full-stack webapp base template using Deno and Vite.",
+  "license": "AGPLv3",
+  "type": "module",
+  "main": "src/client.tsx",
+  "scripts": {
+    "build": "vite build",
+    "dev": "npm run dev:api & npm run dev:web",
+    "dev:web": "vite",
+    "dev:api": "deno --watch --unstable-kv -A api/core/server.ts",
+    "postinstall": "link-local"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "ambient-dts": "github:stagas/ambient-dts",
+    "open-in-editor": "^2.2.0",
+    "utils": "github:stagas/utils",
+    "vite": "^5.4.8",
+    "vitest": "^2.1.1"
+  },
+  "dependencies": {
+    "sigui": "github:stagas/sigui",
+    "zod": "^3.23.8"
+  }
+}
