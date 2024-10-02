@@ -4,6 +4,7 @@ import { app } from './app.ts'
 import { IS_DEV } from './constants.ts'
 import { files, logger, session, watcher } from './middleware.ts'
 import { register as registerRpc } from '../routes/rpc.ts'
+import { env } from './env.ts'
 
 const dist = 'dist'
 const home = os.home() ?? '~'
@@ -25,3 +26,5 @@ registerRpc(app)
 IS_DEV && app.log('Listening: https://devito.test:8000')
 IS_DEV && app.get('/watcher', [watcher])
 app.use(null, [files(dist)])
+
+console.log('DENO_DEPLOYMENT_ID', env.DENO_DEPLOYMENT_ID)
