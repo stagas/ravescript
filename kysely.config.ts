@@ -3,12 +3,16 @@ import { CamelCasePlugin, PostgresDialect } from 'kysely'
 import { defineConfig } from 'kysely-ctl'
 import { Pool } from 'pg'
 
+const DATABASE_URL = process.env.DATABASE_URL
+
 dotenv.config({
 	override: true,
 	path: process.env.NODE_ENV === 'production'
 		? '.env'
 		: '.env.development'
 })
+
+if (DATABASE_URL) process.env.DATABASE_URL = DATABASE_URL
 
 const connectionString = process.env.DATABASE_URL
 if (!connectionString) {

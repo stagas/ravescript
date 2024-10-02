@@ -3,6 +3,7 @@ import * as path from 'jsr:@std/path'
 import { getUserByNick } from '../actions/login-register.ts'
 import { UserSession } from '../schemas/user.ts'
 import { kv } from './app.ts'
+import { env } from './env.ts'
 import type { Handler } from './router.ts'
 import { sessions } from './sessions.ts'
 
@@ -14,6 +15,29 @@ export const watcher: Handler = () => {
     headers: {
       'content-type': 'text/event-stream',
     },
+  })
+}
+
+const ORIGIN_REGEX = /(https:\/\/[^\/\n]+\.deno\.dev)/g
+
+export const cors: Handler = ctx => {
+  ctx.done.then(res => {
+    const origin =
+      ctx.request.headers.get('origin') ??
+      ctx.request.headers.get('referer')
+
+    if (origin) {
+      const [match] = origin.match(ORIGIN_REGEX) ?? []
+      if (match) {
+        res.headers.set('access-control-allow-origin', match)
+      }
+      else if (
+        origin.startsWith(env.WEB_URL) ||
+        origin.startsWith(env.VITE_API_URL)
+      ) {
+        res.headers.set('access-control-allow-origin', origin)
+      }
+    }
   })
 }
 

@@ -1,9 +1,9 @@
 import os from 'https://deno.land/x/os_paths@v7.4.0/src/mod.deno.ts'
 import * as path from 'jsr:@std/path'
+import { register as registerRpc } from '../routes/rpc.ts'
 import { app } from './app.ts'
 import { IS_DEV } from './constants.ts'
-import { files, logger, session, watcher } from './middleware.ts'
-import { register as registerRpc } from '../routes/rpc.ts'
+import { cors, files, logger, session, watcher } from './middleware.ts'
 
 const dist = 'dist'
 const home = os.home() ?? '~'
@@ -18,6 +18,7 @@ const options = IS_DEV
 Deno.serve(options, app.handler)
 
 app.use(null, [logger])
+app.use(null, [cors])
 app.use(null, [session])
 
 registerRpc(app)

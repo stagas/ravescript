@@ -9,16 +9,20 @@
   - [x] Postgres
 - [x] Open in editor
 - [x] Watch/refresh
+
+### CI
 - [x] GitHub actions
-  - [x] Deploy
-  - [ ] Test
+  - [x] Tests
+  - [x] Preview with Neon DB branching
+  - [x] Deploy by merging/pushing to main
 
 ### Backend
 
 - [x] Deno
 - [x] Logging (stdout)
-- [ ] Testing
-  - [ ] Unit
+- [x] Testing
+  - [x] Coverage
+  - [x] Unit
   - [ ] Integration
   - [ ] E2E
 - [x] Deno KV storage
@@ -63,3 +67,19 @@
 - [x] UI
   - [x] Link
 - [ ] AssemblyScript
+
+## Setup
+
+- Repo -> Settings -> Secrets and variables
+  - Secrets
+    - Environment secrets
+      - Production
+        - DATABASE_URL=[neon database url]
+      - Repository
+        - CODECOV_TOKEN=[https://app.codecov.io/github/[user]/[repo]/config/general #Tokens]
+        - NEON_API_KEY
+  - Variables
+    - NEON_PROJECT_ID=[neon project id]
+
+  - NEON_API_KEY and NEON_PROJECT_ID are set automatically
+    from https://console.neon.tech/app/projects/[project-id]/integrations by installing GitHub integration.

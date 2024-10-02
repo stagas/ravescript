@@ -8,6 +8,8 @@
   "main": "src/client.tsx",
   "scripts": {
     "build": "vite build",
+    "test:api": "deno test -A",
+    "test:api:watch": "deno test -A --watch & deno -A api/test-watch.ts",
     "dev": "pnpm dev:db & pnpm dev:api & pnpm dev:web",
     "dev:db": "docker compose up",
     "dev:api": "deno --watch --unstable-kv -A --import-map=./api/import-map.dev.json api/core/server.ts",

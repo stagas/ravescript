@@ -1,14 +1,17 @@
-name: Deploy
+name: PR
 
 on:
-  push:
-    branches: main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
 
 jobs:
-  deploy:
-    name: Deploy
+  pr:
+    name: PR
     runs-on: ubuntu-latest
-    environment: Production
+    environment: Preview
 
     permissions:
       id-token: write # Needed for auth with Deno Deploy
@@ -17,6 +20,23 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
+
+      - name: Get branch name
+        id: branch_name
+        uses: tj-actions/branch-names@v8
+
+      - name: Create Neon Branch
+        id: create_neon_branch
+        uses: neondatabase/create-branch-action@v4
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: preview/pr-${{ github.event.number }}-${{ steps.branch_name.outputs.current_branch }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      - name: Set DATABASE_URL
+        shell: bash
+        run: |
+          echo "DATABASE_URL=${{ steps.create_neon_branch.outputs.db_url }}?sslmode=require" >> $GITHUB_ENV
 
       - name: Install Deno
         uses: denoland/setup-deno@v1
@@ -28,7 +48,7 @@ jobs:
         with:
           node-version: lts/*
 
-      - name: Install step
+      - name: Install modules
         run: npm install --ignore-scripts
 
       - name: Build step
@@ -37,7 +57,7 @@ jobs:
       - name: Generate .env file
         uses: SpicyPizza/create-envfile@v2.0
         with:
-          envkey_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          envkey_DATABASE_URL: ${{ env.DATABASE_URL }}
 
       - name: Run migrations
         run: npm run kysely -- migrate:latest
@@ -61,3 +81,5 @@ jobs:
           root: ""
           entrypoint: "./api/core/server.ts"
           include: .env,api,dist
+          env: |
+            DATABASE_URL=${{ env.DATABASE_URL }}
