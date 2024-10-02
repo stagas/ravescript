@@ -33,10 +33,30 @@ jobs:
       - name: Build step
         run: "npm run build"
 
+      - name: Run migrations
+        run: npm run kysely -- migrate:latest
+
+      - name: Run tests
+        run: deno test -A --coverage=coverage # create coverage files
+
+      - name: Generate coverage
+        run: deno coverage coverage --lcov --output=coverage/lcov.info # create coverage report
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4 # upload the report on Codecov
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage/lcov.info
+
+      - name: Generate .env file
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
           project: "vasi"
           root: ""
           entrypoint: "./api/core/server.ts"
-          include: api,dist
+          include: .env,api,dist
