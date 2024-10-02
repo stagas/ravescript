@@ -25,5 +25,7 @@ jobs:
 
       - name: Collect coverage
         uses: codecov/codecov-action@v4 # upload the report on Codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           file: ./coverage/lcov.info
