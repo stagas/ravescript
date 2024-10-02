@@ -11,6 +11,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v1
@@ -25,7 +27,5 @@ jobs:
 
       - name: Collect coverage
         uses: codecov/codecov-action@v4 # upload the report on Codecov
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           file: ./coverage/lcov.info
