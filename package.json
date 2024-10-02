@@ -10,11 +10,11 @@
     "build": "vite build",
     "dev": "pnpm dev:db & pnpm dev:api & pnpm dev:web",
     "dev:db": "docker compose up",
-    "dev:api": "deno --watch --unstable-kv -A api/core/server.ts",
+    "dev:api": "deno --watch --unstable-kv -A --import-map=./api/import-map.dev.json api/core/server.ts",
     "dev:web": "vite",
     "kysely": "kysely",
     "models": "kysely-zod-codegen --env-file=.env.development --camel-case --out-file=api/models.ts",
-    "postinstall": "link-local"
+    "postinstall": "link-local || exit 0"
   },
   "devDependencies": {
     "@maktouch/kysely-zod-codegen": "^0.5.2",

@@ -13,6 +13,10 @@ const homedir = os.homedir()
 // https://vitejs.dev/config/
 export default ({ mode }) => {
   loadEnv(mode, root)
+  const https = mode === 'development' ? {
+    key: fs.readFileSync(path.join(homedir, '.ssl-certs', 'devito.test-key.pem')),
+    cert: fs.readFileSync(path.join(homedir, '.ssl-certs', 'devito.test.pem')),
+  } : undefined
   return defineConfig({
     clearScreen: false,
     test: {
@@ -29,10 +33,7 @@ export default ({ mode }) => {
           '/',
         ]
       },
-      https: {
-        key: fs.readFileSync(path.join(homedir, '.ssl-certs', 'devito.test-key.pem')),
-        cert: fs.readFileSync(path.join(homedir, '.ssl-certs', 'devito.test.pem')),
-      }
+      https
     },
     esbuild: {
       jsx: 'automatic',

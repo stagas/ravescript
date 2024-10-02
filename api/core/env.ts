@@ -9,6 +9,11 @@ const Env = z.object({
   RESEND_API_KEY: z.string(),
 })
 
-export const env = Env.parse(await load({
+export const env = Env.parse(Object.assign({
+  VITE_API_URL: Deno.env.get('VITE_API_URL')!,
+  WEB_URL: Deno.env.get('WEB_URL')!,
+  DATABASE_URL: Deno.env.get('DATABASE_URL')!,
+  RESEND_API_KEY: Deno.env.get('RESEND_API_KEY')!,
+} satisfies z.infer<typeof Env>, await load({
   envPath: IS_DEV ? '.env.development' : '.env'
-}))
+})))

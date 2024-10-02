@@ -9,9 +9,9 @@
   - [x] Postgres
 - [x] Open in editor
 - [x] Watch/refresh
-- [ ] GitHub actions
+- [x] GitHub actions
+  - [x] Deploy
   - [ ] Test
-  - [ ] Deploy
 
 ### Backend
 
