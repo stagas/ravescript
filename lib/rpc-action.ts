@@ -18,7 +18,8 @@ export function rpcAction<T extends (...args: any[]) => any>(
   fn: string,
 ) {
   return async function (...args: unknown[]) {
-    const url = new URL(env.VITE_API_URL + '/rpc')
+    const api = import.meta.env.DEV ? env.VITE_API_URL : location.origin
+    const url = new URL(api + '/rpc')
 
     url.searchParams.set('fn', fn)
 
