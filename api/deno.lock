@@ -5,12 +5,16 @@
       "jsr:@denorg/scrypt@4.4.4": "jsr:@denorg/scrypt@4.4.4",
       "jsr:@std/assert@0.222.1": "jsr:@std/assert@0.222.1",
       "jsr:@std/assert@^0.222.1": "jsr:@std/assert@0.222.1",
+      "jsr:@std/assert@^1.0.6": "jsr:@std/assert@1.0.6",
       "jsr:@std/crypto@0.222.1": "jsr:@std/crypto@0.222.1",
       "jsr:@std/encoding@0.222.1": "jsr:@std/encoding@0.222.1",
       "jsr:@std/encoding@^0.222.1": "jsr:@std/encoding@0.222.1",
+      "jsr:@std/expect": "jsr:@std/expect@1.0.4",
       "jsr:@std/fmt@^0.222.1": "jsr:@std/fmt@0.222.1",
+      "jsr:@std/internal@^1.0.4": "jsr:@std/internal@1.0.4",
       "jsr:@std/media-types": "jsr:@std/media-types@1.0.3",
       "jsr:@std/path": "jsr:@std/path@1.0.6",
+      "jsr:@std/testing": "jsr:@std/testing@1.0.3",
       "npm:kysely@^0.27.4": "npm:kysely@0.27.4",
       "npm:pg-pool": "npm:pg-pool@3.7.0_pg@8.13.0"
     },
@@ -29,6 +33,12 @@
           "jsr:@std/fmt@^0.222.1"
         ]
       },
+      "@std/assert@1.0.6": {
+        "integrity": "1904c05806a25d94fe791d6d883b685c9e2dcd60e4f9fc30f4fc5cf010c72207",
+        "dependencies": [
+          "jsr:@std/internal@^1.0.4"
+        ]
+      },
       "@std/crypto@0.222.1": {
         "integrity": "d5b9e6c704fadbcc384cd42c0b603ad4aea710ece0ff26426602681b64fd237c",
         "dependencies": [
@@ -39,14 +49,31 @@
       "@std/encoding@0.222.1": {
         "integrity": "fb6c1d38722feebc8d4a5efa3eb2039ecec0d50d053186240484d0c4a4ce1006"
       },
+      "@std/expect@1.0.4": {
+        "integrity": "97f68a445a9de0d9670200d2b7a19a7505a01b2cb390a983ba8d97d90ce30c4f",
+        "dependencies": [
+          "jsr:@std/assert@^1.0.6",
+          "jsr:@std/internal@^1.0.4"
+        ]
+      },
       "@std/fmt@0.222.1": {
         "integrity": "ec3382f9b0261c1ab1a5c804aa355d816515fa984cdd827ed32edfb187c0a722"
+      },
+      "@std/internal@1.0.4": {
+        "integrity": "62e8e4911527e5e4f307741a795c0b0a9e6958d0b3790716ae71ce085f755422"
       },
       "@std/media-types@1.0.3": {
         "integrity": "b12d30a7852f7578f4d210622df713bbfd1cbdd9b4ec2eaf5c1845ab70bab159"
       },
       "@std/path@1.0.6": {
         "integrity": "ab2c55f902b380cf28e0eec501b4906e4c1960d13f00e11cfbcd21de15f18fed"
+      },
+      "@std/testing@1.0.3": {
+        "integrity": "f98c2bee53860a5916727d7e7d3abe920dd6f9edace022e2d059f00d05c2cf42",
+        "dependencies": [
+          "jsr:@std/assert@^1.0.6",
+          "jsr:@std/internal@^1.0.4"
+        ]
       }
     },
     "npm": {

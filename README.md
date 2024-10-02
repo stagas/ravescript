@@ -17,8 +17,9 @@
 
 - [x] Deno
 - [x] Logging (stdout)
-- [ ] Testing
-  - [ ] Unit
+- [x] Testing
+  - [x] Coverage
+  - [x] Unit
   - [ ] Integration
   - [ ] E2E
 - [x] Deno KV storage
