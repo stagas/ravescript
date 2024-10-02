@@ -4,7 +4,6 @@ import { env } from './env.ts'
 import { match } from './match.ts'
 
 const headers: Record<string, string> = {
-  'access-control-allow-origin': env.WEB_URL,
   'access-control-allow-methods': 'GET, HEAD, OPTIONS, POST, PUT',
   'access-control-allow-headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
   'access-control-allow-credentials': 'true',
