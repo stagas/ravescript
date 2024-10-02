@@ -76,3 +76,5 @@ jobs:
           root: ""
           entrypoint: "./api/core/server.ts"
           include: api,dist
+          env: |
+            DATABASE_URL=${{ env.DATABASE_URL }}
