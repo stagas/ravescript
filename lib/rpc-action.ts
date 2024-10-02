@@ -37,7 +37,7 @@ export function rpcAction<T extends (...args: any[]) => any>(
         break
 
       case 'POST':
-        init.body = JSON.stringify({ args })
+        init.body = JSON.stringify({ args } satisfies Rpc)
         break
     }
 

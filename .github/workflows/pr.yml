@@ -1,0 +1,75 @@
+name: PR
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  pr:
+    name: PR
+    runs-on: ubuntu-latest
+    environment: Preview
+
+    permissions:
+      id-token: write # Needed for auth with Deno Deploy
+      contents: read # Needed to clone the repository
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Get branch name
+        id: branch_name
+        uses: tj-actions/branch-names@v8
+
+      - name: Create Neon Branch
+        id: create_neon_branch
+        uses: neondatabase/create-branch-action@v4
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: preview/pr-${{ github.event.number }}-${{ steps.branch_name.outputs.current_branch }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      - name: Set DATABASE_URL
+        shell: bash
+        run: |
+          echo "DATABASE_URL=${{ steps.create_neon_branch.outputs.db_url }}?sslmode=require" >> $GITHUB_ENV
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install modules
+        run: "npm install --ignore-scripts"
+
+      - name: Run migrations
+        run: npm run kysely -- migrate:latest
+
+      - name: Run tests
+        run: deno test -A --coverage=coverage # create coverage files
+
+      - name: Generate coverage
+        run: deno coverage coverage --lcov --output=coverage/lcov.info # create coverage report
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4 # upload the report on Codecov
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage/lcov.info
+
+      - name: Upload to Deno Deploy
+        uses: denoland/deployctl@v1
+        with:
+          project: "vasi"
+          root: ""
+          entrypoint: "./api/core/server.ts"
+          include: api,dist
