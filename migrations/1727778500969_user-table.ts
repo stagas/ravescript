@@ -13,6 +13,9 @@ export async function up(db: Kysely<any>): Promise<void> {
 		.addColumn('email', 'text', col =>
 			col.unique().notNull()
 		)
+		.addColumn('emailVerified', 'boolean', col =>
+			col.defaultTo(false)
+		)
 		.addColumn('password', 'text', col =>
 			col.unique().notNull()
 		)

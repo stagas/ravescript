@@ -6,7 +6,7 @@ import { kv } from './app.ts'
 import type { Handler } from './router.ts'
 import { sessions } from './sessions.ts'
 
-const DEBUG = true
+const DEBUG = false
 
 export const watcher: Handler = () => {
   const body = new ReadableStream()
@@ -25,7 +25,7 @@ export const logger: Handler = ctx => {
     const session = sessions.get(ctx)
     ctx.log(
       res.status,
-      `\x1b[01m${ctx.request.method} ${ctx.url.pathname}\x1b[0m`,
+      `\x1b[01m${ctx.request.method} ${ctx.url.pathname + ctx.url.search}\x1b[0m`,
       `\x1b[34m${sec}\x1b[0m`,
       session?.nick ?? 'guest',
     )
@@ -54,13 +54,11 @@ export const files = (root: string): Handler => async ctx => {
   try {
     filepath = path.join(pathname, 'index.html')
     file = await Deno.open(`${root}${filepath}`, { read: true })
-    DEBUG && ctx.log('Serve:', filepath)
   }
   catch {
     try {
       filepath = pathname
       file = await Deno.open(`${root}${filepath}`, { read: true })
-      DEBUG && ctx.log('Serve:', filepath)
       break out
     }
     catch (e) {
@@ -71,6 +69,8 @@ export const files = (root: string): Handler => async ctx => {
     }
     return new Response(null, { status: 500 })
   }
+
+  DEBUG && ctx.log('Serve:', filepath)
 
   return new Response(file.readable, {
     headers: {

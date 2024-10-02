@@ -6,15 +6,22 @@ import { Link } from '../ui/Link.tsx'
 
 export function Home() {
   return <div>
-    {() => state.user
-      ? [<div>
-        Hello {state.user.nick} <Logout /> {state.user.isAdmin ? <a href="/admin/">Admin</a> : <></>} <Link href="/about">About</Link>
-      </div>]
-      : [<div>
-        <Login />
-        <Register />
-      </div>
-      ]
+    {() => state.user === undefined
+      ? <div>Loading...</div>
+      : state.user === null
+        ?
+        <div>
+          <Login />
+          <Register />
+        </div>
+        :
+        <div class="flex gap-2">
+          <span>Hello {state.user.nick}</span>
+          <Logout />
+          {state.user.isAdmin && <a href="/admin/">Admin</a>}
+          <Link href="/about">About</Link>
+        </div>
+
     }
   </div>
 }

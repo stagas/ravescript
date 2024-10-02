@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  background: #222;
+  background: #1a1a1a;
   color: #aaa;
   font-family: sans-serif;
 }
@@ -14,14 +14,17 @@ button, input {
   color: #ccc;
 }
 button {
-  border: 2px outset #888;
+  border: 2px outset #666;
+  cursor: default;
+  &:hover {
+    border: 2px outset #888;
+  }
   &:active:hover {
-    border: 2px inset #888;
+    border: 2px inset #666;
   }
 }
 input {
-
-  border: 2px inset #888;
+  border: 2px inset #666;
 }
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -34,20 +37,23 @@ a {
   color: #47f;
   &:hover {
     color: #7af;
+    text-decoration: underline;
   }
 }
+
 table {
   border-collapse: collapse;
   font-family: sans-serif;
   font-size: 9pt;
+  background: #272727;
 }
 td, th {
   padding: 4px;
-  border: 1px solid #444;
+  border: 1px solid #854;
 }
 tr:nth-child(even) td {
-  background: #333;
+  background: #2f2f2f;
 }
 th {
-  background: #111;
+  background: #151515;
 }

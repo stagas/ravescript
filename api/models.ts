@@ -12,6 +12,7 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 export const User = z.object({
   nick: z.string(),
   email: z.string(),
+  emailVerified: z.boolean().nullish(),
   password: z.string(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
@@ -19,6 +20,7 @@ export const User = z.object({
 export interface User {
   createdAt: Generated<Timestamp>;
   email: string;
+  emailVerified: Generated<boolean | null>;
   nick: string;
   password: string;
   updatedAt: Generated<Timestamp>;

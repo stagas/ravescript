@@ -1,4 +1,6 @@
 import { Sigui } from 'sigui'
+import { ResetPassword } from '../comp/ResetPassword.tsx'
+import { VerifyEmail } from '../comp/VerifyEmail.tsx'
 import { whoami } from '../rpc/login-register.ts'
 import { state } from '../state.ts'
 import { About } from './About.tsx'
@@ -28,6 +30,12 @@ export function App() {
 
         case '/about':
           return <About />
+
+        case '/verify-email':
+          return <VerifyEmail />
+
+        case '/reset-password':
+          return <ResetPassword />
       }
     }}
   </main>

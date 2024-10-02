@@ -3,14 +3,20 @@ import { z } from 'zod'
 import type { Router } from '../core/router.ts'
 import { sessions } from '../core/sessions.ts'
 
+const DEBUG = false
+
 export type Rpc = z.infer<typeof Rpc>
 export const Rpc = z.object({
-  fn: z.string(),
   args: z.array(z.unknown()),
 })
 
 // deno-lint-ignore no-explicit-any
-export const actions: Record<string, (...args: any[]) => unknown | Promise<unknown>> = {}
+type Actions = Record<string, (...args: any[]) => unknown | Promise<unknown>>
+
+export const actions = {
+  get: {} as Actions,
+  post: {} as Actions,
+}
 
 export class RpcError extends Error {
   declare cause: { status: number }
@@ -22,14 +28,35 @@ export class RpcError extends Error {
 const headers = { 'content-type': 'application/javascript' }
 
 export function register(app: Router) {
-  app.options('/rpc', [() => new Response(null, {
-    headers: { 'allow': 'POST' }
-  })])
+  app.use('/rpc', [async ctx => {
+    const url = new URL(ctx.request.url)
+    const fn: string | null = url.searchParams.get('fn')
+    if (!fn) throw new RpcError(400, 'Missing function name')
 
-  app.post('/rpc', [async ctx => {
-    const { fn, args } = await ctx.parseJson(Rpc)
+    let args: unknown[]
 
-    const action = actions[fn]
+    switch (ctx.request.method) {
+      case 'OPTIONS':
+        return new Response(null, {
+          headers: { 'allow': 'GET, POST' }
+        })
+
+      case 'GET': {
+        args = url.searchParams.getAll('args').map(s => JSON.parse(s))
+        break
+      }
+
+      case 'POST': {
+        const json = await ctx.parseJson(Rpc)
+        args = json.args
+        break
+      }
+
+      default:
+        throw new RpcError(405, 'Method not allowed')
+    }
+
+    const action = actions[ctx.request.method.toLowerCase() as 'get'][fn]
     if (!action) throw new Error('Rpc call not found: ' + fn)
 
     const before = new Date()
@@ -37,7 +64,7 @@ export function register(app: Router) {
       const now = new Date()
       const sec = ((now.getTime() - before.getTime()) * 0.001).toFixed(3)
       const session = sessions.get(ctx)
-      ctx.log(
+      DEBUG && ctx.log(
         'Rpc:',
         `\x1b[35m\x1b[01m${fn}\x1b[0m`,
         `\x1b[34m${sec}\x1b[0m`,

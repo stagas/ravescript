@@ -6,6 +6,7 @@ const Env = z.object({
   VITE_API_URL: z.string(),
   WEB_URL: z.string(),
   DATABASE_URL: z.string(),
+  RESEND_API_KEY: z.string(),
 })
 
 export const env = Env.parse(await load({

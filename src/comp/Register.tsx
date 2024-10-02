@@ -1,6 +1,6 @@
 import { Sigui } from 'sigui'
 import { UserRegister } from '../../api/schemas/user.ts'
-import { loginUser, register } from '../rpc/login-register.ts'
+import * as actions from '../rpc/login-register.ts'
 import { parseForm } from '../util/parse-form.ts'
 
 export function Register() {
@@ -12,27 +12,27 @@ export function Register() {
 
   function onSubmit(ev: Event & { target: HTMLFormElement }) {
     ev.preventDefault()
-    register(parseForm(ev.target, UserRegister))
-      .then(loginUser)
+    actions.register(parseForm(ev.target, UserRegister))
+      .then(actions.loginUser)
       .catch(err => info.error = err.message)
     return false
   }
 
   return <form method="post" onsubmit={onSubmit}>
     <label>
-      Nick <input id="nick" name="nick" required spellcheck="false" />
+      Nick <input id="nick" name="nick" required spellcheck="false" autocomplete="nickname" />
     </label>
 
     <br />
 
     <label>
-      Email <input id="email" name="email" type="email" required />
+      Email <input id="email" name="email" type="email" required autocomplete="email" />
     </label>
 
     <br />
 
     <label>
-      Password <input id="password" name="password" type="password" required />
+      Password <input id="password" name="password" type="password" required autocomplete="new-password" />
     </label>
 
     <br />

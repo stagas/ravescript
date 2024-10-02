@@ -5,7 +5,7 @@ import { db } from '../db.ts'
 import { actions, RpcError } from '../routes/rpc.ts'
 import { UserSession } from '../schemas/user.ts'
 
-export const ADMINS = ['x']
+export const ADMINS = ['x', 'stagas']
 
 function admins(ctx: Context) {
   const session = sessions.get(ctx)
@@ -14,26 +14,26 @@ function admins(ctx: Context) {
   }
 }
 
-async function deleteAllEntries(prefix: string[]) {
+async function kvDeleteAllEntries(prefix: string[]) {
   const rows = kv.list({ prefix })
   for await (const row of rows) {
     await kv.delete(row.key)
   }
 }
 
-actions.listUsers = listUsers
+actions.get.listUsers = listUsers
 export async function listUsers(ctx: Context) {
   admins(ctx)
   return (await db
     .selectFrom('user')
-    .select(['nick', 'email', 'createdAt', 'updatedAt'])
+    .select(['nick', 'email', 'emailVerified', 'createdAt', 'updatedAt'])
     .execute()
   ).map(item =>
     [item.nick, item] as const
   )
 }
 
-actions.deleteUser = deleteUser
+actions.post.deleteUser = deleteUser
 export async function deleteUser(ctx: Context, nick: string) {
   admins(ctx)
   return await db
@@ -43,13 +43,13 @@ export async function deleteUser(ctx: Context, nick: string) {
     .then(() => { })
 }
 
-actions.clearUsers = clearUsers
+actions.post.clearUsers = clearUsers
 export async function clearUsers(ctx: Context) {
   admins(ctx)
   await db.deleteFrom('user').execute()
 }
 
-actions.listSessions = listSessions
+actions.get.listSessions = listSessions
 export async function listSessions(ctx: Context) {
   admins(ctx)
   const sessions = await Array.fromAsync(kv.list<UserSession>({ prefix: ['session'] }))
@@ -66,14 +66,14 @@ export async function listSessions(ctx: Context) {
     })
 }
 
-actions.deleteSession = deleteSession
+actions.post.deleteSession = deleteSession
 export async function deleteSession(ctx: Context, id: string) {
   admins(ctx)
   await kv.delete(['session', id])
 }
 
-actions.clearSessions = clearSessions
+actions.post.clearSessions = clearSessions
 export async function clearSessions(ctx: Context) {
   admins(ctx)
-  await deleteAllEntries(['session'])
+  await kvDeleteAllEntries(['session'])
 }
