@@ -1,17 +1,15 @@
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the main branch
 on:
   push:
-    branches: [main]
+    branches: main
   pull_request:
-    branches: [main]
+    branches: main
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: production
+    environment: Preview
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v1
@@ -23,12 +21,6 @@ jobs:
 
       - name: Create coverage report
         run: deno coverage coverage --lcov --output=coverage/lcov.info # create coverage report
-
-      - name: Sanity
-        shell: bash
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: echo "Hello $CODECOV_TOKEN token should be here"
 
       - name: Collect coverage
         uses: codecov/codecov-action@v4 # upload the report on Codecov
