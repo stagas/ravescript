@@ -24,9 +24,10 @@ jobs:
         run: deno coverage coverage --lcov --output=coverage/lcov.info # create coverage report
 
       - name: Sanity
+        shell: bash
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: echo $CODECOV_TOKEN
+        run: echo "$CODECOV_TOKEN"
 
       - name: Collect coverage
         uses: codecov/codecov-action@v4 # upload the report on Codecov
