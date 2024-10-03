@@ -13,12 +13,18 @@ export function mount(app: Router) {
   } = env
 
   app.get('/oauth/start', [ctx => {
+    const origin = (
+      ctx.request.headers.get('origin') ??
+      ctx.request.headers.get('referer') ??
+      env.WEB_URL
+    ).replace(/\/$/, '')
+
     const { provider, redirect_to } = OAuthStart.parse(Object.fromEntries(ctx.url.searchParams.entries()))
     switch (provider) {
       case 'github': {
         const url = new URL('https://github.com/login/oauth/authorize')
         url.searchParams.set('client_id', client_id)
-        url.searchParams.set('state', redirect_to ?? '/')
+        url.searchParams.set('state', [origin, redirect_to ?? '/'].join(','))
         return ctx.redirect(302, url.href)
       }
     }
