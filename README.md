@@ -49,7 +49,7 @@
   - [x] Coverage
   - [x] Unit
   - [ ] Integration
-  - [ ] E2E
+  - [x] E2E
 - [x] HMR
 - [x] RPC
 - [x] Admin

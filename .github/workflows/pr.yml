@@ -43,16 +43,19 @@ jobs:
         with:
           deno-version: v1.x
 
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 22.x
 
-      - name: Install modules
+      - name: Install dependencies
         run: npm install --ignore-scripts
 
-      - name: Build step
-        run: npm run build
+      - name: Build
+        run: bun run build
 
       - name: Generate .env file
         uses: SpicyPizza/create-envfile@v2.0
@@ -60,10 +63,10 @@ jobs:
           envkey_DATABASE_URL: ${{ env.DATABASE_URL }}
 
       - name: Run migrations
-        run: npm run kysely -- migrate:latest
+        run: bun run kysely -- migrate:latest
 
       - name: Run tests
-        run: npm run test:ci:npm
+        run: bun run test
 
       - name: Upload coverage deno
         uses: codecov/codecov-action@v4

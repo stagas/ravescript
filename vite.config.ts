@@ -1,5 +1,3 @@
-/// <reference types="vitest" />
-
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -19,22 +17,6 @@ export default ({ mode }) => {
   } : undefined
   return defineConfig({
     clearScreen: false,
-    test: {
-      globals: true,
-      dir: 'src',
-      includeSource: ['src/**/*.{js,jsx,ts,tsx}'],
-      environment: 'jsdom',
-      coverage: {
-        clean: false,
-        cleanOnRerun: false,
-        include: ['src'],
-        reporter: ['lcovonly'],
-        reportsDirectory: 'coverage'
-      }
-    },
-    define: {
-      'import.meta.vitest': 'undefined',
-    },
     server: {
       host: true,
       fs: {
