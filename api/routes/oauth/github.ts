@@ -1,6 +1,5 @@
+import { createCookie, randomHash } from 'utils'
 import { z } from 'zod'
-import { createCookie } from '../../../node_modules/utils/src/cookies.ts'
-import { randomHash } from '../../../node_modules/utils/src/random-hash.ts'
 import { getUserByEmail, loginUser } from '../../actions/login-register.ts'
 import { kv } from '../../core/app.ts'
 import { fetchJson } from '../../core/fetch-json.ts'
