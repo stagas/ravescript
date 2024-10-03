@@ -1,5 +1,5 @@
+import { env } from '../env.ts'
 import { EMAIL_FROM } from './constants.ts'
-import { env } from './env.ts'
 
 const MAIL_ENABLED = false
 

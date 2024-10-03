@@ -72,17 +72,18 @@
 ## Setup
 
 - Create Deno Deploy project
-- Create Resend project and get RESEND_API_KEY
+- Create Resend project and get `RESEND_API_KEY`
 - Repo -> Settings -> Secrets and variables
   - Secrets
     - Environment secrets
       - Production
-        - DATABASE_URL=[neon database url]
+        - `DATABASE_URL=[neon database url]`
       - Repository
-        - CODECOV_TOKEN=[https://app.codecov.io/github/[user]/[repo]/config/general #Tokens]
-        - NEON_API_KEY
+        - `CODECOV_TOKEN=[https://app.codecov.io/github/[user]/[repo]/config/general #Tokens]`
+        - `NEON_API_KEY`
   - Variables
-    - NEON_PROJECT_ID=[neon project id]
+    - `NEON_PROJECT_ID=[neon project id]`
 
-  - NEON_API_KEY and NEON_PROJECT_ID are set automatically
-    from https://console.neon.tech/app/projects/[project-id]/integrations by installing GitHub integration.
+  - `NEON_API_KEY` and `NEON_PROJECT_ID` are set automatically
+    from `https://console.neon.tech/app/projects/[project-id]/integrations`
+    by installing their GitHub integration.
