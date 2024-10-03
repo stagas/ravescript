@@ -43,7 +43,7 @@ jobs:
         run: npm run kysely -- migrate:latest
 
       - name: Run tests
-        run: npm run test:ci
+        run: npm run test:ci:npm
 
       - name: Upload coverage deno
         uses: codecov/codecov-action@v4

@@ -10,6 +10,7 @@
     "build": "vite build",
     "test": "pnpm test:api && pnpm test:web",
     "test:ci": "pnpm test:api:ci && pnpm test:web",
+    "test:ci:npm": "npm run test:api:ci && npm run test:web",
     "test:watch": "pnpm test:api:watch & pnpm test:web:watch",
     "test:api": "deno test -A --no-lock api",
     "test:api:ci": "deno test -A --no-lock --import-map=./api/import-map.production.json --coverage=coverage/deno api",
