@@ -15,7 +15,8 @@ export function ResetPassword() {
   function onSubmit(ev: Event & { target: HTMLFormElement }) {
     ev.preventDefault()
     const { token, password } = parseForm(ev.target, UserResetPassword)
-    actions.changePassword(token, password)
+    actions
+      .changePassword(token, password)
       .then(actions.loginUser)
       .then(() => go('/'))
       .catch(err => info.error = err.message)
@@ -25,7 +26,8 @@ export function ResetPassword() {
   const token = new URLSearchParams(location.search).get('token')
   if (!token) return <div>Token not found</div>
 
-  actions.getResetPasswordUser(token)
+  actions
+    .getResetPasswordUser(token)
     .then(user => info.user = user)
     .catch(err => info.error = err.message)
 

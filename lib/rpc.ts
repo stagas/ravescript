@@ -13,12 +13,12 @@ type RpcResponse = {
 
 const headers = { 'content-type': 'application/json' }
 
-export function rpcAction<T extends (...args: any[]) => any>(
+export function rpc<T extends (...args: any[]) => any>(
   method: RpcMethods,
   fn: string,
 ) {
   return async function (...args: unknown[]) {
-    const api = import.meta.env.DEV ? env.VITE_API_URL : location.origin
+    const api = env.VITE_API_URL
     const url = new URL(api + '/rpc')
 
     url.searchParams.set('fn', fn)

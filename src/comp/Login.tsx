@@ -22,7 +22,8 @@ export function Login() {
         })
     }
     else {
-      actions.login(userLogin)
+      actions
+        .login(userLogin)
         .then(actions.loginUser)
         .catch(err => info.error = err.message)
     }
@@ -31,13 +32,23 @@ export function Login() {
 
   return <form method="post" onsubmit={onSubmit}>
     <label>
-      Nick or Email <input name="nickOrEmail" required spellcheck="false" autocomplete="nickname" />
+      Nick or Email <input
+        name="nickOrEmail"
+        required
+        spellcheck="false"
+        autocomplete="nickname"
+      />
     </label>
 
     <br />
 
     <label>
-      Password <input name="password" type="password" required autocomplete="current-password" />
+      Password <input
+        name="password"
+        type="password"
+        required
+        autocomplete="current-password"
+      />
     </label>
 
     <br />

@@ -12,7 +12,7 @@
     "test:api:watch": "deno test -A --watch & deno -A api/test-watch.ts",
     "dev": "pnpm dev:db & pnpm dev:api & pnpm dev:web",
     "dev:db": "docker compose up",
-    "dev:api": "deno --watch --unstable-kv -A --import-map=./api/import-map.dev.json api/core/server.ts",
+    "dev:api": "deno --watch --unstable-kv -A api/core/server.ts",
     "dev:web": "vite",
     "kysely": "kysely",
     "models": "kysely-zod-codegen --env-file=.env.development --camel-case --out-file=api/models.ts",

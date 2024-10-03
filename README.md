@@ -70,6 +70,8 @@
 
 ## Setup
 
+- Create Deno Deploy project
+- Create Resend project and get RESEND_API_KEY
 - Repo -> Settings -> Secrets and variables
   - Secrets
     - Environment secrets

@@ -82,8 +82,6 @@ function Table<T extends readonly [string, Record<string, unknown>]>({
 }
 
 export function Admin() {
-  using $ = Sigui()
-
   whoami().then(user => {
     if (!user) location.href = '/'
     else state.user = user
