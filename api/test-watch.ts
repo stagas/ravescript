@@ -3,13 +3,20 @@ import { debounce } from 'utils'
 const watcher = Deno.watchFs('./api')
 
 const run = debounce(100, async () => {
-  Deno.removeSync('./coverage', { recursive: true })
+  try {
+    Deno.removeSync('./coverage/deno', { recursive: true })
+  }
+  catch {
+    //
+  }
 
   {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         'test',
-        '--coverage',
+        'api',
+        '--no-lock',
+        '--coverage=coverage/deno',
       ],
     })
     await command.output()
@@ -19,7 +26,7 @@ const run = debounce(100, async () => {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         'coverage',
-        'coverage',
+        'coverage/deno',
       ],
     })
     const { stdout } = await command.output()
@@ -30,9 +37,9 @@ const run = debounce(100, async () => {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         'coverage',
-        'coverage',
+        'coverage/deno',
         '--lcov',
-        '--output=coverage/lcov.info'
+        '--output=coverage/lcov-deno.info'
       ],
     })
     await command.output()
@@ -41,6 +48,7 @@ const run = debounce(100, async () => {
   console.log('Coverage report generated')
 })
 
+run()
 for await (const _ of watcher) {
   run()
 }

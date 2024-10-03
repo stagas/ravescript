@@ -39,7 +39,6 @@ const findBlockEnd = (code: string, start: number) => {
   return null
 }
 
-// @ts-ignore
 if (import.meta.vitest) {
   describe('vite-using', () => {
     const minifyCode = (code: string) => code.replace(/\s+/g, ' ').trim()

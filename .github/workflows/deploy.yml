@@ -43,12 +43,15 @@ jobs:
         run: npm run kysely -- migrate:latest
 
       - name: Run tests
-        run: deno test --import-map=./api/import-map.production.json -A --coverage=coverage
+        run: npm run test:ci:npm
 
-      - name: Generate coverage
-        run: deno coverage coverage --lcov --output=coverage/lcov.info
+      - name: Upload coverage deno
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage/lcov-deno.info
 
-      - name: Upload coverage
+      - name: Upload coverage web
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
