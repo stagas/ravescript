@@ -74,6 +74,7 @@ export const files = (root: string): Handler => async ctx => {
   const { pathname } = ctx.url
   let file
   let filepath
+  let error
   out:
   try {
     filepath = path.join(pathname, 'index.html')
@@ -86,10 +87,18 @@ export const files = (root: string): Handler => async ctx => {
       break out
     }
     catch (e) {
-      ctx.log('Error serving:', filepath, e)
+      error = e
       if (e instanceof Deno.errors.NotFound) {
-        return
+        try {
+          filepath = '/index.html'
+          file = await Deno.open(`${root}${filepath}`, { read: true })
+          break out
+        }
+        catch (e) {
+          error = e
+        }
       }
+      ctx.log('Error serving:', filepath, error)
     }
     return new Response(null, { status: 500 })
   }

@@ -18,6 +18,9 @@ describe('App', () => {
     state.url = new URL('/about', location.origin)
     state.url = new URL('/verify-email', location.origin)
     state.url = new URL('/reset-password', location.origin)
+    state.url = new URL('/oauth/popup', location.origin)
+    state.url = new URL('/oauth/register', location.origin)
+    state.url = new URL('/oauth/complete', location.origin)
   })
 
   it('user', async () => {

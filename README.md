@@ -32,8 +32,8 @@
 - [x] Emails (Resend)
 - [x] Login/Register
   - [x] Nick, email, password
-  - [ ] OAuth providers
-    - [ ] GitHub
+  - [x] OAuth providers
+    - [x] GitHub
     - [ ] Google
     - [ ] Facebook
     - [ ] X/Twitter

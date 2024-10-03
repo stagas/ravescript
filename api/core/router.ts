@@ -2,6 +2,8 @@ import { defer, parseCookie } from 'utils'
 import { z } from 'zod'
 import { match } from './match.ts'
 
+const DEBUG = false
+
 const headers: Record<string, string> = {
   'access-control-allow-methods': 'GET, HEAD, OPTIONS, POST, PUT',
   'access-control-allow-headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
@@ -26,6 +28,13 @@ export type Handler = (ctx: Context) => string | void | Response | Promise<strin
 interface Route {
   method: string
   handle: Handler
+}
+
+export class RouteError extends Error {
+  declare cause: { status: number }
+  constructor(status: number, message: string) {
+    super(message, { cause: { status } })
+  }
 }
 
 function redirect(status: number, location: string) {
@@ -90,6 +99,7 @@ export function Router({ log = console.log }: { log?: typeof console.log } = {})
     return async function handler(ctx) {
       let m: ReturnType<ReturnType<typeof match>> | undefined
       if (matcher) m = matcher(ctx.url.pathname)
+      DEBUG && ctx.log('match:', ctx.url.pathname, 'to:', path, m)
       if (path === null || m) {
         ctx.params = m && m.params || {}
         for (const fn of fns) {

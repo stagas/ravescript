@@ -5,6 +5,8 @@ import { whoami } from '../rpc/login-register.ts'
 import { state } from '../state.ts'
 import { About } from './About.tsx'
 import { Home } from './Home.tsx'
+import { OAuthRegister } from './OAuthRegister.tsx'
+import { env } from '../env.ts'
 
 export function App() {
   using $ = Sigui()
@@ -24,6 +26,8 @@ export function App() {
     Page: {() => state.url.pathname}
     <br />
     {() => {
+      if (state.user === undefined) return <div>Loading...</div>
+
       switch (state.url.pathname) {
         case '/':
           return <Home />
@@ -36,6 +40,20 @@ export function App() {
 
         case '/reset-password':
           return <ResetPassword />
+
+        case '/oauth/popup':
+          const provider = state.url.searchParams.get('provider')!
+          location.href = `${env.VITE_API_URL}/oauth/start?provider=${provider}&redirect_to=/`
+          return <div />
+
+        case '/oauth/register':
+          return <OAuthRegister />
+
+        case '/oauth/complete':
+          // Hack: triggering a localStorage write we listen to
+          // window.onstorage and we can close the popup automatically.
+          localStorage.oauth = Math.random()
+          return <div>Logging in...</div>
       }
     }}
   </main>
