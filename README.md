@@ -45,8 +45,9 @@
 - [x] Vite
 - [x] Sigui
 - [x] Tailwindcss
-- [ ] Testing
-  - [ ] Unit
+- [x] Testing
+  - [x] Coverage
+  - [x] Unit
   - [ ] Integration
   - [ ] E2E
 - [x] HMR

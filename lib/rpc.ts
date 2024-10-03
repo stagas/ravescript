@@ -6,7 +6,7 @@ export type RpcFn<T extends (...args: never[]) => unknown> =
   ? (...args: U) => V
   : never
 
-type RpcMethods = 'GET' | 'POST'
+type RpcMethod = 'GET' | 'POST'
 type RpcResponse = {
   error?: string
 } | null | undefined
@@ -14,7 +14,7 @@ type RpcResponse = {
 const headers = { 'content-type': 'application/json' }
 
 export function rpc<T extends (...args: any[]) => any>(
-  method: RpcMethods,
+  method: RpcMethod,
   fn: string,
 ) {
   return async function (...args: unknown[]) {

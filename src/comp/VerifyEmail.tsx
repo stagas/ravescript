@@ -14,7 +14,7 @@ export function VerifyEmail() {
 
   actions
     .verifyEmail(token)
-    .then(user => info.isVerified = true)
+    .then(() => info.isVerified = true)
     .catch(err => info.error = err.message)
 
   return <div>{

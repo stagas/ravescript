@@ -259,7 +259,7 @@ export async function getResetPasswordUser(_ctx: Context, token: string) {
   if (result.value) {
     const user = await getUserByNick(result.value)
     if (user) {
-      // @ts-ignore remove password from entry
+      // @ts-ignore remove password before returning
       delete user.password
       return user as Omit<User, 'password'>
     }
