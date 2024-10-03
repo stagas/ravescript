@@ -3,38 +3,39 @@ import { hash } from 'jsr:@denorg/scrypt@4.4.4'
 import { createCookie, randomHash, timeout } from 'utils'
 import { kv } from '../core/app.ts'
 import { SALT as salt } from '../core/constants.ts'
-import { Context } from '../core/router.ts'
+import { Context, RouteError } from '../core/router.ts'
 import { sendEmail } from '../core/send-email.ts'
 import { sessions } from '../core/sessions.ts'
 import { db } from '../db.ts'
 import { env } from '../env.ts'
-import { actions, RpcError } from '../routes/rpc.ts'
-import { User, UserLogin, UserRegister, UserSession } from '../schemas/user.ts'
+import { actions } from '../routes/rpc.ts'
+import { UserLogin, UserRegister, UserSession } from '../schemas/user.ts'
 import { ADMINS } from './admin.ts'
+import { User } from '../models.ts'
 
 // const DEBUG = true
 
-class LoginError extends RpcError {
+class LoginError extends RouteError {
   constructor() { super(403, 'Wrong user or password') }
 }
 
-class UserExistsError extends RpcError {
+class UserExistsError extends RouteError {
   constructor() { super(409, 'User already exists') }
 }
 
-class UnableToRegisterError extends RpcError {
+class UnableToRegisterError extends RouteError {
   constructor() { super(500, 'Unable to register') }
 }
 
-class UserEmailAlreadyVerified extends RpcError {
+class UserEmailAlreadyVerified extends RouteError {
   constructor() { super(404, 'Email already verified') }
 }
 
-class UserNotFound extends RpcError {
+class UserNotFound extends RouteError {
   constructor() { super(404, 'User not found') }
 }
 
-class TokenNotFound extends RpcError {
+class TokenNotFound extends RouteError {
   constructor() { super(404, 'Token not found') }
 }
 
@@ -58,7 +59,7 @@ export async function getUser(nickOrEmail: string) {
   return await getUserByNick(nickOrEmail) || await getUserByEmail(nickOrEmail)
 }
 
-async function loginUser(ctx: Context, nick: string) {
+export async function loginUser(ctx: Context, nick: string) {
   ctx.log('Login:', nick)
 
   const sessionId = randomHash()
@@ -80,6 +81,7 @@ async function loginUser(ctx: Context, nick: string) {
       'session',
       sessionId,
       expires,
+      'Path=/',
       'SameSite=Strict',
       'Secure',
       'HttpOnly',
@@ -106,7 +108,7 @@ async function generateEmailVerificationToken(email: string) {
 actions.post.whoami = whoami
 export async function whoami(ctx: Context) {
   const session = sessions.get(ctx)
-  return session
+  return session ?? null
 }
 
 actions.post.login = login
@@ -124,23 +126,66 @@ export async function login(ctx: Context, userLogin: UserLogin) {
 }
 
 actions.post.register = register
-export async function register(ctx: Context, userRegister: UserRegister) {
-  const { nick, email, password } = userRegister
+export async function register(ctx: Context, userRegister: UserRegister, oauthField?: 'oauthGithub') {
+  const { nick, email } = userRegister
 
-  if (await getUserByNick(nick) || await getUserByEmail(email)) {
-    throw new UserExistsError()
+  const userByNick = await getUserByNick(nick)
+  const userByEmail = await getUserByEmail(email)
+
+  // user nick or email exists
+  if (userByNick || userByEmail) {
+    // user has registered with password before and is now logging in with oauth
+    if (oauthField && userByEmail) {
+      await db
+        .updateTable('user')
+        .where('email', '=', email)
+        .set('emailVerified', true)
+        .set(oauthField, true)
+        .executeTakeFirstOrThrow(UnableToRegisterError)
+    }
+    // user has logged in with oauth before and is now registering with password
+    else if (userByEmail?.emailVerified && 'password' in userRegister && !userByEmail.password) {
+      await db
+        .updateTable('user')
+        .where('email', '=', email)
+        .set('password', hash(userRegister.password, { salt }))
+        .executeTakeFirstOrThrow(UnableToRegisterError)
+    }
+    else {
+      throw new UserExistsError()
+    }
   }
+  // user is new
+  else {
+    let values: UserRegister
+    // user registers with password
+    if ('password' in userRegister) {
+      values = {
+        nick,
+        email,
+        password: hash(userRegister.password, { salt })
+      }
+    }
+    // user registers with oauth
+    else if (oauthField) {
+      values = {
+        nick,
+        email,
+        emailVerified: true,
+        // @ts-ignore ts has issues with dynamic keys even though it is typed
+        [oauthField]: true
+      }
+    }
+    else {
+      throw new RouteError(400, 'Invalid registration')
+    }
 
-  await db.insertInto('user')
-    .values({
-      nick,
-      email,
-      emailVerified: false,
-      password: hash(password, { salt })
-    })
-    .executeTakeFirstOrThrow(UnableToRegisterError)
+    await db.insertInto('user')
+      .values(values)
+      .executeTakeFirstOrThrow(UnableToRegisterError)
 
-  sendVerificationEmail(ctx, email).catch(ctx.log)
+    if (!oauthField) sendVerificationEmail(ctx, email).catch(ctx.log)
+  }
 
   return loginUser(ctx, nick)
 }
@@ -173,7 +218,7 @@ If you did not register, simply ignore this email.`,
   })
 
   if (!result.ok) {
-    throw new RpcError(result.error.statusCode, result.error.message)
+    throw new RouteError(result.error.statusCode, result.error.message)
   }
 }
 
@@ -248,7 +293,7 @@ If you did not request a password reset, simply ignore this email.`,
   })
 
   if (!result.ok) {
-    throw new RpcError(result.error.statusCode, result.error.message)
+    throw new RouteError(result.error.statusCode, result.error.message)
   }
 }
 
@@ -259,9 +304,8 @@ export async function getResetPasswordUser(_ctx: Context, token: string) {
   if (result.value) {
     const user = await getUserByNick(result.value)
     if (user) {
-      // @ts-ignore remove password before returning
-      delete user.password
-      return user as Omit<User, 'password'>
+      user.password = null
+      return user
     }
   }
 

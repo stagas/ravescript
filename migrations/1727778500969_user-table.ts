@@ -16,9 +16,8 @@ export async function up(db: Kysely<any>): Promise<void> {
 		.addColumn('emailVerified', 'boolean', col =>
 			col.defaultTo(false)
 		)
-		.addColumn('password', 'text', col =>
-			col.unique().notNull()
-		)
+		.addColumn('password', 'text')
+		.addColumn('oauthGithub', 'boolean')
 		.addColumn('createdAt', 'timestamp', (col) =>
 			col.defaultTo(sql`now()`).notNull()
 		)

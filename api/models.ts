@@ -13,7 +13,8 @@ export const User = z.object({
   nick: z.string(),
   email: z.string(),
   emailVerified: z.boolean().nullish(),
-  password: z.string(),
+  password: z.string().nullish(),
+  oauthGithub: z.boolean().nullish(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -22,7 +23,8 @@ export interface User {
   email: string;
   emailVerified: Generated<boolean | null>;
   nick: string;
-  password: string;
+  oauthGithub: boolean | null;
+  password: string | null;
   updatedAt: Generated<Timestamp>;
 }
 

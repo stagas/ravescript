@@ -1,8 +1,8 @@
 import { kv } from '../core/app.ts'
-import { Context } from '../core/router.ts'
+import { Context, RouteError } from '../core/router.ts'
 import { sessions } from '../core/sessions.ts'
 import { db } from '../db.ts'
-import { actions, RpcError } from '../routes/rpc.ts'
+import { actions } from '../routes/rpc.ts'
 import { UserSession } from '../schemas/user.ts'
 
 export const ADMINS = ['x', 'stagas']
@@ -10,7 +10,7 @@ export const ADMINS = ['x', 'stagas']
 function admins(ctx: Context) {
   const session = sessions.get(ctx)
   if (!session || !ADMINS.includes(session.nick)) {
-    throw new RpcError(403, 'Forbidden')
+    throw new RouteError(403, 'Forbidden')
   }
 }
 

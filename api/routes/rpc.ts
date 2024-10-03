@@ -1,6 +1,6 @@
 import { defer } from 'utils'
 import { z } from 'zod'
-import type { Router } from '../core/router.ts'
+import { RouteError, type Router } from '../core/router.ts'
 import { sessions } from '../core/sessions.ts'
 
 const DEBUG = false
@@ -18,20 +18,13 @@ export const actions = {
   post: {} as Actions,
 }
 
-export class RpcError extends Error {
-  declare cause: { status: number }
-  constructor(status: number, message: string) {
-    super(message, { cause: { status } })
-  }
-}
-
 const headers = { 'content-type': 'application/javascript' }
 
 export function mount(app: Router) {
   app.use('/rpc', [async ctx => {
     const url = new URL(ctx.request.url)
     const fn: string | null = url.searchParams.get('fn')
-    if (!fn) throw new RpcError(400, 'Missing function name')
+    if (!fn) throw new RouteError(400, 'Missing function name')
 
     let args: unknown[]
 
@@ -53,11 +46,12 @@ export function mount(app: Router) {
       }
 
       default:
-        throw new RpcError(405, 'Method not allowed')
+        throw new RouteError(405, 'Method not allowed')
     }
 
-    const action = actions[ctx.request.method.toLowerCase() as 'get'][fn]
-    if (!action) throw new Error('Rpc call not found: ' + fn)
+    const method = ctx.request.method.toLowerCase() as 'get'
+    const action = actions[method][fn]
+    if (!action) throw new Error(`Rpc call not found: ${method} ${fn}`)
 
     const before = new Date()
     using _ = defer(() => {
@@ -81,7 +75,8 @@ export function mount(app: Router) {
       })
     }
     catch (error) {
-      if (error instanceof RpcError) {
+      console.error(error)
+      if (error instanceof RouteError) {
         return new Response(JSON.stringify({ error: error.message }), {
           status: error.cause.status,
           headers
