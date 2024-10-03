@@ -1,7 +1,8 @@
 import { Sigui } from 'sigui'
-import * as oauth from '../rpc/oauth.ts'
-import { parseForm } from '../util/parse-form.ts'
 import { z } from 'zod'
+import * as oauth from '../rpc/oauth.ts'
+import { go } from '../ui/Link.tsx'
+import { parseForm } from '../util/parse-form.ts'
 
 const formSchema = z.object({
   nick: z.string(),
@@ -29,9 +30,7 @@ export function OAuthRegister() {
       ev.preventDefault()
       const { nick } = parseForm(ev.target as HTMLFormElement, formSchema)
       oauth.registerOAuth(id, nick)
-        .then(() => {
-
-        })
+        .then(() => go('/oauth/complete'))
         .catch(error => info.error = error.message)
     }}>
       <input name="nick" value={() => info.nick} spellcheck="false" autocomplete="nickname" />
