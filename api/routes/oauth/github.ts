@@ -58,9 +58,11 @@ export function mount(app: Router) {
   } = env
 
   app.get('/oauth/github', [async ctx => {
-    const origin =
+    const origin = (
       ctx.request.headers.get('origin') ??
-      ctx.request.headers.get('referer')
+      ctx.request.headers.get('referer') ??
+      env.WEB_URL
+    ).replace(/\/$/, '')
 
     const cb = OAuthCallback.parse(Object.fromEntries(ctx.url.searchParams.entries()))
     if ('error' in cb) throw new RouteError(401, cb.error_description)
