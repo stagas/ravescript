@@ -40,7 +40,7 @@ jobs:
       - name: Generate .env file
         uses: SpicyPizza/create-envfile@v2.0
         with:
-          envkey_DATABASE_URL: ${{ env.DATABASE_URL }}
+          envkey_DATABASE_URL: ${{ secrets.DATABASE_URL }}
           envkey_OAUTH_GITHUB_CLIENT_ID: ${{ secrets.OAUTH_GITHUB_CLIENT_ID }}
           envkey_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}
 
