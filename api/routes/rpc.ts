@@ -27,7 +27,7 @@ export class RpcError extends Error {
 
 const headers = { 'content-type': 'application/javascript' }
 
-export function register(app: Router) {
+export function mount(app: Router) {
   app.use('/rpc', [async ctx => {
     const url = new URL(ctx.request.url)
     const fn: string | null = url.searchParams.get('fn')

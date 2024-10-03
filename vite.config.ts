@@ -21,7 +21,16 @@ export default ({ mode }) => {
     clearScreen: false,
     test: {
       globals: true,
+      dir: 'src',
       includeSource: ['src/**/*.{js,jsx,ts,tsx}'],
+      environment: 'jsdom',
+      coverage: {
+        clean: false,
+        cleanOnRerun: false,
+        include: ['src'],
+        reporter: ['lcovonly'],
+        reportsDirectory: 'coverage'
+      }
     },
     define: {
       'import.meta.vitest': 'undefined',
