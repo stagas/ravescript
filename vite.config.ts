@@ -22,13 +22,13 @@ export default ({ mode }) => {
     test: {
       globals: true,
       dir: 'src',
-      includeSource: ['src/**/*.{js,jsx,ts,tsx}'],
+      // includeSource: ['src/**/*.{js,jsx,ts,tsx}'],
       environment: 'jsdom',
       coverage: {
         clean: false,
         cleanOnRerun: false,
         include: ['src'],
-        reporter: ['lcovonly'],
+        reporter: ['lcovonly', 'text-summary'],
         reportsDirectory: 'coverage'
       }
     },
