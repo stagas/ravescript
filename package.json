@@ -16,8 +16,8 @@
     "test:api:ci": "deno test -A --no-lock --import-map=./api/import-map.production.json --coverage=coverage/deno api",
     "test:api:cov": "deno coverage coverage/deno --lcov --output=coverage/lcov-deno.info",
     "test:api:watch": "deno test -A --watch --no-lock api & deno -A --no-lock api/test-watch.ts",
-    "test:web": "vitest run --coverage",
-    "test:web:watch": "vitest --coverage",
+    "test:web": "bun test --coverage src",
+    "test:web:watch": "bun test --coverage --watch src",
     "dev": "pnpm dev:db & pnpm dev:api & pnpm dev:web",
     "dev:db": "docker compose up",
     "dev:api": "deno --watch --unstable-kv -A api/core/server.ts",
@@ -27,9 +27,10 @@
     "postinstall": "link-local || exit 0"
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "^15.7.4",
     "@maktouch/kysely-zod-codegen": "^0.5.2",
+    "@types/bun": "^1.1.10",
     "@types/node": "^22.7.4",
-    "@vitest/coverage-v8": "^2.1.2",
     "ambient-dts": "github:stagas/ambient-dts",
     "autoprefixer": "^10.4.20",
     "jsdom": "^25.0.1",
@@ -39,8 +40,7 @@
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
     "utils": "github:stagas/utils",
-    "vite": "^5.4.8",
-    "vitest": "^2.1.1"
+    "vite": "^5.4.8"
   },
   "dependencies": {
     "@types/pg": "^8.11.10",
