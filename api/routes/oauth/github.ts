@@ -58,6 +58,10 @@ export function mount(app: Router) {
   } = env
 
   app.get('/oauth/github', [async ctx => {
+    const origin =
+      ctx.request.headers.get('origin') ??
+      ctx.request.headers.get('referer')
+
     const cb = OAuthCallback.parse(Object.fromEntries(ctx.url.searchParams.entries()))
     if ('error' in cb) throw new RouteError(401, cb.error_description)
 
@@ -85,7 +89,7 @@ export function mount(app: Router) {
     // user has already registered
     if (userByEmail?.oauthGithub) {
       await loginUser(ctx, userByEmail.nick)
-      const url = new URL(`${env.WEB_URL}/oauth/complete`)
+      const url = new URL(`${origin}/oauth/complete`)
       url.searchParams.set('redirect_to', redirect_to)
       const res = ctx.redirect(302, url.href)
       return res
@@ -107,7 +111,7 @@ export function mount(app: Router) {
     })
 
     // redirect user to register
-    const url = new URL(`${env.WEB_URL}/oauth/register`)
+    const url = new URL(`${origin}/oauth/register`)
     url.searchParams.set('id', id)
     const res = ctx.redirect(302, url.href)
 
