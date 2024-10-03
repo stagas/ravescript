@@ -12,7 +12,8 @@ export function Register() {
 
   function onSubmit(ev: Event & { target: HTMLFormElement }) {
     ev.preventDefault()
-    actions.register(parseForm(ev.target, UserRegister))
+    actions
+      .register(parseForm(ev.target, UserRegister))
       .then(actions.loginUser)
       .catch(err => info.error = err.message)
     return false

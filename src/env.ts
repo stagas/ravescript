@@ -4,4 +4,6 @@ const Env = z.object({
   VITE_API_URL: z.string(),
 })
 
-export const env = Env.parse(import.meta.env)
+export const env = Env.parse(Object.assign({
+  VITE_API_URL: location.origin
+}, import.meta.env))

@@ -1,10 +1,10 @@
 import type * as actions from '../../api/actions/admin.ts'
-import { rpcAction } from '../../lib/rpc-action.ts'
+import { rpc } from '../../lib/rpc.ts'
 
-export const listUsers = rpcAction<typeof actions.listUsers>('GET', 'listUsers')
-export const deleteUser = rpcAction<typeof actions.deleteUser>('POST', 'deleteUser')
-export const clearUsers = rpcAction<typeof actions.clearUsers>('POST', 'clearUsers')
+export const listUsers = rpc<typeof actions.listUsers>('GET', 'listUsers')
+export const deleteUser = rpc<typeof actions.deleteUser>('POST', 'deleteUser')
+export const clearUsers = rpc<typeof actions.clearUsers>('POST', 'clearUsers')
 
-export const listSessions = rpcAction<typeof actions.listSessions>('GET', 'listSessions')
-export const deleteSession = rpcAction<typeof actions.deleteSession>('POST', 'deleteSession')
-export const clearSessions = rpcAction<typeof actions.clearSessions>('POST', 'clearSessions')
+export const listSessions = rpc<typeof actions.listSessions>('GET', 'listSessions')
+export const deleteSession = rpc<typeof actions.deleteSession>('POST', 'deleteSession')
+export const clearSessions = rpc<typeof actions.clearSessions>('POST', 'clearSessions')

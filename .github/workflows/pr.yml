@@ -63,13 +63,13 @@ jobs:
         run: npm run kysely -- migrate:latest
 
       - name: Run tests
-        run: deno test -A --coverage=coverage # create coverage files
+        run: deno test --import-map=./api/import-map.production.json -A --coverage=coverage
 
       - name: Generate coverage
-        run: deno coverage coverage --lcov --output=coverage/lcov.info # create coverage report
+        run: deno coverage coverage --lcov --output=coverage/lcov.info
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4 # upload the report on Codecov
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage/lcov.info
@@ -77,9 +77,8 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "vasi"
+          project: vasi
           root: ""
-          entrypoint: "./api/core/server.ts"
           include: .env,api,dist
-          env: |
-            DATABASE_URL=${{ env.DATABASE_URL }}
+          entrypoint: ./api/core/server.ts
+          import-map: ./api/import-map.production.json

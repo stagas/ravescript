@@ -12,7 +12,8 @@ export function VerifyEmail() {
   const token = new URLSearchParams(location.search).get('token')
   if (!token) return <div>Token not found</div>
 
-  actions.verifyEmail(token)
+  actions
+    .verifyEmail(token)
     .then(user => info.isVerified = true)
     .catch(err => info.error = err.message)
 
