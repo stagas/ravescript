@@ -13,8 +13,10 @@ export function Home() {
     const x = window.outerWidth / 2 + window.screenX - (w / 2)
     const y = window.outerHeight / 2 + window.screenY - (h / 2)
 
+    const url = new URL(`${location.origin}/oauth/popup`)
+    url.searchParams.set('provider', provider)
     const popup = window.open(
-      `${location.origin}/oauth/popup?provider=${provider}`,
+      url,
       'oauth',
       `width=${w}, height=${h}, top=${y}, left=${x}`
     )
@@ -23,7 +25,12 @@ export function Home() {
 
     on(window, 'storage', () => {
       popup!.close()
-      whoami().then(user => state.user = user)
+      if (localStorage.oauth?.startsWith('complete')) {
+        whoami().then(user => state.user = user)
+      }
+      else {
+        alert('OAuth failed.\n\nTry logging in using a different method.')
+      }
     }, { once: true })
   }
 

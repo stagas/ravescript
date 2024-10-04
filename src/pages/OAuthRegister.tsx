@@ -12,7 +12,7 @@ export function OAuthRegister() {
   using $ = Sigui()
 
   const id = new URL(location.href).searchParams.get('id')
-  if (!id) return <div>id not found</div>
+  if (!id) return <div>OAuth session id not found</div>
 
   const info = $({
     nick: undefined as undefined | string,

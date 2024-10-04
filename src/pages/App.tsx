@@ -41,18 +41,26 @@ export function App() {
         case '/reset-password':
           return <ResetPassword />
 
-        case '/oauth/popup':
+        case '/oauth/popup': {
           const provider = state.url.searchParams.get('provider')!
-          location.href = `${env.VITE_API_URL}/oauth/start?provider=${provider}&redirect_to=/`
+          const url = new URL(`${env.VITE_API_URL}/oauth/start`)
+          url.searchParams.set('origin', location.origin)
+          url.searchParams.set('provider', provider)
+          location.href = url.href
           return <div />
+        }
 
         case '/oauth/register':
           return <OAuthRegister />
 
+        case '/oauth/cancel':
+          localStorage.oauth = 'cancel' + Math.random()
+          return <div>OAuth login cancelled</div>
+
         case '/oauth/complete':
           // Hack: triggering a localStorage write we listen to
           // window.onstorage and we can close the popup automatically.
-          localStorage.oauth = Math.random()
+          localStorage.oauth = 'complete' + Math.random()
           return <div>Logging in...</div>
       }
     }}
