@@ -10,7 +10,8 @@
 - [x] Open in editor
 - [x] Watch/refresh
 
-### CI
+### CI/CD
+
 - [x] GitHub actions
   - [x] Tests
   - [x] Preview with Neon DB branching
@@ -30,21 +31,26 @@
   - [x] Migrations
 - [x] RPC (GET/POST)
 - [x] Emails (Resend)
-- [x] Login/Register
+- [x] Auth
+  - [x] Login/Register
   - [x] Nick, email, password
+  - [x] Verify email
+  - [x] Forgot password
   - [x] OAuth providers
     - [x] GitHub
     - [ ] Google
     - [ ] Facebook
     - [ ] X/Twitter
-- [x] Verify email
-- [x] Forgot password
+- [ ] BroadcastChannel
+- [ ] WebSockets
 
 ### Frontend
 
+- [ ] PWA
 - [x] Vite
 - [x] Sigui
 - [x] Tailwindcss
+- [ ] AssemblyScript
 - [x] Testing
   - [x] Coverage
   - [x] Unit
@@ -59,15 +65,19 @@
   - [x] App
   - [x] About
   - [x] Home
+  - [x] OAuthRegister
 - [x] Components
   - [x] Login
   - [x] Logout
+  - [x] OAuthLogin
   - [x] Register
   - [x] ResetPassword
   - [x] VerifyEmail
 - [x] UI
+  - [x] Fieldset
+  - [x] Input
+  - [x] Label
   - [x] Link
-- [ ] AssemblyScript
 
 ## Setup
 
