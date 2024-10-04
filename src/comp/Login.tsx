@@ -3,7 +3,7 @@ import { UserForgot, UserLogin } from '../../api/schemas/user.ts'
 import * as actions from '../rpc/login-register.ts'
 import { parseForm } from '../util/parse-form.ts'
 import { Link } from '../ui/Link.tsx'
-import { Input, Label } from '../ui/index.ts'
+import { Fieldset, Input, Label } from '../ui/index.ts'
 
 export function Login() {
   using $ = Sigui()
@@ -40,9 +40,7 @@ export function Login() {
       switch (info.mode) {
         case 'login':
           return <form method="post" onsubmit={submitLogin}>
-            <h2>Login</h2>
-
-            <div class="flex flex-col sm:items-end gap-1">
+            <Fieldset legend="Login">
               <Label text="Nick or Email">
                 <Input
                   name="nickOrEmail"
@@ -67,7 +65,7 @@ export function Login() {
               </div>
 
               <span>{() => info.error}</span>
-            </div>
+            </Fieldset>
 
           </form>
 
@@ -78,9 +76,7 @@ export function Login() {
           }
           else {
             return <form method="post" onsubmit={submitForgot}>
-              <h2>Forgot Password</h2>
-
-              <div class="flex flex-col sm:items-end gap-1">
+              <Fieldset legend="Forgot Password">
                 <Label text="Email">
                   <Input
                     name="email"
@@ -91,13 +87,13 @@ export function Login() {
                   />
                 </Label>
 
-                <div class="flex flex-row items-center gap-2">
+                <div class="flex flex-row items-center justify-end gap-2">
                   <span><Link onclick={() => info.mode = 'login'}>Login using password</Link></span>
                   <button type="submit">Send reset link</button>
                 </div>
 
                 <span>{() => info.error}</span>
-              </div>
+              </Fieldset>
             </form>
           }
       }

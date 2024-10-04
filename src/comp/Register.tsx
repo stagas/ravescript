@@ -1,7 +1,7 @@
 import { Sigui } from 'sigui'
 import { UserRegister } from '../../api/schemas/user.ts'
 import * as actions from '../rpc/login-register.ts'
-import { Input, Label } from '../ui/index.ts'
+import { Fieldset, Input, Label } from '../ui/index.ts'
 import { parseForm } from '../util/parse-form.ts'
 
 export function Register() {
@@ -21,9 +21,7 @@ export function Register() {
   }
 
   return <form method="post" onsubmit={onSubmit}>
-    <h2>Register</h2>
-
-    <div class="flex flex-col sm:items-end gap-1">
+    <Fieldset legend="Register">
       <Label text="Nick">
         <Input
           name="nick"
@@ -56,7 +54,6 @@ export function Register() {
       </div>
 
       <span>{() => info.error}</span>
-    </div>
-
+    </Fieldset>
   </form>
 }

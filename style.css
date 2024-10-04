@@ -12,6 +12,9 @@
   h3 {
     @apply text-lg;
   }
+  legend {
+    @apply text-xl;
+  }
 }
 
 body {
