@@ -2,13 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  h1 {
+    @apply text-2xl;
+  }
+  h2 {
+    @apply text-xl;
+  }
+  h3 {
+    @apply text-lg;
+  }
+}
+
 body {
   background: #1a1a1a;
   color: #aaa;
   font-family: sans-serif;
 }
 button, input {
-  height: 30px;
+  min-height: 30px;
   padding: 0 0.25rem;
   background: #444;
   color: #ccc;

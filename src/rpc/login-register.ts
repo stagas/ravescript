@@ -13,7 +13,7 @@ export const sendVerificationEmail = rpc<typeof actions.sendVerificationEmail>('
 export const verifyEmail = rpc<typeof actions.verifyEmail>('POST', 'verifyEmail')
 
 export const forgotPassword = rpc<typeof actions.forgotPassword>('POST', 'forgotPassword')
-export const getResetPasswordUser = rpc<typeof actions.getResetPasswordUser>('GET', 'getResetPasswordUser')
+export const getResetPasswordUserNick = rpc<typeof actions.getResetPasswordUserNick>('GET', 'getResetPasswordUserNick')
 export const changePassword = rpc<typeof actions.changePassword>('POST', 'changePassword')
 
 export function loginUser(session: UserSession) {

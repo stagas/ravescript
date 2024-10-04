@@ -1,14 +1,14 @@
 import { Sigui } from 'sigui'
-import { UserResetPassword, type User } from '../../api/schemas/user.ts'
+import { UserResetPassword } from '../../api/schemas/user.ts'
 import * as actions from '../rpc/login-register.ts'
-import { parseForm } from '../util/parse-form.ts'
 import { go } from '../ui/Link.tsx'
+import { parseForm } from '../util/parse-form.ts'
 
 export function ResetPassword() {
   using $ = Sigui()
 
   const info = $({
-    user: null as User | null,
+    nick: null as null | string,
     error: ''
   })
 
@@ -17,8 +17,10 @@ export function ResetPassword() {
     const { token, password } = parseForm(ev.target, UserResetPassword)
     actions
       .changePassword(token, password)
-      .then(actions.loginUser)
-      .then(() => go('/'))
+      .then(session => {
+        go('/')
+        actions.loginUser(session)
+      })
       .catch(err => info.error = err.message)
     return false
   }
@@ -27,14 +29,14 @@ export function ResetPassword() {
   if (!token) return <div>Token not found</div>
 
   actions
-    .getResetPasswordUser(token)
-    .then(user => info.user = user)
+    .getResetPasswordUserNick(token)
+    .then(nick => info.nick = nick)
     .catch(err => info.error = err.message)
 
-  return <div>{() => info.user ? <div>
+  return <div>{() => info.nick ? <div>
     <h1>Reset Password</h1>
 
-    Hello {info.user.nick}! Please enter your new password below:
+    Hello {info.nick}! Please enter your new password below:
 
     <form method="post" onsubmit={onSubmit}>
       <input type="hidden" name="token" value={token} />
