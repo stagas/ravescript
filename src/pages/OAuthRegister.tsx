@@ -33,7 +33,7 @@ export function OAuthRegister() {
         .then(() => go('/oauth/complete'))
         .catch(error => info.error = error.message)
     }}>
-      <input name="nick" value={() => info.nick} spellcheck="false" autocomplete="nickname" />
+      <input name="nick" value={() => info.nick} spellcheck="false" required autocomplete="nickname" />
       <button type="submit">Register</button>
       <br />
       {() => info.error}
