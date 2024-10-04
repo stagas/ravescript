@@ -14,7 +14,7 @@ export function Home() {
         <div class="flex flex-col items-center">
           <div class="flex flex-col sm:flex-row flex-wrap gap-8">
             <Login />
-            <span class="self-center">or</span>
+            <span class="self-center italic">or</span>
             <Register />
           </div>
 

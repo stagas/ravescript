@@ -92,8 +92,8 @@ export function Login() {
                 </Label>
 
                 <div class="flex flex-row items-center gap-2">
+                  <span><Link onclick={() => info.mode = 'login'}>Login using password</Link></span>
                   <button type="submit">Send reset link</button>
-                  <span>or <Link onclick={() => info.mode = 'login'}>login using password</Link></span>
                 </div>
 
                 <span>{() => info.error}</span>
