@@ -26,7 +26,7 @@ export async function listUsers(ctx: Context) {
   admins(ctx)
   return (await db
     .selectFrom('user')
-    .select(['nick', 'email', 'emailVerified', 'createdAt', 'updatedAt'])
+    .select(['nick', 'email', 'emailVerified', 'oauthGithub', 'createdAt', 'updatedAt'])
     .execute()
   ).map(item =>
     [item.nick, item] as const
