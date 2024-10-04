@@ -1,8 +1,8 @@
+import { randomHash } from 'utils'
 import { z } from 'zod'
+import { kv } from '../../core/app.ts'
 import { Router } from '../../core/router.ts'
 import { env } from '../../env.ts'
-import { randomHash } from 'utils'
-import { kv } from '../../core/app.ts'
 
 const OAuthStart = z.object({
   provider: z.enum(['github']),
@@ -23,15 +23,10 @@ export function mount(app: Router) {
       Object.fromEntries(ctx.url.searchParams.entries())
     )
 
-    const { origin } = new URL((
-      ctx.request.headers.get('referer') ??
-      env.WEB_URL
-    ))
-
-    ctx.log('OAuth origin:', origin)
+    ctx.log('OAuth origin:', ctx.origin)
 
     const state = OAuthState.parse({
-      origin,
+      origin: ctx.origin,
       provider,
     })
 

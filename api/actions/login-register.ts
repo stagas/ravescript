@@ -7,11 +7,9 @@ import { Context, RouteError } from '../core/router.ts'
 import { sendEmail } from '../core/send-email.ts'
 import { sessions } from '../core/sessions.ts'
 import { db } from '../db.ts'
-import { env } from '../env.ts'
 import { actions } from '../routes/rpc.ts'
 import { UserLogin, UserRegister, UserSession } from '../schemas/user.ts'
 import { ADMINS } from './admin.ts'
-import { User } from '../models.ts'
 
 // const DEBUG = true
 
@@ -200,7 +198,7 @@ export async function sendVerificationEmail(ctx: Context, email: string) {
 
   ctx.log(`Send email verification for user ${user.nick} to:`, email, 'token:', token)
 
-  const emailVerificationUrl = `${env.WEB_URL}/verify-email?token=${token}`
+  const emailVerificationUrl = `${ctx.origin}/verify-email?token=${token}`
 
   const result = await sendEmail({
     to: [email],
@@ -275,7 +273,7 @@ export async function forgotPassword(ctx: Context, nickOrEmail: string) {
 
   ctx.log('Send reset password email for user', user.nick, 'to email:', user.email, 'token:', token)
 
-  const emailResetPasswordUrl = `${env.WEB_URL}/reset-password?token=${token}`
+  const emailResetPasswordUrl = `${ctx.origin}/reset-password?token=${token}`
 
   const result = await sendEmail({
     to: [user.email],
