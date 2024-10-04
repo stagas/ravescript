@@ -23,10 +23,10 @@ export function mount(app: Router) {
       Object.fromEntries(ctx.url.searchParams.entries())
     )
 
-    const origin = (
+    const { origin } = new URL((
       ctx.request.headers.get('referer') ??
       env.WEB_URL
-    ).replace(/\/$/, '')
+    ))
 
     ctx.log('OAuth origin:', origin)
 

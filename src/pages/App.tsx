@@ -44,7 +44,6 @@ export function App() {
         case '/oauth/popup': {
           const provider = state.url.searchParams.get('provider')!
           const url = new URL(`${env.VITE_API_URL}/oauth/start`)
-          url.searchParams.set('origin', location.origin)
           url.searchParams.set('provider', provider)
           location.href = url.href
           return <div />
