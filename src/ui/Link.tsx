@@ -13,9 +13,17 @@ export function go(href: string) {
   link.url = new URL(location.href)
 }
 
-export function Link({ href, children }: { href: string, children?: any }) {
+export function Link({
+  href = '#',
+  onclick = go,
+  children
+}: {
+  href?: string,
+  onclick?: (href: string) => unknown,
+  children?: any
+}) {
   return <a href={href} onclick={ev => {
     ev.preventDefault()
-    go(href)
+    onclick(href)
   }}>{children}</a>
 }

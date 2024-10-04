@@ -26,11 +26,12 @@ export async function listUsers(ctx: Context) {
   admins(ctx)
   return (await db
     .selectFrom('user')
-    .select(['nick', 'email', 'emailVerified', 'createdAt', 'updatedAt'])
+    .selectAll()
     .execute()
-  ).map(item =>
-    [item.nick, item] as const
-  )
+  ).map(item => {
+    item.password = '✓' // mask password
+    return [item.nick, item] as const
+  })
 }
 
 actions.post.deleteUser = deleteUser

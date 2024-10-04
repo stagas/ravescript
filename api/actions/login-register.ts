@@ -7,11 +7,9 @@ import { Context, RouteError } from '../core/router.ts'
 import { sendEmail } from '../core/send-email.ts'
 import { sessions } from '../core/sessions.ts'
 import { db } from '../db.ts'
-import { env } from '../env.ts'
 import { actions } from '../routes/rpc.ts'
 import { UserLogin, UserRegister, UserSession } from '../schemas/user.ts'
 import { ADMINS } from './admin.ts'
-import { User } from '../models.ts'
 
 // const DEBUG = true
 
@@ -200,7 +198,7 @@ export async function sendVerificationEmail(ctx: Context, email: string) {
 
   ctx.log(`Send email verification for user ${user.nick} to:`, email, 'token:', token)
 
-  const emailVerificationUrl = `${env.WEB_URL}/verify-email?token=${token}`
+  const emailVerificationUrl = `${ctx.origin}/verify-email?token=${token}`
 
   const result = await sendEmail({
     to: [email],
@@ -253,13 +251,13 @@ export async function logout(ctx: Context) {
 }
 
 actions.post.forgotPassword = forgotPassword
-export async function forgotPassword(ctx: Context, nickOrEmail: string) {
-  ctx.log('Forgot password for:', nickOrEmail)
+export async function forgotPassword(ctx: Context, email: string) {
+  ctx.log('Forgot password for:', email)
 
-  const user = await getUser(nickOrEmail)
+  const user = await getUserByEmail(email)
 
   if (!user) {
-    ctx.log('Forgot password user does not exist:', nickOrEmail)
+    ctx.log('Forgot password user does not exist:', email)
     // fake a delay that would have been a call to an email service
     await timeout(2000 + Math.random() * 5000)
     return
@@ -275,7 +273,7 @@ export async function forgotPassword(ctx: Context, nickOrEmail: string) {
 
   ctx.log('Send reset password email for user', user.nick, 'to email:', user.email, 'token:', token)
 
-  const emailResetPasswordUrl = `${env.WEB_URL}/reset-password?token=${token}`
+  const emailResetPasswordUrl = `${ctx.origin}/reset-password?token=${token}`
 
   const result = await sendEmail({
     to: [user.email],
@@ -297,15 +295,14 @@ If you did not request a password reset, simply ignore this email.`,
   }
 }
 
-actions.get.getResetPasswordUser = getResetPasswordUser
-export async function getResetPasswordUser(_ctx: Context, token: string) {
+actions.get.getResetPasswordUserNick = getResetPasswordUserNick
+export async function getResetPasswordUserNick(_ctx: Context, token: string) {
   const result = await kv.get<string>(['resetPassword', token])
 
   if (result.value) {
     const user = await getUserByNick(result.value)
     if (user) {
-      user.password = null
-      return user
+      return user.nick
     }
   }
 

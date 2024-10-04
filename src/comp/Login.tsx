@@ -1,62 +1,102 @@
-import { refs, Sigui } from 'sigui'
-import { UserLogin } from '../../api/schemas/user.ts'
+import { Sigui } from 'sigui'
+import { UserForgot, UserLogin } from '../../api/schemas/user.ts'
 import * as actions from '../rpc/login-register.ts'
 import { parseForm } from '../util/parse-form.ts'
+import { Link } from '../ui/Link.tsx'
+import { Fieldset, Input, Label } from '../ui/index.ts'
 
 export function Login() {
   using $ = Sigui()
 
   const info = $({
+    mode: 'login' as 'login' | 'forgot',
+    forgotEmail: null as null | string,
     error: ''
   })
 
-  function onSubmit(ev: Event & { target: HTMLFormElement, submitter: HTMLElement }) {
+  function submitLogin(ev: Event & { target: HTMLFormElement, submitter: HTMLElement }) {
     ev.preventDefault()
     const userLogin = parseForm(ev.target, UserLogin)
-
-    if (ev.submitter === refs.forgot) {
-      actions
-        .forgotPassword(userLogin.nickOrEmail)
-        .then(() => {
-          alert('Check your email for a password reset link.')
-        })
-    }
-    else {
-      actions
-        .login(userLogin)
-        .then(actions.loginUser)
-        .catch(err => info.error = err.message)
-    }
+    actions
+      .login(userLogin)
+      .then(actions.loginUser)
+      .catch(err => info.error = err.message)
     return false
   }
 
-  return <form method="post" onsubmit={onSubmit}>
-    <label>
-      Nick or Email <input
-        name="nickOrEmail"
-        required
-        spellcheck="false"
-        autocomplete="nickname"
-      />
-    </label>
+  function submitForgot(ev: Event & { target: HTMLFormElement, submitter: HTMLElement }) {
+    ev.preventDefault()
+    const userForgot = parseForm(ev.target, UserForgot)
+    actions
+      .forgotPassword(userForgot.email)
+      .then(() => {
+        info.forgotEmail = userForgot.email
+      })
+    return false
+  }
 
-    <br />
+  return <div>
+    {() => {
+      switch (info.mode) {
+        case 'login':
+          return <form method="post" onsubmit={submitLogin}>
+            <Fieldset legend="Login">
+              <Label text="Nick or Email">
+                <Input
+                  name="nickOrEmail"
+                  required
+                  spellcheck="false"
+                  autocomplete="nickname"
+                />
+              </Label>
 
-    <label>
-      Password <input
-        name="password"
-        type="password"
-        required
-        autocomplete="current-password"
-      />
-    </label>
+              <Label text="Password">
+                <Input
+                  name="password"
+                  type="password"
+                  required
+                  autocomplete="current-password"
+                />
+              </Label>
 
-    <br />
+              <div class="flex flex-row items-center justify-end gap-2">
+                <Link onclick={() => info.mode = 'forgot'}>Forgot password</Link>
+                <button type="submit">Login</button>
+              </div>
 
-    <button type="submit">Login</button>
+              <span>{() => info.error}</span>
+            </Fieldset>
 
-    <button ref="forgot" type="submit">Forgot password</button>
+          </form>
 
-    {() => info.error}
-  </form>
+        case 'forgot':
+          if (info.forgotEmail) {
+            const site = `https://${info.forgotEmail.split('@')[1]}`
+            return <div>Done! <a href={site}>Check your email</a> for a reset password link.</div>
+          }
+          else {
+            return <form method="post" onsubmit={submitForgot}>
+              <Fieldset legend="Forgot Password">
+                <Label text="Email">
+                  <Input
+                    name="email"
+                    type="email"
+                    required
+                    spellcheck="false"
+                    autocomplete="email"
+                  />
+                </Label>
+
+                <div class="flex flex-row items-center justify-end gap-2">
+                  <span><Link onclick={() => info.mode = 'login'}>Login using password</Link></span>
+                  <button type="submit">Send reset link</button>
+                </div>
+
+                <span>{() => info.error}</span>
+              </Fieldset>
+            </form>
+          }
+      }
+    }}
+  </div>
 }

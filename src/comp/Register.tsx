@@ -1,6 +1,7 @@
 import { Sigui } from 'sigui'
 import { UserRegister } from '../../api/schemas/user.ts'
 import * as actions from '../rpc/login-register.ts'
+import { Fieldset, Input, Label } from '../ui/index.ts'
 import { parseForm } from '../util/parse-form.ts'
 
 export function Register() {
@@ -20,26 +21,39 @@ export function Register() {
   }
 
   return <form method="post" onsubmit={onSubmit}>
-    <label>
-      Nick <input id="nick" name="nick" required spellcheck="false" autocomplete="nickname" />
-    </label>
+    <Fieldset legend="Register">
+      <Label text="Nick">
+        <Input
+          name="nick"
+          required
+          spellcheck="false"
+          autocomplete="nickname"
+        />
+      </Label>
 
-    <br />
+      <Label text="Email">
+        <Input
+          name="email"
+          type="email"
+          required
+          autocomplete="email"
+        />
+      </Label>
 
-    <label>
-      Email <input id="email" name="email" type="email" required autocomplete="email" />
-    </label>
+      <Label text="Password">
+        <Input
+          name="password"
+          type="password"
+          required
+          autocomplete="new-password"
+        />
+      </Label>
 
-    <br />
+      <div class="flex flex-row items-center justify-end gap-2">
+        <button type="submit">Register</button>
+      </div>
 
-    <label>
-      Password <input id="password" name="password" type="password" required autocomplete="new-password" />
-    </label>
-
-    <br />
-
-    <button type="submit">Register</button>
-
-    {() => info.error}
+      <span>{() => info.error}</span>
+    </Fieldset>
   </form>
 }

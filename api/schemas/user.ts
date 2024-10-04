@@ -24,6 +24,11 @@ export const UserLogin = z.object({
   password: z.string(),
 })
 
+export type UserForgot = z.infer<typeof UserForgot>
+export const UserForgot = z.object({
+  email: z.string(),
+})
+
 export type UserSession = z.infer<typeof UserSession>
 export const UserSession = z.object({
   nick: z.string(),

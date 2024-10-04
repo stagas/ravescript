@@ -1,5 +1,6 @@
 import { defer, parseCookie } from 'utils'
 import { z } from 'zod'
+import { env } from '../env.ts'
 import { match } from './match.ts'
 
 const DEBUG = false
@@ -16,6 +17,7 @@ export type Context = {
   info: Deno.ServeHandlerInfo
   url: URL
   cookies: Record<string, string>
+  origin: string
   params: Partial<Record<string, string | string[]>>
   parseForm<T extends z.AnyZodObject>(this: Context, schema: T): Promise<z.infer<T>>
   parseJson<T extends z.AnyZodObject>(this: Context, schema: T): Promise<z.infer<T>>
@@ -71,12 +73,18 @@ export function Router({ log = console.log }: { log?: typeof console.log } = {})
     let res: string | void | Response
     let response!: Response
 
+    const { origin } = new URL(
+      req.headers.get('referer') ??
+      env.WEB_URL
+    )
+
     const ctx: Context = {
       log,
       request: req,
       info: info,
       url: new URL(req.url),
       cookies: parseCookie(req.headers.get('cookie') ?? ''),
+      origin,
       params: {},
       parseForm,
       parseJson,

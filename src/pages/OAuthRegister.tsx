@@ -12,7 +12,7 @@ export function OAuthRegister() {
   using $ = Sigui()
 
   const id = new URL(location.href).searchParams.get('id')
-  if (!id) return <div>id not found</div>
+  if (!id) return <div>OAuth session id not found</div>
 
   const info = $({
     nick: undefined as undefined | string,
@@ -33,7 +33,7 @@ export function OAuthRegister() {
         .then(() => go('/oauth/complete'))
         .catch(error => info.error = error.message)
     }}>
-      <input name="nick" value={() => info.nick} spellcheck="false" autocomplete="nickname" />
+      <input name="nick" value={() => info.nick} spellcheck="false" required autocomplete="nickname" />
       <button type="submit">Register</button>
       <br />
       {() => info.error}
