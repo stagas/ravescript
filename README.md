@@ -41,7 +41,7 @@
     - [ ] Google
     - [ ] Facebook
     - [ ] X/Twitter
-- [ ] BroadcastChannel
+- [x] BroadcastChannel
 - [ ] WebSockets
 
 ### Frontend
