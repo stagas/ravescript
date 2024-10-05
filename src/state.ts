@@ -8,6 +8,7 @@ import { link } from '~/src/ui/Link.tsx'
 
 export let state = $({
   user: undefined as undefined | null | UserSession,
+
   url: link.$.url,
   get pathname() {
     return state.url.pathname
@@ -23,9 +24,9 @@ export let state = $({
     if (state.search.includes('api2')) {
       url.port = '8001'
     }
-    console.log(url.href)
     return url.href
   },
+
   channelsList: [] as Pick<z.infer<typeof Channels>, 'name'>[],
   channels: [] as UiChannel[],
   currentChannelName: null as null | string,

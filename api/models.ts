@@ -19,12 +19,14 @@ export interface Channels {
 }
 
 export const ChannelUser = z.object({
+  channelNickPair: z.string(),
   channel: z.string(),
   nick: z.string(),
   joinedAt: z.coerce.date(),
 })
 export interface ChannelUser {
   channel: string;
+  channelNickPair: string;
   joinedAt: Generated<Timestamp>;
   nick: string;
 }

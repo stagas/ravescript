@@ -12,7 +12,7 @@ import { Link } from '~/src/ui/Link.tsx'
 export function App() {
   using $ = Sigui()
 
-  whoami().then(user => state.user = user)
+  if (!state.user) whoami().then(user => state.user = user)
 
   // `info` holds our reactive data
   const info = $({

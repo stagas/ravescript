@@ -53,6 +53,8 @@ export function Chat() {
           channel.messages = [...channel.messages, msg]
 
           if (msg.type === 'join') {
+            // if user is already in channel, don't add them again
+            if (channel.users.find(u => u.nick === msg.nick)) return
             channel.users = [...channel.users, { nick: msg.nick }].sort(byNick)
           }
         }

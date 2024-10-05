@@ -14,6 +14,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 	await db.schema
 		.createTable('channelUser')
 		.ifNotExists()
+		.addColumn('channelNickPair', 'text', col => col.primaryKey())
 		.addColumn('channel', 'text', col => col.notNull().references('channels.name'))
 		.addColumn('nick', 'text', col => col.notNull().references('users.nick'))
 		.addColumn('joinedAt', 'timestamp', col => col.notNull().defaultTo(sql`now()`))

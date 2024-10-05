@@ -82,7 +82,7 @@ function Table<T extends readonly [string, Record<string, unknown>]>({
 }
 
 export function Admin() {
-  whoami().then(user => {
+  if (!state.user) whoami().then(user => {
     if (!user) location.href = '/'
     else state.user = user
   })

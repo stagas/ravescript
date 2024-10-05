@@ -1,9 +1,9 @@
-import { UiUser, UserSession } from '~/api/auth/types.ts'
+import { UiUser } from '~/api/auth/types.ts'
 
 export interface ChatChannel {
   name: string
   bus: BroadcastChannel
-  userSessions: Set<UserSession>
+  nicks: Set<string>
 }
 
 export interface UiChannel {
