@@ -39,7 +39,7 @@ class TokenNotFound extends RouteError {
 
 export async function getUserByNick(nick: string) {
   return await db
-    .selectFrom('user')
+    .selectFrom('users')
     .selectAll()
     .where('nick', '=', nick)
     .executeTakeFirst()
@@ -47,7 +47,7 @@ export async function getUserByNick(nick: string) {
 
 export async function getUserByEmail(email: string) {
   return await db
-    .selectFrom('user')
+    .selectFrom('users')
     .selectAll()
     .where('email', '=', email)
     .executeTakeFirst()
@@ -135,7 +135,7 @@ export async function register(ctx: Context, userRegister: UserRegister, oauthFi
     // user has registered with password before and is now logging in with oauth
     if (oauthField && userByEmail) {
       await db
-        .updateTable('user')
+        .updateTable('users')
         .where('email', '=', email)
         .set('emailVerified', true)
         .set(oauthField, true)
@@ -144,7 +144,7 @@ export async function register(ctx: Context, userRegister: UserRegister, oauthFi
     // user has logged in with oauth before and is now registering with password
     else if (userByEmail?.emailVerified && 'password' in userRegister && !userByEmail.password) {
       await db
-        .updateTable('user')
+        .updateTable('users')
         .where('email', '=', email)
         .set('password', hash(userRegister.password, { salt }))
         .executeTakeFirstOrThrow(UnableToRegisterError)
@@ -179,7 +179,7 @@ export async function register(ctx: Context, userRegister: UserRegister, oauthFi
     }
 
     await db
-      .insertInto('user')
+      .insertInto('users')
       .values(values)
       .executeTakeFirstOrThrow(UnableToRegisterError)
 
@@ -234,7 +234,7 @@ export async function verifyEmail(ctx: Context, token: string) {
   ctx.log(`Verify email for user ${user.nick}:`, email)
 
   await db
-    .updateTable('user')
+    .updateTable('users')
     .where('email', '=', email.value)
     .set('emailVerified', true)
     .executeTakeFirstOrThrow()
@@ -320,7 +320,7 @@ export async function changePassword(ctx: Context, token: string, password: stri
   ctx.log('Reset password for user:', nick)
 
   await db
-    .updateTable('user')
+    .updateTable('users')
     .where('nick', '=', nick.value)
     .set('password', hash(password, { salt }))
     .executeTakeFirstOrThrow()

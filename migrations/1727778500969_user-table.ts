@@ -5,7 +5,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 	// note: up migrations are mandatory. you must implement this function.
 	// For more info, see: https://kysely.dev/docs/migrations
 	await db.schema
-		.createTable('user')
+		.createTable('users')
 		.ifNotExists()
 		.addColumn('nick', 'text', col => col.primaryKey())
 		.addColumn('email', 'text', col => col.unique().notNull())
@@ -17,9 +17,9 @@ export async function up(db: Kysely<any>): Promise<void> {
 		.execute()
 
 	await db.schema
-		.createIndex('user_email_index')
+		.createIndex('users_email_index')
 		.ifNotExists()
-		.on('user')
+		.on('users')
 		.column('email')
 		.execute()
 }
@@ -29,7 +29,7 @@ export async function down(db: Kysely<any>): Promise<void> {
 	// note: down migrations are optional. you can safely delete this function.
 	// For more info, see: https://kysely.dev/docs/migrations
 	await db.schema
-		.dropTable('user')
+		.dropTable('users')
 		.ifExists()
 		.cascade()
 		.execute()

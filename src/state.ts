@@ -1,7 +1,7 @@
 import { $ } from 'sigui'
 import type { z } from 'zod'
 import type { UiChannel } from '../api/actions/chat.ts'
-import type { Channel } from '../api/models.ts'
+import type { Channels } from '../api/models.ts'
 import type { UserSession } from '../api/schemas/user.ts'
 import { link } from './ui/Link.tsx'
 
@@ -11,7 +11,7 @@ export let state = $({
   get pathname() {
     return state.url.pathname
   },
-  channelsList: [] as Pick<z.infer<typeof Channel>, 'name'>[],
+  channelsList: [] as Pick<z.infer<typeof Channels>, 'name'>[],
   channels: [] as UiChannel[],
   currentChannelName: null as null | string,
   get currentChannel() {

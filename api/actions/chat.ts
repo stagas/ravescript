@@ -38,7 +38,7 @@ export interface ChatMessage {
 actions.get.listChannels = listChannels
 export async function listChannels(_ctx: Context) {
   return await db
-    .selectFrom('channel')
+    .selectFrom('channels')
     .select(['name'])
     .execute()
 }
@@ -49,7 +49,7 @@ export async function createChannel(ctx: Context, channel: string) {
   const { nick } = session
 
   await db
-    .insertInto('channel')
+    .insertInto('channels')
     .values({ name: channel })
     .returning(['name'])
     .executeTakeFirstOrThrow()
@@ -155,14 +155,14 @@ export async function partChannel(ctx: Context, channel: string) {
 actions.post.deleteChannel = deleteChannel
 export async function deleteChannel(_ctx: Context, name: string) {
   return await db
-    .deleteFrom('channel')
+    .deleteFrom('channels')
     .where('name', '=', name)
     .executeTakeFirstOrThrow()
 }
 
 async function getChannelMessages(_ctx: Context, channel: string) {
   return await db
-    .selectFrom('message')
+    .selectFrom('messages')
     .selectAll()
     .where('channel', '=', channel)
     .orderBy('createdAt', 'asc')
@@ -204,7 +204,7 @@ export async function sendMessageToChannel(
   const { nick } = session
 
   const message = await db
-    .insertInto('message')
+    .insertInto('messages')
     .values({
       type,
       channel,

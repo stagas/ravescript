@@ -9,11 +9,11 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-export const Channel = z.object({
+export const Channels = z.object({
   name: z.string(),
   createdAt: z.coerce.date(),
 })
-export interface Channel {
+export interface Channels {
   createdAt: Generated<Timestamp>;
   name: string;
 }
@@ -29,7 +29,7 @@ export interface ChannelUser {
   nick: string;
 }
 
-export const Message = z.object({
+export const Messages = z.object({
   id: z.string(),
   channel: z.string(),
   type: z.string(),
@@ -37,7 +37,7 @@ export const Message = z.object({
   text: z.string(),
   createdAt: z.coerce.date(),
 })
-export interface Message {
+export interface Messages {
   channel: string;
   createdAt: Generated<Timestamp>;
   id: Generated<string>;
@@ -46,7 +46,7 @@ export interface Message {
   type: string;
 }
 
-export const User = z.object({
+export const Users = z.object({
   nick: z.string(),
   email: z.string(),
   emailVerified: z.boolean().nullish(),
@@ -55,7 +55,7 @@ export const User = z.object({
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
-export interface User {
+export interface Users {
   createdAt: Generated<Timestamp>;
   email: string;
   emailVerified: Generated<boolean | null>;
@@ -66,14 +66,14 @@ export interface User {
 }
 
 export const DB = z.object({
-  channel: Channel,
+  channels: Channels,
   channelUser: ChannelUser,
-  message: Message,
-  user: User,
+  messages: Messages,
+  users: Users,
 })
 export interface DB {
-  channel: Channel;
+  channels: Channels;
   channelUser: ChannelUser;
-  message: Message;
-  user: User;
+  messages: Messages;
+  users: Users;
 }
