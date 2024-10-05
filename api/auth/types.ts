@@ -1,5 +1,9 @@
 import { z } from 'zod'
 
+export interface UiUser {
+  nick: string
+}
+
 export const UserGet = z.object({
   nick: z.string()
 })

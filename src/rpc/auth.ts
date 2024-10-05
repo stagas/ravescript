@@ -1,7 +1,7 @@
-import type * as actions from '../../api/actions/login-register.ts'
-import type { UserSession } from '../../api/schemas/user.ts'
-import { rpc } from '../../lib/rpc.ts'
-import { state } from '../state.ts'
+import type * as actions from '~/api/auth/actions.ts'
+import type { UserSession } from '~/api/auth/types.ts'
+import { rpc } from '~/lib/rpc.ts'
+import { state } from '~/src/state.ts'
 
 export const whoami = rpc<typeof actions.whoami>('POST', 'whoami')
 

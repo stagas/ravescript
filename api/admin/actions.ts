@@ -1,9 +1,9 @@
-import { kv } from '../core/app.ts'
-import { Context, RouteError } from '../core/router.ts'
-import { sessions } from '../core/sessions.ts'
-import { db } from '../db.ts'
-import { actions } from '../routes/rpc.ts'
-import { UserSession } from '../schemas/user.ts'
+import { UserSession } from '~/api/auth/types.ts'
+import { kv } from '~/api/core/app.ts'
+import { Context, RouteError } from '~/api/core/router.ts'
+import { sessions } from '~/api/core/sessions.ts'
+import { db } from '~/api/db.ts'
+import { actions } from '~/api/rpc/routes.ts'
 
 export const ADMINS = ['x', 'stagas']
 
@@ -25,7 +25,7 @@ actions.get.listUsers = listUsers
 export async function listUsers(ctx: Context) {
   admins(ctx)
   return (await db
-    .selectFrom('user')
+    .selectFrom('users')
     .selectAll()
     .execute()
   ).map(item => {
@@ -38,7 +38,7 @@ actions.post.deleteUser = deleteUser
 export async function deleteUser(ctx: Context, nick: string) {
   admins(ctx)
   return await db
-    .deleteFrom('user')
+    .deleteFrom('users')
     .where('nick', '=', nick)
     .executeTakeFirstOrThrow()
     .then(() => { })
@@ -47,7 +47,7 @@ export async function deleteUser(ctx: Context, nick: string) {
 actions.post.clearUsers = clearUsers
 export async function clearUsers(ctx: Context) {
   admins(ctx)
-  await db.deleteFrom('user').execute()
+  await db.deleteFrom('users').execute()
 }
 
 actions.get.listSessions = listSessions

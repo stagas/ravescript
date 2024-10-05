@@ -1,11 +1,11 @@
 import * as media from 'jsr:@std/media-types'
 import * as path from 'jsr:@std/path'
-import { getUserByNick } from '../actions/login-register.ts'
-import { env } from '../env.ts'
-import { UserSession } from '../schemas/user.ts'
-import { kv } from './app.ts'
-import type { Handler } from './router.ts'
-import { sessions } from './sessions.ts'
+import { getUserByNick } from '~/api/auth/actions.ts'
+import { UserSession } from '~/api/auth/types.ts'
+import { kv } from "~/api/core/app.ts"
+import type { Handler } from '~/api/core/router.ts'
+import { sessions } from "~/api/core/sessions.ts"
+import { env } from '~/api/env.ts'
 
 const DEBUG = false
 

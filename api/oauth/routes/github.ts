@@ -1,11 +1,11 @@
-import { createCookie, randomHash } from 'utils'
+import { randomHash } from 'utils'
 import { z } from 'zod'
-import { getUserByEmail, loginUser } from '../../actions/login-register.ts'
-import { kv } from '../../core/app.ts'
-import { fetchJson } from '../../core/fetch-json.ts'
-import { RouteError, Router } from '../../core/router.ts'
-import { env } from '../../env.ts'
-import { OAuthState } from './common.ts'
+import { getUserByEmail, loginUser } from '~/api/auth/actions.ts'
+import { kv } from '~/api/core/app.ts'
+import { fetchJson } from '~/api/core/fetch-json.ts'
+import { RouteError, Router } from '~/api/core/router.ts'
+import { env } from '~/api/env.ts'
+import { OAuthState } from "~/api/oauth/routes/common.ts"
 
 const OAuthError = z.object({
   error: z.string(),

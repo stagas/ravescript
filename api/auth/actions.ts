@@ -1,15 +1,15 @@
 // deno-lint-ignore-file require-await
 import { hash } from 'jsr:@denorg/scrypt@4.4.4'
 import { createCookie, randomHash, timeout } from 'utils'
-import { kv } from '../core/app.ts'
-import { SALT as salt } from '../core/constants.ts'
-import { Context, RouteError } from '../core/router.ts'
-import { sendEmail } from '../core/send-email.ts'
-import { sessions } from '../core/sessions.ts'
-import { db } from '../db.ts'
-import { actions } from '../routes/rpc.ts'
-import { UserLogin, UserRegister, UserSession } from '../schemas/user.ts'
-import { ADMINS } from './admin.ts'
+import { ADMINS } from '~/api/admin/actions.ts'
+import { UserLogin, UserRegister, UserSession } from "~/api/auth/types.ts"
+import { kv } from '~/api/core/app.ts'
+import { SALT as salt } from '~/api/core/constants.ts'
+import { Context, RouteError } from '~/api/core/router.ts'
+import { sendEmail } from '~/api/core/send-email.ts'
+import { sessions } from '~/api/core/sessions.ts'
+import { db } from '~/api/db.ts'
+import { actions } from '~/api/rpc/routes.ts'
 
 // const DEBUG = true
 
@@ -39,7 +39,7 @@ class TokenNotFound extends RouteError {
 
 export async function getUserByNick(nick: string) {
   return await db
-    .selectFrom('user')
+    .selectFrom('users')
     .selectAll()
     .where('nick', '=', nick)
     .executeTakeFirst()
@@ -47,7 +47,7 @@ export async function getUserByNick(nick: string) {
 
 export async function getUserByEmail(email: string) {
   return await db
-    .selectFrom('user')
+    .selectFrom('users')
     .selectAll()
     .where('email', '=', email)
     .executeTakeFirst()
@@ -135,7 +135,7 @@ export async function register(ctx: Context, userRegister: UserRegister, oauthFi
     // user has registered with password before and is now logging in with oauth
     if (oauthField && userByEmail) {
       await db
-        .updateTable('user')
+        .updateTable('users')
         .where('email', '=', email)
         .set('emailVerified', true)
         .set(oauthField, true)
@@ -144,7 +144,7 @@ export async function register(ctx: Context, userRegister: UserRegister, oauthFi
     // user has logged in with oauth before and is now registering with password
     else if (userByEmail?.emailVerified && 'password' in userRegister && !userByEmail.password) {
       await db
-        .updateTable('user')
+        .updateTable('users')
         .where('email', '=', email)
         .set('password', hash(userRegister.password, { salt }))
         .executeTakeFirstOrThrow(UnableToRegisterError)
@@ -178,7 +178,8 @@ export async function register(ctx: Context, userRegister: UserRegister, oauthFi
       throw new RouteError(400, 'Invalid registration')
     }
 
-    await db.insertInto('user')
+    await db
+      .insertInto('users')
       .values(values)
       .executeTakeFirstOrThrow(UnableToRegisterError)
 
@@ -233,7 +234,7 @@ export async function verifyEmail(ctx: Context, token: string) {
   ctx.log(`Verify email for user ${user.nick}:`, email)
 
   await db
-    .updateTable('user')
+    .updateTable('users')
     .where('email', '=', email.value)
     .set('emailVerified', true)
     .executeTakeFirstOrThrow()
@@ -319,7 +320,7 @@ export async function changePassword(ctx: Context, token: string, password: stri
   ctx.log('Reset password for user:', nick)
 
   await db
-    .updateTable('user')
+    .updateTable('users')
     .where('nick', '=', nick.value)
     .set('password', hash(password, { salt }))
     .executeTakeFirstOrThrow()

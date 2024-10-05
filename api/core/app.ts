@@ -1,5 +1,5 @@
 import { timeMs } from 'utils'
-import { Router } from './router.ts'
+import { Router } from "~/api/core/router.ts"
 
 function log(...args: unknown[]) {
   const now = new Date()

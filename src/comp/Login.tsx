@@ -1,9 +1,9 @@
 import { Sigui } from 'sigui'
-import { UserForgot, UserLogin } from '../../api/schemas/user.ts'
-import * as actions from '../rpc/login-register.ts'
-import { parseForm } from '../util/parse-form.ts'
-import { Link } from '../ui/Link.tsx'
-import { Fieldset, Input, Label } from '../ui/index.ts'
+import { UserForgot, UserLogin } from '~/api/auth/types.ts'
+import * as actions from '~/src/rpc/auth.ts'
+import { Link } from '~/src/ui/Link.tsx'
+import { Fieldset, Input, Label } from '~/src/ui/index.ts'
+import { parseForm } from '~/src/util/parse-form.ts'
 
 export function Login() {
   using $ = Sigui()

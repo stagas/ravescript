@@ -1,5 +1,5 @@
-import { App } from '../pages/App.tsx'
-import { state } from '../state.ts'
+import { App } from '~/src/pages/App.tsx'
+import { state } from '~/src/state.ts'
 
 // @ts-ignore
 globalThis.fetch = () => {

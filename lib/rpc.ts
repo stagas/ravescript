@@ -1,5 +1,5 @@
-import type { Rpc } from '../api/routes/rpc.ts'
-import { env } from '../src/env.ts'
+import type { Rpc } from '~/api/rpc/routes.ts'
+import { state } from '~/src/state.ts'
 
 export type RpcFn<T extends (...args: never[]) => unknown> =
   T extends (first: never, ...rest: infer U) => infer V
@@ -18,8 +18,7 @@ export function rpc<T extends (...args: any[]) => any>(
   fn: string,
 ) {
   return async function (...args: unknown[]) {
-    const api = env.VITE_API_URL
-    const url = new URL(api + '/rpc')
+    const url = new URL(`${state.apiUrl}rpc`)
 
     url.searchParams.set('fn', fn)
 

@@ -1,6 +1,6 @@
 import { cleanup, hmr, mount } from 'sigui'
-import { setState, state } from '../src/state.ts'
-import { Admin } from './Admin.tsx'
+import { Admin } from '~/admin/Admin.tsx'
+import { setState, state } from '~/src/state.ts'
 
 export const start = mount('#container', target => {
   target.replaceChildren(<Admin />)

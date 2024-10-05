@@ -1,5 +1,5 @@
 import { Sigui } from 'sigui'
-import * as actions from '../rpc/login-register.ts'
+import * as actions from '~/src/rpc/auth.ts'
 
 export function VerifyEmail() {
   using $ = Sigui()

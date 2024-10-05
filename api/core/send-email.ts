@@ -1,7 +1,7 @@
-import { env } from '../env.ts'
-import { EMAIL_FROM } from './constants.ts'
+import { EMAIL_FROM } from "~/api/core/constants.ts"
+import { env } from '~/api/env.ts'
 
-const MAIL_ENABLED = true
+const MAIL_ENABLED = false
 
 type SendEmailResult = {
   ok: true,

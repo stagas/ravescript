@@ -1,8 +1,8 @@
 import { Sigui } from 'sigui'
-import { UserResetPassword } from '../../api/schemas/user.ts'
-import * as actions from '../rpc/login-register.ts'
-import { go } from '../ui/Link.tsx'
-import { parseForm } from '../util/parse-form.ts'
+import { UserResetPassword } from '~/api/auth/types.ts'
+import * as actions from '~/src/rpc/auth.ts'
+import { go } from '~/src/ui/Link.tsx'
+import { parseForm } from '~/src/util/parse-form.ts'
 
 export function ResetPassword() {
   using $ = Sigui()

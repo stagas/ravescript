@@ -1,6 +1,6 @@
 import { on } from 'utils'
-import { whoami } from '../rpc/login-register.ts'
-import { state } from '../state.ts'
+import { whoami } from '~/src/rpc/auth.ts'
+import { state } from '~/src/state.ts'
 
 export function OAuthLogin() {
   function oauthLogin(provider: string) {

@@ -1,7 +1,7 @@
 import { CamelCasePlugin, Kysely, PostgresDialect } from 'kysely'
 import Pool from 'pg-pool'
-import { env } from './env.ts'
-import { DB } from './models.ts'
+import { env } from '~/api/env.ts'
+import { DB } from '~/api/models.ts'
 
 const dialect = new PostgresDialect({
   pool: new Pool({

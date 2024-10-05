@@ -17,7 +17,9 @@ export const OpenInEditor = (): Plugin => ({
       if (req.method === 'POST') {
         const fsPath = req.url!.slice(1).replace('@fs', '')
         const homedir = os.homedir()
-        console.log(fsPath, homedir)
+
+        console.log('[open-in-editor]', fsPath)
+
         let filename: string
         if (fsPath.startsWith(homedir)) {
           filename = fsPath
@@ -33,11 +35,11 @@ export const OpenInEditor = (): Plugin => ({
           res.end((error as Error).message)
           return
         }
+
         res.writeHead(200, {
           'content-type': 'text/html'
         })
         res.end('<script>window.close()</script>')
-        return
       }
       next()
     })

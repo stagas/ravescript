@@ -1,5 +1,5 @@
 import { $ } from 'sigui'
-import type { UserSession } from '../api/schemas/user.ts'
+import type { UserSession } from '~/api/auth/types.ts'
 
 export let state = $({
   user: null as undefined | null | UserSession,

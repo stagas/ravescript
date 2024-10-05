@@ -1,10 +1,10 @@
 import { Save, Trash } from 'lucide'
 import { Sigui } from 'sigui'
-import { icon } from '../lib/icon.ts'
-import { Logout } from '../src/comp/Logout.tsx'
-import { whoami } from '../src/rpc/login-register.ts'
-import * as actions from './rpc/admin.ts'
-import { state } from './state.ts'
+import * as actions from '~/admin/rpc/admin.ts'
+import { state } from '~/admin/state.ts'
+import { icon } from '~/lib/icon.ts'
+import { Logout } from '~/src/comp/Logout.tsx'
+import { whoami } from '~/src/rpc/auth.ts'
 
 const EDITABLE = new Set(['nick', 'email'])
 
@@ -82,7 +82,7 @@ function Table<T extends readonly [string, Record<string, unknown>]>({
 }
 
 export function Admin() {
-  whoami().then(user => {
+  if (!state.user) whoami().then(user => {
     if (!user) location.href = '/'
     else state.user = user
   })

@@ -19,8 +19,13 @@
     "dev": "bun run dev:db & bun run dev:api & bun run dev:web",
     "dev:db": "docker compose up",
     "dev:api": "deno --watch --unstable-kv -A api/core/server.ts",
+    "dev:api:2": "deno --watch --unstable-kv -A api/core/server.ts --port=8001",
     "dev:web": "vite",
     "kysely": "kysely",
+    "migrate:make": "kysely migrate:make",
+    "migrate:down": "kysely migrate:down && bun run models",
+    "migrate:latest": "kysely migrate:latest && bun run models",
+    "migrate:rollback": "kysely migrate:rollback --all",
     "models": "kysely-zod-codegen --env-file=.env.development --camel-case --out-file=api/models.ts",
     "postinstall": "link-local || exit 0"
   },
@@ -38,7 +43,8 @@
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
     "utils": "github:stagas/utils",
-    "vite": "^5.4.8"
+    "vite": "^5.4.8",
+    "vite-tsconfig-paths": "^5.0.1"
   },
   "dependencies": {
     "@types/pg": "^8.11.10",

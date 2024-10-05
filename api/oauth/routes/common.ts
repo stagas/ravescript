@@ -1,8 +1,8 @@
 import { randomHash } from 'utils'
 import { z } from 'zod'
-import { kv } from '../../core/app.ts'
-import { Router } from '../../core/router.ts'
-import { env } from '../../env.ts'
+import { kv } from '~/api/core/app.ts'
+import { Router } from '~/api/core/router.ts'
+import { env } from '~/api/env.ts'
 
 const OAuthStart = z.object({
   provider: z.enum(['github']),
