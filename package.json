@@ -27,6 +27,7 @@
     "migrate:latest": "kysely migrate:latest && bun run models",
     "migrate:rollback": "kysely migrate:rollback --all",
     "models": "kysely-zod-codegen --env-file=.env.development --camel-case --out-file=api/models.ts",
+    "pwa": "pwa-assets-generator --preset minimal-2023 public/favicon.svg",
     "postinstall": "link-local || exit 0"
   },
   "devDependencies": {
