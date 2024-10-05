@@ -46,7 +46,7 @@
 
 ### Frontend
 
-- [ ] PWA
+- [x] PWA
 - [x] Vite
 - [x] Sigui
 - [x] Tailwindcss
