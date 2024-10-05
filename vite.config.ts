@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { defineConfig, loadEnv } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 import Paths from 'vite-tsconfig-paths'
 import { OpenInEditor } from './vendor/vite-plugin-open-in-editor.ts'
 import { ViteUsing } from './vendor/vite-plugin-using.ts'
@@ -36,6 +37,56 @@ export default ({ mode }) => {
       Paths(),
       ViteUsing(),
       OpenInEditor(),
+      VitePWA({
+        strategies: 'injectManifest',
+        srcDir: 'src/service-worker',
+        filename: 'sw.ts',
+        registerType: 'autoUpdate',
+        injectRegister: false,
+
+        pwaAssets: {
+          disabled: false,
+          config: true,
+        },
+
+        manifest: {
+          id: '/',
+          name: 'Vasi',
+          short_name: 'Vasi',
+          description: 'Vasi is a full-stack webapp base template using Deno and Vite.',
+          theme_color: '#000000',
+
+          icons: [{
+            src: 'pwa-64x64.png',
+            sizes: '64x64',
+            type: 'image/png',
+          }, {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          }, {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          }, {
+            src: 'maskable-icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          }],
+        },
+
+        injectManifest: {
+          globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+        },
+
+        devOptions: {
+          enabled: true,
+          navigateFallback: 'index.html',
+          suppressWarnings: true,
+          type: 'module',
+        },
+      })
     ],
     build: {
       rollupOptions: {
