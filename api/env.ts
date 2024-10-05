@@ -30,5 +30,7 @@ export const env = Env.parse(Object.assign({
   OAUTH_GITHUB_CLIENT_SECRET: Deno.env.get('OAUTH_GITHUB_CLIENT_SECRET')!,
 
 } satisfies z.infer<typeof Env>, await load({
-  envPath: IS_DEV ? '.env.development' : '.env'
+  envPath: IS_DEV
+    ? '.env.development'
+    : '.env.production'
 })))

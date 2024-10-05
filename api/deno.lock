@@ -6,6 +6,7 @@
       "jsr:@std/assert@0.222.1": "jsr:@std/assert@0.222.1",
       "jsr:@std/assert@^0.222.1": "jsr:@std/assert@0.222.1",
       "jsr:@std/assert@^1.0.6": "jsr:@std/assert@1.0.6",
+      "jsr:@std/cli": "jsr:@std/cli@1.0.6",
       "jsr:@std/crypto@0.222.1": "jsr:@std/crypto@0.222.1",
       "jsr:@std/encoding@0.222.1": "jsr:@std/encoding@0.222.1",
       "jsr:@std/encoding@^0.222.1": "jsr:@std/encoding@0.222.1",
@@ -38,6 +39,9 @@
         "dependencies": [
           "jsr:@std/internal@^1.0.4"
         ]
+      },
+      "@std/cli@1.0.6": {
+        "integrity": "d22d8b38c66c666d7ad1f2a66c5b122da1704f985d3c47f01129f05abb6c5d3d"
       },
       "@std/crypto@0.222.1": {
         "integrity": "d5b9e6c704fadbcc384cd42c0b603ad4aea710ece0ff26426602681b64fd237c",

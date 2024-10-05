@@ -178,7 +178,8 @@ export async function register(ctx: Context, userRegister: UserRegister, oauthFi
       throw new RouteError(400, 'Invalid registration')
     }
 
-    await db.insertInto('user')
+    await db
+      .insertInto('user')
       .values(values)
       .executeTakeFirstOrThrow(UnableToRegisterError)
 

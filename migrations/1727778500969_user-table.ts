@@ -7,27 +7,18 @@ export async function up(db: Kysely<any>): Promise<void> {
 	await db.schema
 		.createTable('user')
 		.ifNotExists()
-		.addColumn('nick', 'text', col =>
-			col.primaryKey()
-		)
-		.addColumn('email', 'text', col =>
-			col.unique().notNull()
-		)
-		.addColumn('emailVerified', 'boolean', col =>
-			col.defaultTo(false)
-		)
+		.addColumn('nick', 'text', col => col.primaryKey())
+		.addColumn('email', 'text', col => col.unique().notNull())
+		.addColumn('emailVerified', 'boolean', col => col.defaultTo(false))
 		.addColumn('password', 'text')
 		.addColumn('oauthGithub', 'boolean')
-		.addColumn('createdAt', 'timestamp', (col) =>
-			col.defaultTo(sql`now()`).notNull()
-		)
-		.addColumn('updatedAt', 'timestamp', (col) =>
-			col.defaultTo(sql`now()`).notNull()
-		)
+		.addColumn('createdAt', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
+		.addColumn('updatedAt', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
 		.execute()
 
 	await db.schema
 		.createIndex('user_email_index')
+		.ifNotExists()
 		.on('user')
 		.column('email')
 		.execute()
@@ -39,6 +30,7 @@ export async function down(db: Kysely<any>): Promise<void> {
 	// For more info, see: https://kysely.dev/docs/migrations
 	await db.schema
 		.dropTable('user')
+		.ifExists()
 		.cascade()
 		.execute()
 }

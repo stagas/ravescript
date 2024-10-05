@@ -24,7 +24,10 @@ export function Home() {
         <div class="flex gap-2">
           <span>Hello {state.user.nick}</span>
           <Logout />
+
           {state.user.isAdmin && <a href="/admin/">Admin</a>}
+
+          <Link href="/chat">Chat</Link>
           <Link href="/about">About</Link>
         </div>
     }

@@ -8,7 +8,7 @@ const DATABASE_URL = process.env.DATABASE_URL
 dotenv.config({
 	override: true,
 	path: process.env.NODE_ENV === 'production'
-		? '.env'
+		? '.env.production'
 		: '.env.development'
 })
 
