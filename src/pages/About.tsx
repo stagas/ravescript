@@ -1,4 +1,4 @@
-import { Link } from '../ui/Link.tsx'
+import { Link } from '~/src/ui/Link.tsx'
 
 export function About() {
   return <div>

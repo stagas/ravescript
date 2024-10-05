@@ -1,8 +1,13 @@
-import { Router } from '../core/router.ts'
-import { getSession } from '../core/sessions.ts'
-import { UserSession } from '../schemas/user.ts'
+import { Router } from '~/api/core/router.ts'
+import { getSession } from '~/api/core/sessions.ts'
 
-export const chatSubs = new Map<UserSession, ChatStream>()
+export const subs = new Map<string, ChatStream>()
+
+export function broadcast(data: unknown) {
+  for (const stream of subs.values()) {
+    stream.send(data)
+  }
+}
 
 class ChatStream {
   constructor(public controller: ReadableStreamDefaultController<string>) { }
@@ -18,16 +23,16 @@ class ChatStream {
 
 export function mount(app: Router) {
   app.get('/chat/events', [ctx => {
-    const session = getSession(ctx)
+    const { nick } = getSession(ctx)
 
     const stream = new ReadableStream({
       start(controller) {
         const stream = new ChatStream(controller)
-        chatSubs.set(session, stream)
-        stream.send({ type: 'started', nick: session.nick })
+        subs.set(nick, stream)
+        stream.send({ type: 'started', nick })
       },
       cancel() {
-        chatSubs.delete(session)
+        subs.delete(nick)
       },
     })
 

@@ -1,9 +1,9 @@
-import { kv } from '../core/app.ts'
-import { Context, RouteError } from '../core/router.ts'
-import { sessions } from '../core/sessions.ts'
-import { db } from '../db.ts'
-import { actions } from '../routes/rpc.ts'
-import { UserSession } from '../schemas/user.ts'
+import { UserSession } from '~/api/auth/types.ts'
+import { kv } from '~/api/core/app.ts'
+import { Context, RouteError } from '~/api/core/router.ts'
+import { sessions } from '~/api/core/sessions.ts'
+import { db } from '~/api/db.ts'
+import { actions } from '~/api/rpc/routes.ts'
 
 export const ADMINS = ['x', 'stagas']
 

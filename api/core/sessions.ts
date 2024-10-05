@@ -1,5 +1,5 @@
-import { RouteError, type Context } from './router.ts'
-import type { UserSession } from '../schemas/user.ts'
+import type { UserSession } from '~/api/auth/types.ts'
+import { RouteError, type Context } from "~/api/core/router.ts"
 
 export const sessions = new WeakMap<Context, UserSession>()
 

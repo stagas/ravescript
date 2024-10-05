@@ -1,15 +1,15 @@
 // deno-lint-ignore-file require-await
 import { hash } from 'jsr:@denorg/scrypt@4.4.4'
 import { createCookie, randomHash, timeout } from 'utils'
-import { kv } from '../core/app.ts'
-import { SALT as salt } from '../core/constants.ts'
-import { Context, RouteError } from '../core/router.ts'
-import { sendEmail } from '../core/send-email.ts'
-import { sessions } from '../core/sessions.ts'
-import { db } from '../db.ts'
-import { actions } from '../routes/rpc.ts'
-import { UserLogin, UserRegister, UserSession } from '../schemas/user.ts'
-import { ADMINS } from './admin.ts'
+import { ADMINS } from '~/api/admin/actions.ts'
+import { UserLogin, UserRegister, UserSession } from "~/api/auth/types.ts"
+import { kv } from '~/api/core/app.ts'
+import { SALT as salt } from '~/api/core/constants.ts'
+import { Context, RouteError } from '~/api/core/router.ts'
+import { sendEmail } from '~/api/core/send-email.ts'
+import { sessions } from '~/api/core/sessions.ts'
+import { db } from '~/api/db.ts'
+import { actions } from '~/api/rpc/routes.ts'
 
 // const DEBUG = true
 

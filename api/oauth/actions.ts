@@ -1,8 +1,8 @@
-import { kv } from '../core/app.ts'
-import { Context, RouteError } from '../core/router.ts'
-import { OAuthSession } from '../routes/oauth/github.ts'
-import { actions } from '../routes/rpc.ts'
-import * as loginRegisterActions from './login-register.ts'
+import * as authActions from '~/api/auth/actions.ts'
+import { kv } from '~/api/core/app.ts'
+import { Context, RouteError } from '~/api/core/router.ts'
+import { OAuthSession } from "~/api/oauth/routes/github.ts"
+import { actions } from '~/api/rpc/routes.ts'
 
 function pascalCase(s: string) {
   return s.replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase())
@@ -22,7 +22,7 @@ export async function registerOAuth(ctx: Context, id: string, nick: string) {
   if (!entry.value) throw new RouteError(404, 'OAuth session not found')
   const session = OAuthSession.parse(entry.value)
   const oauthField = `oauth${pascalCase(session.state.provider)}` as 'oauthGithub'
-  return await loginRegisterActions.register(ctx, {
+  return await authActions.register(ctx, {
     nick,
     email: session.email,
     // @ts-ignore ts has issues with dynamic keys

@@ -1,39 +1,14 @@
-import { defer } from 'utils'
-import { Context } from '../core/router.ts'
-import { getSession } from '../core/sessions.ts'
-import { db } from '../db.ts'
-import { chatSubs } from '../routes/chat.ts'
-import { actions } from '../routes/rpc.ts'
-import { UiUser, UserSession } from '../schemas/user.ts'
+import { UserSession } from '~/api/auth/types.ts'
+import { bus } from "~/api/chat/bus.ts"
+import { broadcast, subs } from "~/api/chat/routes.ts"
+import { ChatChannel, ChatMessage, ChatMessageType, UiChannel } from "~/api/chat/types.ts"
+import { createBus } from '~/api/core/create-bus.ts'
+import { Context } from '~/api/core/router.ts'
+import { getSession } from '~/api/core/sessions.ts'
+import { db } from '~/api/db.ts'
+import { actions } from '~/api/rpc/routes.ts'
 
-const chatBus = new BroadcastChannel('chatBus')
 const chatChannels = new Map<string, ChatChannel>()
-
-interface ChatChannel {
-  name: string
-  bus: BroadcastChannel
-  userSessions: Set<UserSession>
-}
-
-export interface UiChannel {
-  name: string
-  users: UiUser[]
-  messages: ChatMessage[]
-}
-
-type ChatMessageType =
-  | 'started'
-  | 'createChannel'
-  | 'message'
-  | 'join'
-  | 'part'
-
-export interface ChatMessage {
-  type: ChatMessageType
-  channel?: string
-  nick: string
-  text: string
-}
 
 actions.get.listChannels = listChannels
 export async function listChannels(_ctx: Context) {
@@ -57,31 +32,15 @@ export async function createChannel(ctx: Context, channel: string) {
   ensureChannel(channel, session)
 
   const msg: ChatMessage = { type: 'createChannel', nick, text: channel }
-  chatBus.postMessage(msg)
-  for (const stream of chatSubs.values()) stream.send(msg)
+  bus.postMessage(msg)
+  broadcast(msg)
 
   await joinChannel(ctx, channel)
 }
 
 function ensureChannel(name: string, session: UserSession) {
-  let bus: BroadcastChannel
-  using _ = defer(() => {
-    bus.addEventListener('message', ({ data }) => {
-      console.log('broadcast to', name, data)
-      for (const userSession of userSessions) {
-        // if (nick === userSession.nick) continue
-        for (const [sess, sub] of chatSubs) {
-          if (sess.nick === userSession.nick) {
-            sub.send(data)
-            break
-          }
-        }
-      }
-    })
-  })
   if (chatChannels.has(name)) {
     const channel = chatChannels.get(name)!
-    bus = channel.bus
     // remove session for nick
     for (const userSession of channel.userSessions) {
       if (userSession.nick === session.nick) {
@@ -90,15 +49,25 @@ function ensureChannel(name: string, session: UserSession) {
       }
     }
     channel.userSessions.add(session)
-    console.log('reused', name, session.nick)
     return channel
   }
   // const { nick } = session
   const userSessions = new Set([session])
-  bus = new BroadcastChannel(`chatChannel:${name}`)
+  const bus = createBus(['chat', 'channel', name])
+  bus.onmessage = ({ data }) => {
+    // console.log('received', name, data)
+    for (const userSession of userSessions) {
+      // if (nick === userSession.nick) continue
+      for (const [nick, sub] of subs) {
+        if (nick === userSession.nick) {
+          sub.send(data)
+          break
+        }
+      }
+    }
+  }
   const channel: ChatChannel = { name, bus, userSessions }
   chatChannels.set(name, channel)
-  console.log('created', channel.name, session.nick)
   return channel
 }
 
@@ -125,6 +94,7 @@ export async function joinChannel(ctx: Context, channel: string) {
     .executeTakeFirstOrThrow()
 
   sendMessageToChannel(ctx, 'join', channel)
+
   return join
 }
 
@@ -221,12 +191,12 @@ export async function sendMessageToChannel(
     nick,
     text,
   }
-  console.log('post', msg, chatChannel.userSessions)
+
   chatChannel.bus.postMessage(msg)
   for (const userSession of chatChannel.userSessions) {
     if (userSession.nick === session.nick) continue
-    for (const [sess, sub] of chatSubs) {
-      if (sess.nick === userSession.nick) {
+    for (const [nick, sub] of subs) {
+      if (nick === userSession.nick) {
         sub.send(msg)
         break
       }

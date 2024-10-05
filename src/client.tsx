@@ -1,6 +1,6 @@
 import { cleanup, hmr, mount } from 'sigui'
-import { App } from './pages/App.tsx'
-import { setState, state } from './state.ts'
+import { App } from '~/src/pages/App.tsx'
+import { setState, state } from '~/src/state.ts'
 
 export const start = mount('#container', target => {
   target.replaceChildren(<App />)

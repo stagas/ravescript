@@ -1,5 +1,5 @@
-import type * as actions from '../../api/actions/chat.ts'
-import { rpc } from '../../lib/rpc.ts'
+import type * as actions from '~/api/chat/actions.ts'
+import { rpc } from '~/lib/rpc.ts'
 
 export const listChannels = rpc<typeof actions.listChannels>('GET', 'listChannels')
 export const createChannel = rpc<typeof actions.createChannel>('POST', 'createChannel')

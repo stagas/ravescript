@@ -1,8 +1,8 @@
 import { Sigui } from 'sigui'
 import { z } from 'zod'
-import * as oauth from '../rpc/oauth.ts'
-import { go } from '../ui/Link.tsx'
-import { parseForm } from '../util/parse-form.ts'
+import * as oauth from '~/src/rpc/oauth.ts'
+import { go } from '~/src/ui/Link.tsx'
+import { parseForm } from '~/src/util/parse-form.ts'
 
 const formSchema = z.object({
   nick: z.string(),

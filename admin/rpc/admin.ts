@@ -1,5 +1,5 @@
-import type * as actions from '../../api/actions/admin.ts'
-import { rpc } from '../../lib/rpc.ts'
+import type * as actions from '~/api/admin/actions.ts'
+import { rpc } from '~/lib/rpc.ts'
 
 export const listUsers = rpc<typeof actions.listUsers>('GET', 'listUsers')
 export const deleteUser = rpc<typeof actions.deleteUser>('POST', 'deleteUser')

@@ -1,15 +1,30 @@
 import { $ } from 'sigui'
 import type { z } from 'zod'
-import type { UiChannel } from '../api/actions/chat.ts'
-import type { Channels } from '../api/models.ts'
-import type { UserSession } from '../api/schemas/user.ts'
-import { link } from './ui/Link.tsx'
+import type { UserSession } from '~/api/auth/types.ts'
+import type { UiChannel } from '~/api/chat/types.ts'
+import type { Channels } from '~/api/models.ts'
+import { env } from '~/src/env.ts'
+import { link } from '~/src/ui/Link.tsx'
 
 export let state = $({
   user: undefined as undefined | null | UserSession,
   url: link.$.url,
   get pathname() {
     return state.url.pathname
+  },
+  get search() {
+    return state.url.search
+  },
+  get searchParams() {
+    return new URLSearchParams(state.search)
+  },
+  get apiUrl() {
+    const url = new URL(env.VITE_API_URL)
+    if (state.search.includes('api2')) {
+      url.port = '8001'
+    }
+    console.log(url.href)
+    return url.href
   },
   channelsList: [] as Pick<z.infer<typeof Channels>, 'name'>[],
   channels: [] as UiChannel[],

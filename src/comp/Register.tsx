@@ -1,8 +1,8 @@
 import { Sigui } from 'sigui'
-import { UserRegister } from '../../api/schemas/user.ts'
-import * as actions from '../rpc/login-register.ts'
-import { Fieldset, Input, Label } from '../ui/index.ts'
-import { parseForm } from '../util/parse-form.ts'
+import { UserRegister } from '~/api/auth/types.ts'
+import * as actions from '~/src/rpc/auth.ts'
+import { Fieldset, Input, Label } from '~/src/ui/index.ts'
+import { parseForm } from '~/src/util/parse-form.ts'
 
 export function Register() {
   using $ = Sigui()

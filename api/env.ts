@@ -1,6 +1,6 @@
 import { load } from 'https://deno.land/std@0.224.0/dotenv/mod.ts'
 import { z } from 'zod'
-import { IS_DEV } from './core/constants.ts'
+import { IS_DEV } from '~/api/core/constants.ts'
 
 const Env = z.object({
   DENO_DEPLOYMENT_ID: z.string().optional(),

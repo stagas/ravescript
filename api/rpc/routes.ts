@@ -1,7 +1,7 @@
 import { defer } from 'utils'
 import { z } from 'zod'
-import { RouteError, type Router } from '../core/router.ts'
-import { sessions } from '../core/sessions.ts'
+import { RouteError, type Router } from '~/api/core/router.ts'
+import { sessions } from '~/api/core/sessions.ts'
 
 const DEBUG = false
 

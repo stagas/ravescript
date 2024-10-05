@@ -14,7 +14,7 @@ const run = debounce(100, async () => {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         'test',
-        'api',
+        '~/api',
         '--no-lock',
         '--coverage=coverage/deno',
       ],

@@ -1,5 +1,5 @@
-import { logout } from '../rpc/login-register.ts'
-import { state } from '../state.ts'
+import { logout } from '~/src/rpc/auth.ts'
+import { state } from '~/src/state.ts'
 
 export function Logout({ then }: { then?: () => void }) {
   return <button onclick={() =>

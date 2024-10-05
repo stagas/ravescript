@@ -1,14 +1,13 @@
 import { Sigui } from 'sigui'
-import { ResetPassword } from '../comp/ResetPassword.tsx'
-import { VerifyEmail } from '../comp/VerifyEmail.tsx'
-import { env } from '../env.ts'
-import { whoami } from '../rpc/login-register.ts'
-import { state } from '../state.ts'
-import { About } from './About.tsx'
-import { Chat } from './Chat.tsx'
-import { Home } from './Home.tsx'
-import { OAuthRegister } from './OAuthRegister.tsx'
-import { Link } from '../ui/Link.tsx'
+import { ResetPassword } from '~/src/comp/ResetPassword.tsx'
+import { VerifyEmail } from '~/src/comp/VerifyEmail.tsx'
+import { About } from '~/src/pages/About.tsx'
+import { Chat } from '~/src/pages/Chat/Chat.tsx'
+import { Home } from '~/src/pages/Home.tsx'
+import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
+import { whoami } from '~/src/rpc/auth.ts'
+import { state } from '~/src/state.ts'
+import { Link } from '~/src/ui/Link.tsx'
 
 export function App() {
   using $ = Sigui()
@@ -52,7 +51,7 @@ export function App() {
 
           case '/oauth/popup': {
             const provider = state.url.searchParams.get('provider')!
-            const url = new URL(`${env.VITE_API_URL}/oauth/start`)
+            const url = new URL(`${state.apiUrl}oauth/start`)
             url.searchParams.set('provider', provider)
             location.href = url.href
             return <div />

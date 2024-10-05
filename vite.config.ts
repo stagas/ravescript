@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { defineConfig, loadEnv } from 'vite'
+import Paths from 'vite-tsconfig-paths'
 import { OpenInEditor } from './vendor/vite-plugin-open-in-editor.ts'
 import { ViteUsing } from './vendor/vite-plugin-using.ts'
 
@@ -32,6 +33,7 @@ export default ({ mode }) => {
       treeShaking: true
     },
     plugins: [
+      Paths(),
       ViteUsing(),
       OpenInEditor(),
     ],
