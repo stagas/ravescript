@@ -62,11 +62,14 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage/lcov.info
 
+      - name: Copy .env to .env.production
+        run: cp .env .env.production
+
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
           project: vasi
           root: ""
-          include: .env,api,dist
+          include: .env.production,api,dist
           entrypoint: ./api/core/server.ts
           import-map: ./api/import-map.production.json
