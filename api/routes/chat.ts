@@ -17,7 +17,7 @@ class ChatStream {
 }
 
 export function mount(app: Router) {
-  app.get('/chat', [ctx => {
+  app.get('/chat/events', [ctx => {
     const session = getSession(ctx)
 
     const stream = new ReadableStream({

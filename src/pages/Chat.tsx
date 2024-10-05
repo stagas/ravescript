@@ -183,7 +183,7 @@ export function Chat() {
     state.channelsList = channels.map(c => $(c)).sort(byName)
   )
 
-  const chat = new EventSource(`${env.VITE_API_URL}/chat`, {
+  const chat = new EventSource(`${env.VITE_API_URL}/chat/events`, {
     withCredentials: true
   })
   chat.onmessage = ({ data }) => {
