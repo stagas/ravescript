@@ -50,6 +50,7 @@ export default ({ mode }) => {
         },
 
         manifest: {
+          id: '/',
           name: 'Vasi',
           short_name: 'Vasi',
           description: 'Vasi is a full-stack webapp base template using Deno and Vite.',
