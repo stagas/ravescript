@@ -52,7 +52,7 @@ jobs:
           node-version: 22.x
 
       - name: Install dependencies
-        run: npm install --ignore-scripts
+        run: npm install --ignore-scripts --force
 
       - name: Build
         run: bun run build
