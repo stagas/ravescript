@@ -136,6 +136,10 @@ export default ({ mode }) => {
     worker: {
       format: 'es',
     },
+    define: {
+      // strip out import.meta.vitest blocks
+      'import.meta.vitest': 'undefined',
+    },
     plugins,
     build: {
       target: 'esnext',
