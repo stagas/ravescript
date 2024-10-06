@@ -55,12 +55,15 @@
 - [x] Sigui
 - [x] Tailwindcss
 - [x] Icons (Lucide)
-- [ ] Fonts
+- [x] Fonts
+- [ ] Canvas
+  - [ ] Wait for Fonts
 - [x] AssemblyScript
-- [ ] WebGL
-- [ ] WebRTC
 - [x] WebAudio
   - [x] Wasm AudioWorklet
+- [ ] WebGL
+- [ ] WebRTC
+- [ ] QRCode
 - [x] Testing
   - [x] Coverage
   - [x] Unit

@@ -1,4 +1,6 @@
 import { Sigui } from 'sigui'
+import { Header } from '~/src/comp/Header.tsx'
+import { Logout } from '~/src/comp/Logout.tsx'
 import { ResetPassword } from '~/src/comp/ResetPassword.tsx'
 import { VerifyEmail } from '~/src/comp/VerifyEmail.tsx'
 import { About } from '~/src/pages/About.tsx'
@@ -8,7 +10,7 @@ import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
 import { whoami } from '~/src/rpc/auth.ts'
 import { state } from '~/src/state.ts'
-import { Link } from '~/src/ui/Link.tsx'
+import { go, Link } from '~/src/ui/Link.tsx'
 
 export function App() {
   using $ = Sigui()
@@ -24,10 +26,17 @@ export function App() {
     onmouseenter={() => info.bg = '#433'}
     onmouseleave={() => info.bg = 'transparent'}
   >
-    <header class="h-10 p-3.5 bg-black flex items-center gap-2">
-      <Link href="/">home</Link>
-      <span>{() => state.url.pathname}</span>
-    </header>
+    <Header>
+      <div class="flex items-center gap-2">
+        <Link href="/">home</Link>
+        <span>{() => state.url.pathname}</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <Link href={() => `/${state.user?.nick ?? ''}`}>{() => state.user?.nick}</Link>
+        <Logout then={() => go('/')} />
+      </div>
+    </Header>
 
     <div class="p-3">
       {() => {

@@ -7,6 +7,9 @@ export default {
     './admin/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
+    fontFamily: {
+      sans: ['"Fustat"', 'sans-serif'],
+    },
     extend: {},
   },
   plugins: [],

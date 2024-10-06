@@ -1,5 +1,4 @@
 import { Login } from '~/src/comp/Login.tsx'
-import { Logout } from '~/src/comp/Logout.tsx'
 import { OAuthLogin } from '~/src/comp/OAuthLogin.tsx'
 import { Register } from '~/src/comp/Register.tsx'
 import { state } from '~/src/state.ts'
@@ -22,11 +21,7 @@ export function Home() {
         </div>
         :
         <div class="flex gap-2">
-          <span>Hello {state.user.nick}</span>
-          <Logout />
-
           {state.user.isAdmin && <a href="/admin/">Admin</a>}
-
           <Link href="/chat">Chat</Link>
           <Link href="/asc">AssemblyScript</Link>
           <Link href="/about">About</Link>
