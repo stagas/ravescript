@@ -3,6 +3,7 @@ import { Sigui } from 'sigui'
 import * as actions from '~/admin/rpc/admin.ts'
 import { state } from '~/admin/state.ts'
 import { icon } from '~/lib/icon.ts'
+import { Header } from '~/src/comp/Header.tsx'
 import { Logout } from '~/src/comp/Logout.tsx'
 import { whoami } from '~/src/rpc/auth.ts'
 
@@ -87,23 +88,35 @@ export function Admin() {
     else state.user = user
   })
 
-  return <div class="p-2">
-    Welcome {() => state.user?.nick} <Logout then={() => location.href = '/'} /> <a href="/">Home</a>
+  return <div>
+    <Header>
+      <div class="flex items-center gap-2">
+        <a href="/">home</a>
+        <span>{() => state.url.pathname}</span>
+      </div>
 
-    {() =>
-      <Table
-        name="Users"
-        list={actions.listUsers}
-        del={actions.deleteUser}
-        clear={actions.clearUsers}
-      />}
+      <div class="flex items-center gap-2">
+        <span>{state.user?.nick}</span>
+        <Logout then={() => location.href = '/'} />
+      </div>
+    </Header>
 
-    {() =>
-      <Table
-        name="Sessions"
-        list={actions.listSessions}
-        del={actions.deleteSession}
-        clear={actions.clearSessions}
-      />}
+    <div class="p-3">
+      {() =>
+        <Table
+          name="Users"
+          list={actions.listUsers}
+          del={actions.deleteUser}
+          clear={actions.clearUsers}
+        />}
+
+      {() =>
+        <Table
+          name="Sessions"
+          list={actions.listSessions}
+          del={actions.deleteSession}
+          clear={actions.clearSessions}
+        />}
+    </div>
   </div>
 }

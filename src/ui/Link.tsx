@@ -18,12 +18,12 @@ export function Link({
   onclick = go,
   children
 }: {
-  href?: string,
+  href?: string | (() => string),
   onclick?: (href: string) => unknown,
   children?: any
 }) {
   return <a href={href} onclick={ev => {
     ev.preventDefault()
-    onclick(href)
+    onclick(typeof href === 'function' ? href() : href)
   }}>{children}</a>
 }
