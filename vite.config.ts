@@ -109,6 +109,16 @@ export default ({ mode }) => {
         '--transform', './vendor/as-transform-unroll.js',
       ]
     }),
+    ViteAssemblyScript({
+      configFile: 'asconfig-pkg-nort.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/pkg',
+      srcEntryFile: 'as/assembly/pkg/index.ts',
+      mapFile: './as/build/pkg-nort.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+      ]
+    }),
   ]
 
   return defineConfig({
@@ -125,10 +135,10 @@ export default ({ mode }) => {
     esbuild: {
       jsx: 'automatic',
       target: 'esnext',
-      treeShaking: true
+      treeShaking: true,
     },
     worker: {
-      format: 'es'
+      format: 'es',
     },
     plugins,
     build: {

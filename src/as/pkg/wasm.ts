@@ -9,7 +9,7 @@ const { log } = console
 let mod: WebAssembly.Module
 
 if (import.meta.env && import.meta.env.MODE !== 'production') {
-  const hex = (await import('../../as/build/pkg.wasm?raw-hex')).default
+  const hex = (await import('~/as/build/pkg.wasm?raw-hex')).default
   const fromHexString = (hexString: string) => Uint8Array.from(
     hexString.match(/.{1,2}/g)!.map(byte =>
       parseInt(byte, 16)

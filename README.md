@@ -49,14 +49,18 @@
 
 - [x] PWA
 - [x] Vite
-  - [ ] COOP/COEP
-  - [ ] Workers
+  - [x] COOP/COEP
   - [x] Binary/Hex loader ?raw-hex
+  - [x] Worker import
 - [x] Sigui
 - [x] Tailwindcss
 - [x] Icons (Lucide)
 - [ ] Fonts
 - [x] AssemblyScript
+- [ ] WebGL
+- [ ] WebRTC
+- [x] WebAudio
+  - [x] Wasm AudioWorklet
 - [x] Testing
   - [x] Coverage
   - [x] Unit

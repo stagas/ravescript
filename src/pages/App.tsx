@@ -15,7 +15,6 @@ export function App() {
 
   if (!state.user) whoami().then(user => state.user = user)
 
-  // `info` holds our reactive data
   const info = $({
     bg: 'transparent',
   })
