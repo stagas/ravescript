@@ -21,7 +21,7 @@
 
 - [x] Deno
 - [x] Logging (stdout)
-- [ ] COOP/COEP
+- [x] COOP/COEP
 - [x] Testing
   - [x] Coverage
   - [x] Unit
