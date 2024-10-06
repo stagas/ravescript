@@ -1,3 +1,4 @@
+import { encodeData, generateSVGQRCode } from 'easygenqr'
 import { Sigui } from 'sigui'
 import { Header } from '~/src/comp/Header.tsx'
 import { Logout } from '~/src/comp/Logout.tsx'
@@ -9,6 +10,7 @@ import { Canvas } from '~/src/pages/Canvas'
 import { Chat } from '~/src/pages/Chat/Chat.tsx'
 import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
+import { QrCode } from '~/src/pages/QrCode.tsx'
 import { whoami } from '~/src/rpc/auth.ts'
 import { state } from '~/src/state.ts'
 import { go, Link } from '~/src/ui/Link.tsx'
@@ -20,6 +22,7 @@ export function App() {
 
   const info = $({
     bg: 'transparent',
+
     canvasWidth: 500,
     canvasHeight: 500,
   })
@@ -60,6 +63,9 @@ export function App() {
 
           case '/asc':
             return <AssemblyScript />
+
+          case '/qrcode':
+            return <QrCode />
 
           case '/about':
             return <About />
