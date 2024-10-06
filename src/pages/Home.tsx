@@ -25,6 +25,7 @@ export function Home() {
           <Link href="/chat">Chat</Link>
           <Link href="/canvas">Canvas</Link>
           <Link href="/asc">AssemblyScript</Link>
+          <Link href="/qrcode">QrCode</Link>
           <Link href="/about">About</Link>
         </div>
     }
