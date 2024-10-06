@@ -46,6 +46,7 @@
     "tailwindcss": "^3.4.13",
     "utils": "github:stagas/utils",
     "vite": "^5.4.8",
+    "vite-plugin-externalize-dependencies": "^1.0.1",
     "vite-plugin-pwa": "^0.20.0",
     "vite-tsconfig-paths": "^5.0.1",
     "workbox-core": "^7.1.0",

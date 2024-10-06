@@ -21,6 +21,7 @@
 
 - [x] Deno
 - [x] Logging (stdout)
+- [ ] COOP/COEP
 - [x] Testing
   - [x] Coverage
   - [x] Unit
@@ -48,6 +49,9 @@
 
 - [x] PWA
 - [x] Vite
+  - [ ] COOP/COEP
+  - [ ] Workers
+  - [ ] Binary/Hex loader ?raw-hex
 - [x] Sigui
 - [x] Tailwindcss
 - [ ] AssemblyScript
