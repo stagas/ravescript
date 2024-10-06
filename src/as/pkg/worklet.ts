@@ -110,7 +110,7 @@ export class PlayerProcessor extends AudioWorkletProcessor {
 
   constructor(public options: { processorOptions: PlayerProcessorOptions }) {
     super()
-    this.player.init(this).then(() => console.log('[worklet] ready'))
+    this.player.init(this).then(() => console.log('[pkg-worklet] ready'))
   }
 
   process(inputs: Float32Array[][], outputs: Float32Array[][]) {

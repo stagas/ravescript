@@ -71,7 +71,10 @@ export function App() {
             // Hack: triggering a localStorage write we listen to
             // window.onstorage and we can close the popup automatically.
             localStorage.oauth = 'complete' + Math.random()
-            return <div>Logging in...</div>
+            return <div>
+              Successfully logged in.
+              You may now <button onclick={() => window.close()}>close this window</button>.
+            </div>
         }
       }}
     </div>

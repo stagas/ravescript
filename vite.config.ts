@@ -26,16 +26,16 @@ export default ({ mode }) => {
     cert: fs.readFileSync(path.join(homedir, '.ssl-certs', 'devito.test.pem')),
   } : undefined
 
-  const sharedPlugins: () => Plugins = () => [
+  const buildPlugins: Plugins = [
     ViteUsing(),
     HexLoader(),
     TsConfigPaths(),
   ]
 
-  const buildPlugins: Plugins = [
-    ...sharedPlugins(),
+  const plugins: Plugins = [
+    ...buildPlugins,
     BundleUrl({
-      plugins: sharedPlugins()
+      plugins: buildPlugins
     }),
     VitePWA({
       strategies: 'injectManifest',
@@ -86,11 +86,7 @@ export default ({ mode }) => {
         suppressWarnings: true,
         type: 'module',
       },
-    })
-  ]
-
-  const plugins: Plugins = [
-    ...buildPlugins,
+    }),
     OpenInEditor(),
     ViteCoopCoep(),
     externalize({

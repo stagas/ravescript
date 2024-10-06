@@ -14,7 +14,7 @@ export class Player {
 
     for (; pos < end; pos++) {
       offset = pos << 2
-      sample = rand() as f32
+      sample = 0.1 * rand() as f32
       store<f32>(out_L + offset, sample)
       store<f32>(out_R + offset, sample)
     }
