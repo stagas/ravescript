@@ -2,6 +2,7 @@ import { Sigui } from 'sigui'
 import { ResetPassword } from '~/src/comp/ResetPassword.tsx'
 import { VerifyEmail } from '~/src/comp/VerifyEmail.tsx'
 import { About } from '~/src/pages/About.tsx'
+import { AssemblyScript } from '~/src/pages/AssemblyScript.tsx'
 import { Chat } from '~/src/pages/Chat/Chat.tsx'
 import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
@@ -14,7 +15,6 @@ export function App() {
 
   if (!state.user) whoami().then(user => state.user = user)
 
-  // `info` holds our reactive data
   const info = $({
     bg: 'transparent',
   })
@@ -39,6 +39,9 @@ export function App() {
 
           case '/chat':
             return <Chat />
+
+          case '/asc':
+            return <AssemblyScript />
 
           case '/about':
             return <About />
@@ -68,7 +71,10 @@ export function App() {
             // Hack: triggering a localStorage write we listen to
             // window.onstorage and we can close the popup automatically.
             localStorage.oauth = 'complete' + Math.random()
-            return <div>Logging in...</div>
+            return <div>
+              Successfully logged in.
+              You may now <button onclick={() => window.close()}>close this window</button>.
+            </div>
         }
       }}
     </div>

@@ -5,6 +5,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import externalize from "vite-plugin-externalize-dependencies"
 import { VitePWA } from 'vite-plugin-pwa'
 import TsConfigPaths from 'vite-tsconfig-paths'
+import { ViteAssemblyScript } from './vendor/vite-plugin-assemblyscript.ts'
 import { BundleUrl } from './vendor/vite-plugin-bundle-url.ts'
 import { ViteCoopCoep } from './vendor/vite-plugin-coop-coep.ts'
 import { HexLoader } from './vendor/vite-plugin-hex-loader.ts'
@@ -25,16 +26,16 @@ export default ({ mode }) => {
     cert: fs.readFileSync(path.join(homedir, '.ssl-certs', 'devito.test.pem')),
   } : undefined
 
-  const sharedPlugins: () => Plugins = () => [
+  const buildPlugins: Plugins = [
     ViteUsing(),
     HexLoader(),
     TsConfigPaths(),
   ]
 
-  const buildPlugins: Plugins = [
-    ...sharedPlugins(),
+  const plugins: Plugins = [
+    ...buildPlugins,
     BundleUrl({
-      plugins: sharedPlugins()
+      plugins: buildPlugins
     }),
     VitePWA({
       strategies: 'injectManifest',
@@ -85,11 +86,7 @@ export default ({ mode }) => {
         suppressWarnings: true,
         type: 'module',
       },
-    })
-  ]
-
-  const plugins: Plugins = [
-    ...buildPlugins,
+    }),
     OpenInEditor(),
     ViteCoopCoep(),
     externalize({
@@ -97,6 +94,26 @@ export default ({ mode }) => {
         'node:fs/promises',
         (moduleName) => moduleName.startsWith('node:')
       ],
+    }),
+    ViteAssemblyScript({
+      configFile: 'asconfig-pkg.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/pkg',
+      srcEntryFile: 'as/assembly/pkg/index.ts',
+      mapFile: './as/build/pkg.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+      ]
+    }),
+    ViteAssemblyScript({
+      configFile: 'asconfig-pkg-nort.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/pkg',
+      srcEntryFile: 'as/assembly/pkg/index.ts',
+      mapFile: './as/build/pkg-nort.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+      ]
     }),
   ]
 
@@ -114,10 +131,14 @@ export default ({ mode }) => {
     esbuild: {
       jsx: 'automatic',
       target: 'esnext',
-      treeShaking: true
+      treeShaking: true,
     },
     worker: {
-      format: 'es'
+      format: 'es',
+    },
+    define: {
+      // strip out import.meta.vitest blocks
+      'import.meta.vitest': 'undefined',
     },
     plugins,
     build: {

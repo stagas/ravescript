@@ -2,6 +2,7 @@
 .env.development
 .env.production
 .vscode
+as/build
 coverage
 dist
 node_modules

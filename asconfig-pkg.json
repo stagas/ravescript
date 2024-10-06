@@ -1,0 +1,35 @@
+{
+  "targets": {
+    "debug": {
+      "outFile": "./as/build/pkg.wasm",
+      "textFile": "./as/build/pkg.wat",
+      "sourceMap": true,
+      "debug": true,
+      "noAssert": true
+    },
+    "release": {
+      "outFile": "./as/build/pkg.wasm",
+      "textFile": "./as/build/pkg.wat",
+      "sourceMap": true,
+      "debug": false,
+      "optimizeLevel": 0,
+      "shrinkLevel": 0,
+      "converge": false,
+      "noAssert": true
+    }
+  },
+  "options": {
+    "enable": [
+      "simd",
+      "relaxed-simd",
+      "threads"
+    ],
+    "sharedMemory": true,
+    "importMemory": false,
+    "initialMemory": 5000,
+    "maximumMemory": 5000,
+    "bindings": "raw",
+    "runtime": "incremental",
+    "exportRuntime": true
+  }
+}

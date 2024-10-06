@@ -1,3 +1,4 @@
+// disabled because bun test can't handle worker imports
 import { App } from '~/src/pages/App.tsx'
 import { state } from '~/src/state.ts'
 
