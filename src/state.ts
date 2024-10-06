@@ -32,7 +32,9 @@ export let state = $({
   currentChannelName: null as null | string,
   get currentChannel() {
     return state.channels.find(c => c.name === state.currentChannelName)
-  }
+  },
+
+  toastMessages: [] as { message?: string, stack?: string }[],
 })
 
 export function setState(newState: any) {
