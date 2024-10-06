@@ -5,6 +5,7 @@ import { ResetPassword } from '~/src/comp/ResetPassword.tsx'
 import { VerifyEmail } from '~/src/comp/VerifyEmail.tsx'
 import { About } from '~/src/pages/About.tsx'
 import { AssemblyScript } from '~/src/pages/AssemblyScript.tsx'
+import { Canvas } from '~/src/pages/Canvas'
 import { Chat } from '~/src/pages/Chat/Chat.tsx'
 import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
@@ -19,6 +20,8 @@ export function App() {
 
   const info = $({
     bg: 'transparent',
+    canvasWidth: 500,
+    canvasHeight: 500,
   })
 
   return <main
@@ -48,6 +51,12 @@ export function App() {
 
           case '/chat':
             return <Chat />
+
+          case '/canvas':
+            return <Canvas
+              width={info.$.canvasWidth}
+              height={info.$.canvasHeight}
+            />
 
           case '/asc':
             return <AssemblyScript />
