@@ -30,6 +30,7 @@
 - [x] Deno KV storage
 - [x] Kysley Postgres/Neon storage
   - [x] Migrations
+  - [ ] Seeds
 - [x] RPC (GET/POST)
 - [x] Emails (Resend)
 - [x] Auth
@@ -56,8 +57,10 @@
 - [x] Tailwindcss
 - [x] Icons (Lucide)
 - [x] Fonts
-- [ ] Canvas
-  - [ ] Wait for Fonts
+- [x] Canvas
+  - [x] Wait for Fonts
+  - [x] Animation
+  - [x] Screen/Dims
 - [x] AssemblyScript
 - [x] WebAudio
   - [x] Wasm AudioWorklet
