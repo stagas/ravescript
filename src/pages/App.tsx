@@ -2,6 +2,7 @@ import { Sigui } from 'sigui'
 import { ResetPassword } from '~/src/comp/ResetPassword.tsx'
 import { VerifyEmail } from '~/src/comp/VerifyEmail.tsx'
 import { About } from '~/src/pages/About.tsx'
+import { AssemblyScript } from '~/src/pages/AssemblyScript.tsx'
 import { Chat } from '~/src/pages/Chat/Chat.tsx'
 import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
@@ -39,6 +40,9 @@ export function App() {
 
           case '/chat':
             return <Chat />
+
+          case '/asc':
+            return <AssemblyScript />
 
           case '/about':
             return <About />

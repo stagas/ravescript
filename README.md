@@ -51,10 +51,12 @@
 - [x] Vite
   - [ ] COOP/COEP
   - [ ] Workers
-  - [ ] Binary/Hex loader ?raw-hex
+  - [x] Binary/Hex loader ?raw-hex
 - [x] Sigui
 - [x] Tailwindcss
-- [ ] AssemblyScript
+- [x] Icons (Lucide)
+- [ ] Fonts
+- [x] AssemblyScript
 - [x] Testing
   - [x] Coverage
   - [x] Unit

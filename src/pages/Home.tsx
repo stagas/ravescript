@@ -28,6 +28,7 @@ export function Home() {
           {state.user.isAdmin && <a href="/admin/">Admin</a>}
 
           <Link href="/chat">Chat</Link>
+          <Link href="/asc">AssemblyScript</Link>
           <Link href="/about">About</Link>
         </div>
     }

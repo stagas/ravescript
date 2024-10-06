@@ -5,6 +5,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import externalize from "vite-plugin-externalize-dependencies"
 import { VitePWA } from 'vite-plugin-pwa'
 import TsConfigPaths from 'vite-tsconfig-paths'
+import { ViteAssemblyScript } from './vendor/vite-plugin-assemblyscript.ts'
 import { BundleUrl } from './vendor/vite-plugin-bundle-url.ts'
 import { ViteCoopCoep } from './vendor/vite-plugin-coop-coep.ts'
 import { HexLoader } from './vendor/vite-plugin-hex-loader.ts'
@@ -97,6 +98,16 @@ export default ({ mode }) => {
         'node:fs/promises',
         (moduleName) => moduleName.startsWith('node:')
       ],
+    }),
+    ViteAssemblyScript({
+      configFile: 'asconfig-pkg.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/pkg',
+      srcEntryFile: 'as/assembly/pkg/index.ts',
+      mapFile: './as/build/pkg.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+      ]
     }),
   ]
 
