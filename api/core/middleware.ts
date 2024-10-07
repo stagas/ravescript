@@ -16,7 +16,7 @@ export const cors: Handler = ctx => {
       ctx.request.headers.get('origin') ??
       ctx.request.headers.get('referer')
 
-    if (origin) {
+    if (!ctx.request.headers.get('upgrade') && origin) {
       const [match] = origin.match(ORIGIN_REGEX) ?? []
       if (match) {
         res.headers.set('access-control-allow-origin', match)

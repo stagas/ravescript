@@ -68,7 +68,7 @@ export function Router({ log = console.log }: { log?: typeof console.log } = {})
   async function handler(req: Request, info: Deno.ServeHandlerInfo) {
     using deferred = defer<Response>(() => {
       if (!response) response = new Response('Server Error', { status: 500 })
-      for (const k in headers) response.headers.set(k, headers[k])
+      if (!req.headers.get('upgrade')) for (const k in headers) response.headers.set(k, headers[k])
       return response
     })
 

@@ -23,6 +23,7 @@ export function Home() {
         <div class="flex flex-col">
           {state.user.isAdmin && <a href="/admin/">Admin</a>}
           <Link href="/chat">Chat</Link>
+          <Link href="/ws">WebSockets</Link>
           <Link href="/canvas">Canvas</Link>
           <Link href="/asc">AssemblyScript</Link>
           <Link href="/qrcode">QrCode</Link>

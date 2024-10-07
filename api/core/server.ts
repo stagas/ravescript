@@ -10,6 +10,7 @@ import '~/api/oauth/actions.ts'
 import * as oauthCommon from '~/api/oauth/routes/common.ts'
 import * as oauthGitHub from '~/api/oauth/routes/github.ts'
 import * as rpc from '~/api/rpc/routes.ts'
+import * as ws from '~/api/ws/routes.ts'
 
 const dist = 'dist'
 const home = os.home() ?? '~'
@@ -33,6 +34,7 @@ app.use(null, [logger])
 app.use(null, [cors])
 app.use(null, [session])
 
+ws.mount(app)
 oauthCommon.mount(app)
 oauthGitHub.mount(app)
 rpc.mount(app)
