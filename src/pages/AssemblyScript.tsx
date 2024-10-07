@@ -3,18 +3,22 @@ import { Player } from '~/src/as/pkg/player.ts'
 import { PkgService } from '~/src/as/pkg/service.ts'
 import pkg from '~/src/as/pkg/wasm.ts'
 
+let audioContext: AudioContext
+
 export function AssemblyScript() {
   using $ = Sigui()
-
-  const pkgService = PkgService()
-  $.fx(() => () => pkgService.terminate())
-
-  const audioContext = new AudioContext()
-  const pkgPlayer = Player(audioContext)
 
   const info = $({
     fromWorker: null as null | number
   })
+
+  audioContext ??= new AudioContext()
+
+  const pkgPlayer = Player(audioContext)
+  $.fx(() => () => pkgPlayer.destroy())
+
+  const pkgService = PkgService()
+  $.fx(() => () => pkgService.terminate())
 
   $.fx(() => {
     const { pkg } = $.of(pkgService.info)

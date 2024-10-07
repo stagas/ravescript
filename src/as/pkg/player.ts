@@ -53,6 +53,8 @@ export class PlayerNode extends AudioWorkletNode {
 
 export type Player = ReturnType<typeof Player>
 
+const registeredContexts = new Set<BaseAudioContext>()
+
 export function Player(ctx: AudioContext) {
   using $ = Sigui()
   const pin = <T>(x: T): T => { wasm.__pin(+x); return x }
@@ -70,17 +72,25 @@ export function Player(ctx: AudioContext) {
     isPlaying: false,
     isPaused: false,
     didPlay: false,
-    node: $.unwrap(() =>
-      ctx.audioWorklet.addModule(playerWorkletUrl)
-        .then(() => {
-          const sourcemapUrl = new URL('/as/build/pkg-nort.wasm.map', location.origin).href
-          const node = new PlayerNode(ctx, +player$, out.ptr, sourcemapUrl)
-          node.connect(ctx.destination)
-          return node
-        })
-      // .catch(console.error)
-    ),
+    node: null as null | PlayerNode
   })
+
+  function createNode() {
+    const sourcemapUrl = new URL('/as/build/pkg-nort.wasm.map', location.origin).href
+    const node = new PlayerNode(ctx, +player$, out.ptr, sourcemapUrl)
+    node.connect(ctx.destination)
+    info.node = node
+  }
+
+  if (!registeredContexts.has(ctx)) {
+    ctx.audioWorklet
+      .addModule(playerWorkletUrl)
+      .then(() => registeredContexts.add(ctx))
+      .then(createNode)
+  }
+  else {
+    createNode()
+  }
 
   const off = $.fx(() => {
     if (info.isPlaying) {
@@ -91,13 +101,11 @@ export function Player(ctx: AudioContext) {
   })
 
   function updateInfo() {
-    if (info.node instanceof Error) return
     info.isPlaying = info.node?.isPlaying ?? false
     info.isPaused = info.node?.isPaused ?? false
   }
 
   function stop() {
-    if (info.node instanceof Error) return
     if (info.node?.isPlaying) {
       info.node?.stop()
     }
@@ -105,15 +113,18 @@ export function Player(ctx: AudioContext) {
   }
 
   function play() {
-    if (info.node instanceof Error) return
     info.node?.play()
     updateInfo()
   }
 
   function pause() {
-    if (info.node instanceof Error) return
     info.node?.pause()
     updateInfo()
+  }
+
+  function destroy() {
+    info.node?.disconnect()
+    info.node = null
   }
 
   return {
@@ -122,5 +133,6 @@ export function Player(ctx: AudioContext) {
     stop,
     play,
     pause,
+    destroy,
   }
 }

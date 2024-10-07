@@ -1,4 +1,4 @@
-import { Sigui } from 'sigui'
+import { dispose, Sigui } from 'sigui'
 import { dom } from 'utils'
 import { CachingRouter } from '~/lib/caching-router.ts'
 import { Header } from '~/src/comp/Header.tsx'
@@ -31,7 +31,7 @@ export function App() {
   const router = CachingRouter({
     '/': () => <Home />,
     '/chat': () => <Chat />,
-    '/canvas': () => <Canvas width={info.$.canvasWidth} height={info.$.canvasHeight} />,
+    '!/canvas': () => <Canvas width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/asc': () => <AssemblyScript />,
     '/qrcode': () => <QrCode />,
     '/about': () => <About />,
@@ -53,7 +53,7 @@ export function App() {
       // hack: triggering a localStorage write is how we communicate
       // to the parent window that we're done.
       localStorage.oauth = 'complete' + Math.random()
-      // window.close()
+      window.close()
       return <div>
         Successfully logged in.
         You may now <button onclick={() => window.close()}>close this window</button>.
@@ -66,7 +66,7 @@ export function App() {
       state.toastMessages = [...state.toastMessages, (ev as unknown as ErrorEvent).error]
     }),
     dom.on(window, 'unhandledrejection', ev => {
-      state.toastMessages = [...state.toastMessages, { message: (ev as unknown as PromiseRejectionEvent).reason }]
+      state.toastMessages = [...state.toastMessages, (ev as unknown as PromiseRejectionEvent).reason]
     }),
   ])
 

@@ -40,7 +40,6 @@
     "ambient-dts": "github:stagas/ambient-dts",
     "assemblyscript": "^0.27.30",
     "autoprefixer": "^10.4.20",
-    "jsdom": "^25.0.1",
     "kysely": "^0.27.4",
     "kysely-ctl": "^0.9.0",
     "open-in-editor": "^2.2.0",
