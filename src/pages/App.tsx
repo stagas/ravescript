@@ -32,7 +32,7 @@ export function App() {
   const router = CachingRouter({
     '/': () => <Home />,
     '/chat': () => <Chat />,
-    '/ws': () => <WebSockets />,
+    '!/ws': () => <WebSockets />,
     '!/canvas': () => <Canvas width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/asc': () => <AssemblyScript />,
     '/qrcode': () => <QrCode />,
