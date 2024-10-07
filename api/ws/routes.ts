@@ -1,5 +1,6 @@
 import { createBus } from '~/api/core/create-bus.ts'
-import { RouteError, Router } from '~/api/core/router.ts'
+import { Router } from '~/api/core/router.ts'
+import { getSession } from '~/api/core/sessions.ts'
 
 const clients = new Set<WebSocket>()
 
@@ -20,17 +21,32 @@ function sendToLocalClients(ws: WebSocket | null, data: string) {
 export function mount(app: Router) {
   app.get('/ws', [ctx => {
     if (ctx.request.headers.get('upgrade') !== 'websocket') return
+
+    const { nick } = getSession(ctx)
+
+    ctx.log('[ws] connecting...', nick)
+
     const { socket: ws, response } = Deno.upgradeWebSocket(ctx.request, {
       idleTimeout: 0
     })
 
     ws.onmessage = e => broadcast(ws, e)
-    ws.onopen = () => clients.add(ws)
-    ws.onclose = () => clients.delete(ws)
-    ws.onerror = err => {
-      ctx.log('[ws] error:', err)
+
+    ws.onopen = () => {
+      ctx.log('[ws] open:', nick)
+      clients.add(ws)
+    }
+
+    ws.onclose = () => {
+      ctx.log('[ws] close:', nick)
       clients.delete(ws)
     }
+
+    ws.onerror = err => {
+      ctx.log('[ws] error:', nick, err)
+      clients.delete(ws)
+    }
+
     return response
   }])
 }
