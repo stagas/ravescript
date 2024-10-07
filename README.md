@@ -44,7 +44,7 @@
     - [ ] Facebook
     - [ ] X/Twitter
 - [x] BroadcastChannel
-- [ ] WebSockets
+- [x] WebSockets
 
 ### Frontend
 

@@ -13,6 +13,7 @@ import { Chat } from '~/src/pages/Chat/Chat.tsx'
 import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
 import { QrCode } from '~/src/pages/QrCode.tsx'
+import { WebSockets } from '~/src/pages/WebSockets.tsx'
 import { whoami } from '~/src/rpc/auth.ts'
 import { state } from '~/src/state.ts'
 import { go, Link } from '~/src/ui/Link.tsx'
@@ -31,6 +32,7 @@ export function App() {
   const router = CachingRouter({
     '/': () => <Home />,
     '/chat': () => <Chat />,
+    '!/ws': () => <WebSockets />,
     '!/canvas': () => <Canvas width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/asc': () => <AssemblyScript />,
     '/qrcode': () => <QrCode />,
