@@ -5,16 +5,16 @@ import { getSession } from '~/api/core/sessions.ts'
 const clients = new Set<WebSocket>()
 
 const bus = createBus(['ws'])
-bus.onmessage = event => sendToLocalClients(null, event.data)
+bus.onmessage = event => sendToLocalClients(event.data)
 
-function broadcast(ws: WebSocket | null, { data }: { data: string }) {
+function broadcast(this: WebSocket, { data }: { data: string }) {
   bus.postMessage(data)
-  sendToLocalClients(ws, data)
+  sendToLocalClients(data, this)
 }
 
-function sendToLocalClients(ws: WebSocket | null, data: string) {
-  clients.forEach(c => {
-    if (c !== ws) c.send(data)
+function sendToLocalClients(data: string, socket?: WebSocket) {
+  clients.forEach(client => {
+    if (client !== socket) client.send(data)
   })
 }
 
@@ -30,7 +30,7 @@ export function mount(app: Router) {
       idleTimeout: 0
     })
 
-    ws.onmessage = e => broadcast(ws, e)
+    ws.onmessage = broadcast
 
     ws.onopen = () => {
       ctx.log('[ws] open:', nick)
