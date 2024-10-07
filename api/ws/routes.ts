@@ -4,7 +4,7 @@ import { RouteError, Router } from '~/api/core/router.ts'
 const clients = new Set<WebSocket>()
 
 const bus = createBus(['ws'])
-bus.onmessage = event => broadcast(null, event)
+bus.onmessage = event => sendToLocalClients(null, event.data)
 
 function broadcast(ws: WebSocket | null, { data }: { data: string }) {
   bus.postMessage(data)
