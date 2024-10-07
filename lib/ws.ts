@@ -58,10 +58,11 @@ export function createWebSocket(pathname: string, host?: string): typeof ws {
   }
 
   function close(this: typeof ws, re?: boolean) {
-    // don't reconnect
     if (re) {
-      this.onerror = reconnect
-      this.onclose = reconnect
+      this.onerror = this.onclose = reconnect
+    }
+    else {
+      this.onclose = this.onerror = () => { }
     }
 
     this.socket?.close()
