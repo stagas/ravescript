@@ -19,10 +19,7 @@ function sendToLocalClients(ws: WebSocket | null, data: string) {
 
 export function mount(app: Router) {
   app.get('/ws', [ctx => {
-    if (ctx.request.headers.get('upgrade') != 'websocket') {
-      throw new RouteError(400, 'WebSocket upgrade failed.')
-    }
-
+    if (ctx.request.headers.get('upgrade') !== 'websocket') return
     const { socket: ws, response } = Deno.upgradeWebSocket(ctx.request, {
       idleTimeout: 0
     })

@@ -34,11 +34,11 @@ app.use(null, [logger])
 app.use(null, [cors])
 app.use(null, [session])
 
-ws.mount(app)
+chat.mount(app)
 oauthCommon.mount(app)
 oauthGitHub.mount(app)
 rpc.mount(app)
-chat.mount(app)
+ws.mount(app)
 
 IS_DEV && app.log('Listening: https://devito.test:' + options.port)
 IS_DEV && app.get('/watcher', [watcher])
