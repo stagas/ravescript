@@ -104,7 +104,7 @@ export function Chat() {
       .catch(console.error)
   })
 
-  return <div class="h-[calc(100vh-4rem)] flex gap-4">
+  return <div class="h-[calc(100vh-4.5rem)] flex gap-4">
     <Channels />
     <Messages />
     <Users />

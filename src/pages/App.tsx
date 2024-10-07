@@ -1,5 +1,6 @@
 import { Sigui } from 'sigui'
 import { dom } from 'utils'
+import { CachingRouter } from '~/lib/caching-router.ts'
 import { Header } from '~/src/comp/Header.tsx'
 import { Logout } from '~/src/comp/Logout.tsx'
 import { ResetPassword } from '~/src/comp/ResetPassword.tsx'
@@ -23,9 +24,41 @@ export function App() {
 
   const info = $({
     bg: 'transparent',
-
     canvasWidth: 500,
     canvasHeight: 500,
+  })
+
+  const router = CachingRouter({
+    '/': () => <Home />,
+    '/chat': () => <Chat />,
+    '/canvas': () => <Canvas width={info.$.canvasWidth} height={info.$.canvasHeight} />,
+    '/asc': () => <AssemblyScript />,
+    '/qrcode': () => <QrCode />,
+    '/about': () => <About />,
+    '/verify-email': () => <VerifyEmail />,
+    '/reset-password': () => <ResetPassword />,
+    '/oauth/popup': () => {
+      const provider = state.url.searchParams.get('provider')!
+      const url = new URL(`${state.apiUrl}oauth/start`)
+      url.searchParams.set('provider', provider)
+      location.href = url.href
+      return <div />
+    },
+    '/oauth/register': () => <OAuthRegister />,
+    '/oauth/cancel': () => {
+      localStorage.oauth = 'cancel' + Math.random()
+      return <div>OAuth login cancelled</div>
+    },
+    '/oauth/complete': () => {
+      // hack: triggering a localStorage write is how we communicate
+      // to the parent window that we're done.
+      localStorage.oauth = 'complete' + Math.random()
+      // window.close()
+      return <div>
+        Successfully logged in.
+        You may now <button onclick={() => window.close()}>close this window</button>.
+      </div>
+    }
   })
 
   $.fx(() => [
@@ -52,66 +85,18 @@ export function App() {
 
       <div class="flex items-center gap-2">
         <Link href={() => `/${state.user?.nick ?? ''}`}>{() => state.user?.nick}</Link>
-        <Logout then={() => go('/')} />
+        {() => state.user ? <Logout then={() => go('/')} /> : <div />}
       </div>
     </Header>
 
-    <div class="p-3">
+    <div class="p-3.5">
       {() => {
         if (state.user === undefined) return <div>Loading...</div>
 
-        switch (state.pathname) {
-          case '/':
-            return <Home />
+        const el = router(state.pathname)
+        if (el) return el
 
-          case '/chat':
-            return <Chat />
-
-          case '/canvas':
-            return <Canvas
-              width={info.$.canvasWidth}
-              height={info.$.canvasHeight}
-            />
-
-          case '/asc':
-            return <AssemblyScript />
-
-          case '/qrcode':
-            return <QrCode />
-
-          case '/about':
-            return <About />
-
-          case '/verify-email':
-            return <VerifyEmail />
-
-          case '/reset-password':
-            return <ResetPassword />
-
-          case '/oauth/popup': {
-            const provider = state.url.searchParams.get('provider')!
-            const url = new URL(`${state.apiUrl}oauth/start`)
-            url.searchParams.set('provider', provider)
-            location.href = url.href
-            return <div />
-          }
-
-          case '/oauth/register':
-            return <OAuthRegister />
-
-          case '/oauth/cancel':
-            localStorage.oauth = 'cancel' + Math.random()
-            return <div>OAuth login cancelled</div>
-
-          case '/oauth/complete':
-            // Hack: triggering a localStorage write we listen to
-            // window.onstorage and we can close the popup automatically.
-            localStorage.oauth = 'complete' + Math.random()
-            return <div>
-              Successfully logged in.
-              You may now <button onclick={() => window.close()}>close this window</button>.
-            </div>
-        }
+        return <div>404 Not found</div>
       }}
     </div>
   </main>

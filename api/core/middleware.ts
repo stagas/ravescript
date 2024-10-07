@@ -8,16 +8,6 @@ import { sessions } from "~/api/core/sessions.ts"
 import { env } from '~/api/env.ts'
 
 const DEBUG = false
-
-export const watcher: Handler = () => {
-  const body = new ReadableStream()
-  return new Response(body, {
-    headers: {
-      'content-type': 'text/event-stream',
-    },
-  })
-}
-
 const ORIGIN_REGEX = /(https:\/\/[^\/\n]+\.deno\.dev)/g
 
 export const cors: Handler = ctx => {
@@ -38,6 +28,15 @@ export const cors: Handler = ctx => {
         res.headers.set('access-control-allow-origin', origin)
       }
     }
+  })
+}
+
+export const watcher: Handler = () => {
+  const body = new ReadableStream()
+  return new Response(body, {
+    headers: {
+      'content-type': 'text/event-stream',
+    },
   })
 }
 
