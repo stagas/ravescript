@@ -5,8 +5,8 @@ export function ViteCoopCoep(): Plugin {
     name: 'coop-coep',
     configureServer(server) {
       server.middlewares.use((_req, res, next) => {
-        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
-        res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp')
+        res.setHeader('cross-origin-opener-policy', 'same-origin')
+        res.setHeader('cross-origin-embedder-policy', 'require-corp')
         next()
       })
     },

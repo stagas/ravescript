@@ -9,7 +9,7 @@ const headers: Record<string, string> = {
   'cross-origin-opener-policy': 'same-origin',
   'cross-origin-embedder-policy': 'require-corp',
   'access-control-allow-methods': 'GET, HEAD, OPTIONS, POST, PUT',
-  'access-control-allow-headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+  'access-control-allow-headers': 'Origin, X-Requested-With, Content-Type, Referer, Accept, Authorization',
   'access-control-allow-credentials': 'true',
 }
 
