@@ -8,12 +8,15 @@ import * as actions from '~/src/rpc/chat.ts'
 import { state } from '~/src/state.ts'
 import { byName, hasChannel } from './util.ts'
 
-export function Channels() {
+export function Channels({ overlay = true }: { overlay?: boolean }) {
   using $ = Sigui()
-  return <div class="w-[30%] max-w-56 flex flex-col gap-2 pt-1.5 pb-2.5 flex-shrink-0">
+  return <div class={cn(
+    "w-[30%] max-w-56 flex flex-col gap-2 pt-1.5 pb-2.5 pr-4 mr-4 flex-shrink-0 border-r border-r-neutral-700",
+    { 'absolute bg-neutral-900 h-[calc(100vh-4.5rem)]': overlay },
+  )}>
     <h3 class="min-h-9 flex items-center justify-between border-b border-neutral-600">
       <span>Channels</span>
-      <button class="flex items-center text-sm pr-4 gap-1"
+      <button class="flex items-center text-sm pr-2 gap-1"
         onclick={async () => {
           const batchEnd = $.batch()
           using _ = defer(batchEnd)
@@ -42,7 +45,7 @@ export function Channels() {
           state.currentChannelName = name
         }}
       >
-        {icon(Plus, { size: 16, 'stroke-width': 1.5 })} new
+        {icon(Plus, { size: 16, 'stroke-width': 1.5 })}
       </button>
     </h3>
 

@@ -5,6 +5,7 @@ import { Messages } from '~/src/pages/Chat/Messages.tsx'
 import { Users } from '~/src/pages/Chat/Users.tsx'
 import { byName, byNick, hasChannel } from '~/src/pages/Chat/util.ts'
 import * as actions from '~/src/rpc/chat.ts'
+import { screen } from '~/src/screen.ts'
 import { state } from '~/src/state.ts'
 import { go } from '~/src/ui/Link.tsx'
 
@@ -12,7 +13,8 @@ export function Chat() {
   using $ = Sigui()
 
   const info = $({
-    started: null as null | true
+    started: null as null | true,
+    showChannelsOverlay: false,
   })
 
   actions.listChannels().then(channels => {
@@ -104,9 +106,12 @@ export function Chat() {
       .catch(console.error)
   })
 
-  return <div class="h-[calc(100vh-4.5rem)] flex gap-4">
-    <Channels />
-    <Messages />
-    <Users />
+  return <div class="h-[calc(100vh-4.5rem)] flex">
+    {() => screen.md || info.showChannelsOverlay
+      ? <Channels overlay={info.showChannelsOverlay} />
+      : <div />
+    }
+    <Messages showChannelsOverlay={info.$.showChannelsOverlay} />
+    {() => screen.md ? <Users /> : <div />}
   </div>
 }

@@ -1,14 +1,19 @@
-import { LogOut } from 'lucide'
-import { refs, Sigui } from 'sigui'
+import { LogOut, Menu } from 'lucide'
+import { refs, Sigui, type Signal } from 'sigui'
 import type { ChatMessage } from '~/api/chat/types.ts'
 import { cn } from '~/lib/cn.ts'
 import { icon } from '~/lib/icon.ts'
 import { colorizeNick } from '~/src/pages/Chat/util.ts'
 import * as actions from '~/src/rpc/chat.ts'
+import { screen } from '~/src/screen.ts'
 import { state } from '~/src/state.ts'
 
-export function Messages() {
+export function Messages({ showChannelsOverlay }: { showChannelsOverlay: Signal<boolean> }) {
   using $ = Sigui()
+
+  const info = $({
+    showChannelsOverlay,
+  })
 
   $.fx(() => {
     const { currentChannel } = $.of(state)
@@ -48,9 +53,27 @@ export function Messages() {
 
   const emptyMsg: ChatMessage[] = [{ type: 'message', nick: '', text: '' }]
 
-  return <div class="w-[70%] pt-1.5 pb-2.5 pl-4 border-l border-l-neutral-700 flex flex-col max-h-[calc(100vh-4rem)]">
+  return <div class={cn(
+    'w-full pt-1.5 pb-2.5 flex flex-col max-h-[calc(100vh-4rem)]',
+    { 'w-[70%]': screen.md },
+  )} onclick={() => info.showChannelsOverlay = false}>
     <h3 class="min-h-9 flex items-center border-b border-neutral-600 justify-between">
-      <span>#{() => state.currentChannelName}</span>
+      <div class="flex flex-row">
+        {() => screen.sm
+          ?
+          <button
+            class="mr-2"
+            onclick={ev => {
+              ev.stopPropagation()
+              info.showChannelsOverlay = !info.showChannelsOverlay
+            }}>
+            {icon(Menu)}
+          </button>
+          :
+          <div />
+        }
+        <span>#{() => state.currentChannelName}</span>
+      </div>
       <button class="flex items-center text-sm pr-2 gap-1" title="Leave channel">
         {icon(LogOut, { size: 16, 'stroke-width': 1.5 })}
       </button>
