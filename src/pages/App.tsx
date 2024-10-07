@@ -1,8 +1,9 @@
-import { encodeData, generateSVGQRCode } from 'easygenqr'
 import { Sigui } from 'sigui'
+import { dom } from 'utils'
 import { Header } from '~/src/comp/Header.tsx'
 import { Logout } from '~/src/comp/Logout.tsx'
 import { ResetPassword } from '~/src/comp/ResetPassword.tsx'
+import { Toast } from '~/src/comp/Toast.tsx'
 import { VerifyEmail } from '~/src/comp/VerifyEmail.tsx'
 import { About } from '~/src/pages/About.tsx'
 import { AssemblyScript } from '~/src/pages/AssemblyScript.tsx'
@@ -27,11 +28,22 @@ export function App() {
     canvasHeight: 500,
   })
 
+  $.fx(() => [
+    dom.on(window, 'error', ev => {
+      state.toastMessages = [...state.toastMessages, (ev as unknown as ErrorEvent).error]
+    }),
+    dom.on(window, 'unhandledrejection', ev => {
+      state.toastMessages = [...state.toastMessages, { message: (ev as unknown as PromiseRejectionEvent).reason }]
+    }),
+  ])
+
   return <main
     class="flex flex-col h-[100vh]"
     onmouseenter={() => info.bg = '#433'}
     onmouseleave={() => info.bg = 'transparent'}
   >
+    <Toast />
+
     <Header>
       <div class="flex items-center gap-2">
         <Link href="/">home</Link>

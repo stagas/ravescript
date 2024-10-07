@@ -66,7 +66,7 @@
   - [x] Wasm AudioWorklet
 - [ ] WebGL
 - [ ] WebRTC
-- [ ] QRCode
+- [x] QRCode
 - [x] Testing
   - [x] Coverage
   - [x] Unit
@@ -94,6 +94,8 @@
   - [x] Input
   - [x] Label
   - [x] Link
+  - [x] Toast
+    - [x] Catch/show errors
 
 ## Setup
 
