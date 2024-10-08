@@ -1,20 +1,32 @@
-import { Sigui } from 'sigui'
-import type { ChatMessage } from '~/api/chat/types.ts'
+import { dispose, Sigui } from 'sigui'
+import type { ChatDirectMessage, ChatMessage } from '~/api/chat/types.ts'
 import { Channels } from '~/src/pages/Chat/Channels.tsx'
 import { Messages } from '~/src/pages/Chat/Messages.tsx'
 import { Users } from '~/src/pages/Chat/Users.tsx'
 import { byName, byNick, hasChannel } from '~/src/pages/Chat/util.ts'
+import { VideoCall } from '~/src/pages/Chat/VideoCall.tsx'
 import * as actions from '~/src/rpc/chat.ts'
 import { screen } from '~/src/screen.ts'
 import { state } from '~/src/state.ts'
 import { go } from '~/src/ui/Link.tsx'
+
+export interface RemoteSdp {
+  type: 'webrtc:offer' | 'webrtc:answer'
+  nick: string
+  text: string
+}
 
 export function Chat() {
   using $ = Sigui()
 
   const info = $({
     started: null as null | true,
+
     showChannelsOverlay: false,
+
+    videoCallType: null as null | 'offer' | 'answer',
+    videoCallTargetNick: null as null | string,
+    remoteSdp: null as null | RemoteSdp,
   })
 
   actions.listChannels().then(channels => {
@@ -31,7 +43,7 @@ export function Chat() {
     })
 
     chat.onmessage = ({ data }) => {
-      const msg = JSON.parse(data) as ChatMessage
+      const msg = JSON.parse(data) as ChatMessage | ChatDirectMessage
 
       switch (msg.type) {
         case 'started':
@@ -59,12 +71,43 @@ export function Chat() {
             if (channel.users.find(u => u.nick === msg.nick)) return
             channel.users = [...channel.users, { nick: msg.nick }].sort(byNick)
           }
+          break
+        }
+
+        case 'directMessage': {
+          alert(msg.text)
+          break
+        }
+
+        case 'webrtc:offer': {
+          info.remoteSdp = msg as RemoteSdp
+          info.videoCallType = 'answer'
+          info.videoCallTargetNick = msg.nick
+          break
+        }
+
+        case 'webrtc:answer': {
+          info.remoteSdp = msg as RemoteSdp
+          break
+        }
+
+        case 'webrtc:end': {
+          info.videoCallTargetNick = null
+          break
         }
       }
     }
 
     return () => {
       chat.close()
+    }
+  })
+
+  $.fx(() => {
+    const { videoCallTargetNick } = $.of(info)
+    $()
+    return () => {
+      actions.sendMessageToUser('webrtc:end', videoCallTargetNick)
     }
   })
 
@@ -112,6 +155,19 @@ export function Chat() {
       : <div />
     }
     <Messages showChannelsOverlay={info.$.showChannelsOverlay} />
-    {() => screen.md ? <Users /> : <div />}
+    {() => screen.md ? <Users onUserClick={nick => {
+      info.videoCallType = 'offer'
+      info.videoCallTargetNick = nick
+    }} /> : <div />}
+
+    {() => dispose() && info.videoCallType && info.videoCallTargetNick
+      ?
+      <VideoCall
+        type={info.$.videoCallType}
+        targetNick={info.$.videoCallTargetNick}
+        remoteSdp={info.$.remoteSdp} />
+      :
+      <div />
+    }
   </div>
 }

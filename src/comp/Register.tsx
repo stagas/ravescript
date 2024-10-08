@@ -1,7 +1,7 @@
 import { Sigui } from 'sigui'
 import { UserRegister } from '~/api/auth/types.ts'
 import * as actions from '~/src/rpc/auth.ts'
-import { Fieldset, Input, Label } from '~/src/ui/index.ts'
+import { Button, Fieldset, Input, Label } from '~/src/ui/index.ts'
 import { parseForm } from '~/src/util/parse-form.ts'
 
 export function Register() {
@@ -50,7 +50,7 @@ export function Register() {
       </Label>
 
       <div class="flex flex-row items-center justify-end gap-2">
-        <button type="submit">Register</button>
+        <Button type="submit">Register</Button>
       </div>
 
       <span>{() => info.error}</span>

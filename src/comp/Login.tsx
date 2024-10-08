@@ -1,8 +1,7 @@
 import { Sigui } from 'sigui'
 import { UserForgot, UserLogin } from '~/api/auth/types.ts'
 import * as actions from '~/src/rpc/auth.ts'
-import { Link } from '~/src/ui/Link.tsx'
-import { Fieldset, Input, Label } from '~/src/ui/index.ts'
+import { Button, Fieldset, Input, Label, Link } from '~/src/ui/index.ts'
 import { parseForm } from '~/src/util/parse-form.ts'
 
 export function Login() {
@@ -61,7 +60,7 @@ export function Login() {
 
               <div class="flex flex-row items-center justify-end gap-2">
                 <Link onclick={() => info.mode = 'forgot'}>Forgot password</Link>
-                <button type="submit">Login</button>
+                <Button type="submit">Login</Button>
               </div>
 
               <span>{() => info.error}</span>
@@ -89,7 +88,7 @@ export function Login() {
 
                 <div class="flex flex-row items-center justify-end gap-2">
                   <span><Link onclick={() => info.mode = 'login'}>Login using password</Link></span>
-                  <button type="submit">Send reset link</button>
+                  <Button type="submit">Send reset link</Button>
                 </div>
 
                 <span>{() => info.error}</span>

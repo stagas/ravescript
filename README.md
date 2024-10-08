@@ -65,8 +65,9 @@
 - [x] WebAudio
   - [x] Wasm AudioWorklet
 - [ ] WebGL
-- [ ] WebRTC
+- [x] WebRTC
 - [x] QRCode
+- [ ] Maps
 - [x] Testing
   - [x] Coverage
   - [x] Unit
@@ -78,11 +79,24 @@
   - [x] Users
   - [x] Sessions
 - [x] Pages
-  - [x] App
+  - [x] Chat
+    - [x] Channels
+    - [x] Chat
+    - [x] Messages
+    - [x] Users
   - [x] About
+  - [x] App
+  - [x] AssemblyScript
+  - [x] Canvas
   - [x] Home
   - [x] OAuthRegister
+  - [x] QrCode
+  - [x] WebSockets
+  - [ ] UI Showcase
 - [x] Components
+  - [x] Header
+  - [x] Toast
+    - [x] Catch/show errors
   - [x] Login
   - [x] Logout
   - [x] OAuthLogin
@@ -94,8 +108,6 @@
   - [x] Input
   - [x] Label
   - [x] Link
-  - [x] Toast
-    - [x] Catch/show errors
 
 ## Setup
 

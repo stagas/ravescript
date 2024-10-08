@@ -1,5 +1,5 @@
 import { createBus } from '~/api/core/create-bus.ts'
-import { Router } from '~/api/core/router.ts'
+import type { Router } from '~/api/core/router.ts'
 import { getSession } from '~/api/core/sessions.ts'
 
 const clients = new Set<WebSocket>()
@@ -26,7 +26,7 @@ export function mount(app: Router) {
 
     ctx.log('[ws] connecting...', nick)
 
-    const { socket: ws, response } = Deno.upgradeWebSocket(ctx.request, {
+    const { response, socket: ws } = Deno.upgradeWebSocket(ctx.request, {
       idleTimeout: 0
     })
 

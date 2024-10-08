@@ -7,6 +7,7 @@ import { icon } from '~/lib/icon.ts'
 import * as actions from '~/src/rpc/chat.ts'
 import { state } from '~/src/state.ts'
 import { byName, hasChannel } from './util.ts'
+import { H3 } from '~/src/ui/Heading.tsx'
 
 export function Channels({ overlay = true }: { overlay?: boolean }) {
   using $ = Sigui()
@@ -14,7 +15,7 @@ export function Channels({ overlay = true }: { overlay?: boolean }) {
     "w-[30%] max-w-56 flex flex-col gap-2 pt-1.5 pb-2.5 pr-4 mr-4 flex-shrink-0 border-r border-r-neutral-700",
     { 'absolute bg-neutral-900 h-[calc(100vh-4.5rem)]': overlay },
   )}>
-    <h3 class="min-h-9 flex items-center justify-between border-b border-neutral-600">
+    <H3>
       <span>Channels</span>
       <button class="flex items-center text-sm pr-2 gap-1"
         onclick={async () => {
@@ -47,7 +48,7 @@ export function Channels({ overlay = true }: { overlay?: boolean }) {
       >
         {icon(Plus, { size: 16, 'stroke-width': 1.5 })}
       </button>
-    </h3>
+    </H3>
 
     <div class="flex flex-col overflow-y-scroll leading-[19px]">
       {() => state.channelsList.map(channel => {

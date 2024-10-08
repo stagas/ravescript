@@ -25,3 +25,15 @@ export interface ChatMessage {
   nick: string
   text: string
 }
+
+export type ChatDirectMessageType =
+  | 'directMessage'
+  | 'webrtc:offer'
+  | 'webrtc:answer'
+  | 'webrtc:end'
+
+export interface ChatDirectMessage {
+  type: ChatDirectMessageType
+  nick: string
+  text: string
+}

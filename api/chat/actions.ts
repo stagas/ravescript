@@ -1,7 +1,8 @@
+// deno-lint-ignore-file require-await
 import { UserSession } from '~/api/auth/types.ts'
 import { bus } from "~/api/chat/bus.ts"
 import { broadcast, subs } from "~/api/chat/routes.ts"
-import { ChatChannel, ChatMessage, ChatMessageType, UiChannel } from "~/api/chat/types.ts"
+import { ChatChannel, ChatDirectMessage, ChatDirectMessageType, ChatMessage, ChatMessageType, UiChannel } from "~/api/chat/types.ts"
 import { createBus } from '~/api/core/create-bus.ts'
 import { Context } from '~/api/core/router.ts'
 import { getSession } from '~/api/core/sessions.ts'
@@ -137,6 +138,23 @@ export async function sendMessageToChannel(ctx: Context, type: ChatMessageType, 
   }
 
   return message
+}
+
+actions.post.sendMessageToUser = sendMessageToUser
+export async function sendMessageToUser(ctx: Context, type: ChatDirectMessageType, targetNick: string, text: string = '') {
+  const { nick } = getSession(ctx)
+  if (nick === targetNick) return
+
+  const msg: ChatDirectMessage = {
+    type,
+    nick,
+    text
+  }
+
+  const sub = subs.get(targetNick)
+  if (sub) {
+    sub.send(msg)
+  }
 }
 
 actions.post.joinChannel = joinChannel

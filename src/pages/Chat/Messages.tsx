@@ -7,6 +7,7 @@ import { colorizeNick } from '~/src/pages/Chat/util.ts'
 import * as actions from '~/src/rpc/chat.ts'
 import { screen } from '~/src/screen.ts'
 import { state } from '~/src/state.ts'
+import { H3 } from '~/src/ui/Heading.tsx'
 
 export function Messages({ showChannelsOverlay }: { showChannelsOverlay: Signal<boolean> }) {
   using $ = Sigui()
@@ -57,7 +58,7 @@ export function Messages({ showChannelsOverlay }: { showChannelsOverlay: Signal<
     'w-full pt-1.5 pb-2.5 flex flex-col max-h-[calc(100vh-4rem)]',
     { 'w-[70%]': screen.md },
   )} onclick={() => info.showChannelsOverlay = false}>
-    <h3 class="min-h-9 flex items-center border-b border-neutral-600 justify-between">
+    <H3>
       <div class="flex flex-row">
         {() => screen.sm
           ?
@@ -77,7 +78,7 @@ export function Messages({ showChannelsOverlay }: { showChannelsOverlay: Signal<
       <button class="flex items-center text-sm pr-2 gap-1" title="Leave channel">
         {icon(LogOut, { size: 16, 'stroke-width': 1.5 })}
       </button>
-    </h3>
+    </H3>
 
     <div ref="chatMessages" class="overflow-y-scroll leading-[19px]">
       <div class="flex flex-col justify-end min-h-[calc(100vh-8.75rem)]">
