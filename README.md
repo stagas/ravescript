@@ -65,7 +65,7 @@
 - [x] WebAudio
   - [x] Wasm AudioWorklet
 - [ ] WebGL
-- [ ] WebRTC
+- [x] WebRTC
 - [x] QRCode
 - [ ] Maps
 - [x] Testing

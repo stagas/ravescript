@@ -7,3 +7,4 @@ export const deleteChannel = rpc<typeof actions.deleteChannel>('POST', 'deleteCh
 export const getChannel = rpc<typeof actions.getChannel>('GET', 'getChannel')
 export const joinChannel = rpc<typeof actions.joinChannel>('POST', 'joinChannel')
 export const sendMessageToChannel = rpc<typeof actions.sendMessageToChannel>('POST', 'sendMessageToChannel')
+export const sendMessageToUser = rpc<typeof actions.sendMessageToUser>('POST', 'sendMessageToUser')
