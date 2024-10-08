@@ -154,7 +154,10 @@ export async function sendMessageToUser(ctx: Context, type: ChatDirectMessageTyp
   const sub = subs.get(targetNick)
   if (sub) {
     sub.send(msg)
+    return
   }
+
+  bus.postMessage({ type, from: nick, nick: targetNick, text })
 }
 
 actions.post.joinChannel = joinChannel

@@ -21,6 +21,7 @@ export type ChatMessageType =
 
 export interface ChatMessage {
   type: ChatMessageType
+  from?: string
   channel?: string
   nick: string
   text: string
@@ -32,8 +33,16 @@ export type ChatDirectMessageType =
   | 'webrtc:answer'
   | 'webrtc:end'
 
+export const chatDirectMessageTypes = [
+  'directMessage',
+  'webrtc:offer',
+  'webrtc:answer',
+  'webrtc:end',
+]
+
 export interface ChatDirectMessage {
   type: ChatDirectMessageType
+  from?: string
   nick: string
   text: string
 }
