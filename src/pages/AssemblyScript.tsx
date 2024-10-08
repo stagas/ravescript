@@ -2,6 +2,7 @@ import { Sigui } from 'sigui'
 import { Player } from '~/src/as/pkg/player.ts'
 import { PkgService } from '~/src/as/pkg/service.ts'
 import pkg from '~/src/as/pkg/wasm.ts'
+import { Button } from '~/src/ui/index.ts'
 
 let audioContext: AudioContext
 
@@ -34,7 +35,7 @@ export function AssemblyScript() {
     <br />
     Worker: {() => info.fromWorker}
     <br />
-    <button onclick={() => pkgPlayer.play()}>Play</button>
-    <button onclick={() => pkgPlayer.stop()}>Stop</button>
+    <Button onclick={() => pkgPlayer.play()}>Play</Button>
+    <Button onclick={() => pkgPlayer.stop()}>Stop</Button>
   </div>
 }

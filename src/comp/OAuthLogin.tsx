@@ -1,6 +1,7 @@
 import { on } from 'utils'
 import { whoami } from '~/src/rpc/auth.ts'
 import { state } from '~/src/state.ts'
+import { Button } from '~/src/ui/index.ts'
 
 export function OAuthLogin() {
   function oauthLogin(provider: string) {
@@ -30,5 +31,7 @@ export function OAuthLogin() {
     }, { once: true })
   }
 
-  return <button onclick={() => oauthLogin('github')}>Proceed with GitHub</button>
+  return <Button onclick={() => oauthLogin('github')}>
+    Proceed with GitHub
+  </Button>
 }
