@@ -9,7 +9,7 @@ function UiGroup({ name, children }: { name: string, children?: any }) {
 
 export function UiShowcase() {
   return (
-    <div class="w-[400px]">
+    <div class="max-w-[400px]">
 
       <H1>UI Showcase</H1>
 

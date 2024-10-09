@@ -1,5 +1,5 @@
 import { Sigui, type Signal } from 'sigui'
-import { dom, drawText } from 'utils'
+import { dom, drawText, isMobile } from 'utils'
 import { screen } from '~/src/screen.ts'
 import { Canvas } from '~/src/ui/Canvas.tsx'
 import { TextBuffer } from '~/src/ui/editor/text-buffer'
@@ -18,14 +18,15 @@ export function Editor({ code, width, height }: {
   using $ = Sigui()
 
   const canvas = <Canvas width={width} height={height} /> as HTMLCanvasElement
+
   const textarea = <textarea
     spellcheck="false"
     autocorrect="off"
     autocapitalize="off"
     autocomplete="off"
-    virtualkeyboardpolicy="manual"
+    virtualkeyboardpolicy="auto"
     class="
-      fixed opacity-50 w-[50px] h-[50px]
+      fixed right-0 top-0 opacity-50 w-[50px] h-[50px]
       pointer-events-none caret-transparent
       border-none outline-none
       resize-none p-0 whitespace-pre
@@ -90,7 +91,7 @@ export function Editor({ code, width, height }: {
     c.textBaseline = 'top'
     c.textRendering = 'optimizeSpeed'
     c.miterLimit = 1.5
-    c.font = '16px "Ubuntu Mono"'
+    c.font = '16px "Ubuntu Mono", monospace'
   })
 
   // split code to lines
@@ -166,183 +167,194 @@ export function Editor({ code, width, height }: {
     }
   })
 
-  // focus textarea initially and on window focus or canvas pointerdown
   function focus() {
-    textarea.focus()
+    textarea.focus({ preventScroll: true })
   }
   requestAnimationFrame(focus)
-  window.onfocus = canvas.onpointerup = () => {
-    textarea.focus()
+  if (isMobile()) {
+    canvas.ontouchend = ev => {
+      ev.preventDefault()
+      focus()
+    }
+  }
+  window.onfocus = canvas.onpointerup = (ev: PointerEvent | FocusEvent) => {
+    ev.preventDefault()
+    focus()
   }
 
   // read keyboard input
-  $.fx(() => {
-    textarea.focus()
-    return [
-      dom.on(textarea, 'keydown', $.fn((ev: KeyboardEvent) => {
-        ev.preventDefault()
+  $.fx(() => [
+    // mobile
+    dom.on(textarea, 'input', $.fn((ev: InputEvent) => {
+      if (ev.data) textarea.dispatchEvent(new KeyboardEvent('keydown', { key: ev.data }))
+    }) as any),
 
-        const {
-          buffer,
-          caret, caretIndex, caretVisual, caretVisualXIntent,
-        } = info
+    // desktop
+    dom.on(textarea, 'keydown', $.fn((ev: KeyboardEvent) => {
+      if (ev.ctrlKey && ev.key.toLowerCase() === 'j') return
 
-        const {
-          code,
-          lines, linesVisual
-        } = buffer.info
+      ev.preventDefault()
 
-        const { key } = ev
-        const ctrl = ev.ctrlKey || ev.metaKey
-        const alt = ev.altKey
-        const shift = ev.shiftKey
+      const {
+        buffer,
+        caret, caretIndex, caretVisual, caretVisualXIntent,
+      } = info
 
-        function moveCaretUpDown(newY: number) {
-          if (newY >= 0 && newY <= linesVisual.length) {
-            const { x, y } = buffer.visualPointToLogicalPoint({
-              x: caretVisualXIntent,
-              y: newY
-            })
-            caret.x = x
-            caret.y = y
+      const {
+        code,
+        lines, linesVisual
+      } = buffer.info
+
+      const { key } = ev
+      const ctrl = ev.ctrlKey || ev.metaKey
+      const alt = ev.altKey
+      const shift = ev.shiftKey
+
+      function moveCaretUpDown(newY: number) {
+        if (newY >= 0 && newY <= linesVisual.length) {
+          const { x, y } = buffer.visualPointToLogicalPoint({
+            x: caretVisualXIntent,
+            y: newY
+          })
+          caret.x = x
+          caret.y = y
+        }
+      }
+
+      function moveCaretLeft() {
+        if (caret.x > 0) caret.x--
+        else if (caret.y > 0) {
+          caret.y--
+          caret.x = lines[caret.y].length
+        }
+        $.flush()
+        info.caretVisualXIntent = caretVisual.x
+      }
+
+      function moveCaretRight() {
+        const line = lines[caret.y]
+        if (caret.x < line.length) {
+          caret.x++
+        }
+        else if (caret.y < lines.length - 1) {
+          caret.y++
+          caret.x = 0
+        }
+        $.flush()
+        info.caretVisualXIntent = caretVisual.x
+      }
+
+      function moveCaretWord(dir: number) {
+        const words = parseWords(WORD, code)
+        let index = dir > 0 ? code.length : 0
+        for (let i = dir > 0 ? 0 : words.length - 1; dir > 0 ? i < words.length : i >= 0; dir > 0 ? i++ : i--) {
+          const word = words[i]
+          if ((dir > 0 && word.index > caretIndex) || (dir < 0 && word.index < caretIndex)) {
+            index = word.index
+            break
           }
         }
+        const p = buffer.indexToPoint(index)
+        caret.x = p.x
+        caret.y = p.y
+        $.flush()
+        info.caretVisualXIntent = caretVisual.x
+      }
 
-        function moveCaretLeft() {
-          if (caret.x > 0) caret.x--
+      // insert character
+      if (key.length === 1) {
+        const line = lines[caret.y]
+        lines[caret.y] = line.slice(0, caret.x) + key + line.slice(caret.x)
+        buffer.updateFromLines()
+        caret.x++
+        $.flush()
+        info.caretVisualXIntent = caretVisual.x
+      }
+      else {
+        // handle backspace
+        if (key === 'Backspace') {
+          // at greater than line length, remove char
+          if (caret.x > 0) {
+            const line = lines[caret.y]
+            lines[caret.y] = line.slice(0, caret.x - 1) + line.slice(caret.x)
+            buffer.updateFromLines()
+            caret.x--
+            $.flush()
+            info.caretVisualXIntent = caretVisual.x
+          }
+          // at start of line, merge with previous line
           else if (caret.y > 0) {
+            const line = lines[caret.y]
+            caret.x = lines[caret.y - 1].length
+            lines[caret.y - 1] += line
+            lines.splice(caret.y, 1)
+            buffer.updateFromLines()
             caret.y--
-            caret.x = lines[caret.y].length
+            $.flush()
+            info.caretVisualXIntent = caretVisual.x
           }
-          $.flush()
-          info.caretVisualXIntent = caretVisual.x
         }
-
-        function moveCaretRight() {
+        // handle delete
+        else if (key === 'Delete') {
           const line = lines[caret.y]
           if (caret.x < line.length) {
-            caret.x++
-          }
-          else if (caret.y < lines.length - 1) {
-            caret.y++
-            caret.x = 0
-          }
-          $.flush()
-          info.caretVisualXIntent = caretVisual.x
-        }
-
-        function moveCaretWord(dir: number) {
-          const words = parseWords(WORD, code)
-          let index = dir > 0 ? code.length : 0
-          for (let i = dir > 0 ? 0 : words.length - 1; dir > 0 ? i < words.length : i >= 0; dir > 0 ? i++ : i--) {
-            const word = words[i]
-            if ((dir > 0 && word.index > caretIndex) || (dir < 0 && word.index < caretIndex)) {
-              index = word.index
-              break
-            }
-          }
-          const p = buffer.indexToPoint(index)
-          caret.x = p.x
-          caret.y = p.y
-          $.flush()
-          info.caretVisualXIntent = caretVisual.x
-        }
-
-        // insert character
-        if (key.length === 1) {
-          const line = lines[caret.y]
-          lines[caret.y] = line.slice(0, caret.x) + key + line.slice(caret.x)
-          buffer.updateFromLines()
-          caret.x++
-          $.flush()
-          info.caretVisualXIntent = caretVisual.x
-        }
-        else {
-          // handle backspace
-          if (key === 'Backspace') {
-            // at greater than line length, remove char
-            if (caret.x > 0) {
-              const line = lines[caret.y]
-              lines[caret.y] = line.slice(0, caret.x - 1) + line.slice(caret.x)
-              buffer.updateFromLines()
-              caret.x--
-              $.flush()
-              info.caretVisualXIntent = caretVisual.x
-            }
-            // at start of line, merge with previous line
-            else if (caret.y > 0) {
-              const line = lines[caret.y]
-              caret.x = lines[caret.y - 1].length
-              lines[caret.y - 1] += line
-              lines.splice(caret.y, 1)
-              buffer.updateFromLines()
-              caret.y--
-              $.flush()
-              info.caretVisualXIntent = caretVisual.x
-            }
-          }
-          // handle delete
-          else if (key === 'Delete') {
-            const line = lines[caret.y]
-            if (caret.x < line.length) {
-              lines[caret.y] = line.slice(0, caret.x) + line.slice(caret.x + 1)
-              buffer.updateFromLines()
-            }
-          }
-          // handle home
-          else if (key === 'Home') {
-            const bx = beginOfLine(linesVisual[caretVisual.y].text)
-            const vx = bx === caretVisual.x ? 0 : bx
-            const { x, y } = buffer.visualPointToLogicalPoint({ x: vx, y: caretVisual.y })
-            caret.x = x
-            caret.y = y
-            $.flush()
-            info.caretVisualXIntent = caretVisual.x
-          }
-          // handle end
-          else if (key === 'End') {
-            const { x, y } = buffer.visualPointToLogicalPoint({ x: linesVisual[caretVisual.y].text.length, y: caretVisual.y })
-            caret.x = x
-            caret.y = y
-            $.flush()
-            info.caretVisualXIntent = caretVisual.x
-          }
-          // handle enter
-          else if (key === 'Enter') {
-            const line = lines[caret.y]
-            lines[caret.y] = line.slice(0, caret.x)
-            lines.splice(caret.y + 1, 0, line.slice(caret.x))
+            lines[caret.y] = line.slice(0, caret.x) + line.slice(caret.x + 1)
             buffer.updateFromLines()
-            caret.y++
-            caret.x = 0
-            $.flush()
-            info.caretVisualXIntent = caretVisual.x
-          }
-          // handle arrow keys
-          else if (key === 'ArrowUp' || key === 'ArrowDown') {
-            const newY = key === 'ArrowUp'
-              ? caretVisual.y - 1
-              : caretVisual.y + 1
-            moveCaretUpDown(newY)
-          }
-          else if (key === 'ArrowLeft') {
-            if (ctrl) moveCaretWord(-1)
-            else moveCaretLeft()
-          }
-          else if (key === 'ArrowRight') {
-            if (ctrl) moveCaretWord(+1)
-            else moveCaretRight()
           }
         }
+        // handle home
+        else if (key === 'Home') {
+          const bx = beginOfLine(linesVisual[caretVisual.y].text)
+          const vx = bx === caretVisual.x ? 0 : bx
+          const { x, y } = buffer.visualPointToLogicalPoint({ x: vx, y: caretVisual.y })
+          caret.x = x
+          caret.y = y
+          $.flush()
+          info.caretVisualXIntent = caretVisual.x
+        }
+        // handle end
+        else if (key === 'End') {
+          const { x, y } = buffer.visualPointToLogicalPoint({ x: linesVisual[caretVisual.y].text.length, y: caretVisual.y })
+          caret.x = x
+          caret.y = y
+          $.flush()
+          info.caretVisualXIntent = caretVisual.x
+        }
+        // handle enter
+        else if (key === 'Enter') {
+          const line = lines[caret.y]
+          lines[caret.y] = line.slice(0, caret.x)
+          lines.splice(caret.y + 1, 0, line.slice(caret.x))
+          buffer.updateFromLines()
+          caret.y++
+          caret.x = 0
+          $.flush()
+          info.caretVisualXIntent = caretVisual.x
+        }
+        // handle arrow keys
+        else if (key === 'ArrowUp' || key === 'ArrowDown') {
+          const newY = key === 'ArrowUp'
+            ? caretVisual.y - 1
+            : caretVisual.y + 1
+          moveCaretUpDown(newY)
+        }
+        else if (key === 'ArrowLeft') {
+          if (ctrl) moveCaretWord(-1)
+          else moveCaretLeft()
+        }
+        else if (key === 'ArrowRight') {
+          if (ctrl) moveCaretWord(+1)
+          else moveCaretRight()
+        }
+      }
 
-      }))
-    ]
-  })
+    }))
+  ])
 
   const el = <div>
     {canvas}
     {textarea}
-  </div>
+  </div> as HTMLDivElement
 
   return { el, focus }
 }

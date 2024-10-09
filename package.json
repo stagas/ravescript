@@ -44,6 +44,7 @@
     "kysely-ctl": "^0.9.0",
     "open-in-editor": "^2.2.0",
     "postcss": "^8.4.47",
+    "qrcode-terminal": "^0.12.0",
     "tailwindcss": "^3.4.13",
     "utils": "github:stagas/utils",
     "visitor-as": "^0.11.4",

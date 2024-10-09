@@ -1,13 +1,14 @@
-import { $ } from 'sigui'
+import { $, fx } from 'sigui'
 import type { z } from 'zod'
 import type { UserSession } from '~/api/auth/types.ts'
 import type { UiChannel } from '~/api/chat/types.ts'
 import type { Channels } from '~/api/models.ts'
 import { env } from '~/src/env.ts'
+import { screen } from '~/src/screen.ts'
 import { link } from '~/src/ui/Link.tsx'
 
 export let state = $({
-  user: undefined as undefined | null | UserSession,
+  container: null as null | HTMLElement,
 
   url: link.$.url,
   get pathname() {
@@ -27,6 +28,8 @@ export let state = $({
     return url.href
   },
 
+  user: undefined as undefined | null | UserSession,
+
   channelsList: [] as Pick<z.infer<typeof Channels>, 'name'>[],
   channels: [] as UiChannel[],
   currentChannelName: null as null | string,
@@ -37,9 +40,18 @@ export let state = $({
   toastMessages: [] as { message?: string, stack?: string }[],
 })
 
+// fx(() => {
+//   const { container } = $.of(state)
+//   const { width, height } = screen
+//   $()
+//   container.style.width = width + 'px'
+//   container.style.height = height + 'px'
+// })
+
 export function setState(newState: any) {
   state = newState
 }
+
 // const channels = ['general', 'random', 'dev']
 // // const channels = Array.from({ length: 50 + (Math.random() * 50 | 0) }).map(() => loremRandomWord())
 // state.channels = channels.sort().map(name => $({

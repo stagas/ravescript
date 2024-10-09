@@ -6,6 +6,7 @@ import { kv } from "~/api/core/app.ts"
 import type { Handler } from '~/api/core/router.ts'
 import { sessions } from "~/api/core/sessions.ts"
 import { env } from '~/api/env.ts'
+import { IS_DEV } from '~/api/core/constants.ts'
 
 const DEBUG = false
 const ORIGIN_REGEX = /(https:\/\/[^\/\n]+\.deno\.dev)/g
@@ -17,6 +18,11 @@ export const cors: Handler = ctx => {
       ctx.request.headers.get('referer')
 
     if (!ctx.request.headers.get('upgrade') && origin) {
+      if (IS_DEV) {
+        res.headers.set('access-control-allow-origin', origin)
+        return
+      }
+
       const [match] = origin.match(ORIGIN_REGEX) ?? []
       if (match) {
         res.headers.set('access-control-allow-origin', match)

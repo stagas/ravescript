@@ -1,6 +1,6 @@
 import { build, createLogger, type Plugin, type UserConfig } from 'vite'
 
-export function BundleUrl({ plugins }: { plugins: (Plugin | Plugin[])[] }): Plugin {
+export function ViteBundleUrl({ plugins }: { plugins: (Plugin | Plugin[])[] }): Plugin {
   let viteConfig: UserConfig
 
   return {

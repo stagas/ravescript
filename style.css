@@ -49,6 +49,8 @@
       hover:border-neutral-400
       hover:border-t-neutral-600
       hover:border-l-neutral-600
+
+      placeholder-neutral-500
       ;
   }
   a {
@@ -69,6 +71,9 @@
   }
 }
 
+input::placeholder {
+  font-style: italic;
+}
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,

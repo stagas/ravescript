@@ -149,7 +149,7 @@ export function Chat() {
       .catch(console.error)
   })
 
-  return <div class="h-[calc(100vh-4.5rem)] flex">
+  return <div class="h-[calc(100dvh-4.5rem)] flex">
     {() => screen.md || info.showChannelsOverlay
       ? <Channels overlay={info.showChannelsOverlay} />
       : <div />

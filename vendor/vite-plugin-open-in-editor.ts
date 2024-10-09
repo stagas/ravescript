@@ -10,7 +10,7 @@ const editor: { open(filename: string): Promise<void> } = openInEditor.configure
   dotfiles: 'allow',
 })
 
-export const OpenInEditor = (): Plugin => ({
+export const ViteOpenInEditor = (): Plugin => ({
   name: 'open-in-editor',
   configureServer(server) {
     server.middlewares.use(async (req, res, next) => {

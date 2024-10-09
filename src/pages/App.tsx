@@ -77,7 +77,7 @@ export function App() {
   ])
 
   return <main
-    class="flex flex-col h-[100vh]"
+    class="flex flex-col relative"
     onmouseenter={() => info.bg = '#433'}
     onmouseleave={() => info.bg = 'transparent'}
   >

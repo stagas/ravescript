@@ -7,7 +7,11 @@ export function Canvas({ width, height }: {
 }) {
   using $ = Sigui()
 
-  const canvas = <canvas width="1" height="1" /> as HTMLCanvasElement
+  const canvas = <canvas
+    width="1"
+    height="1"
+    class="touch-none"
+  /> as HTMLCanvasElement
 
   const info = $({
     pr: screen.$.pr,
