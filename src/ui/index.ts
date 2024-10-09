@@ -1,4 +1,5 @@
 export * from './Button.tsx'
+export * from './Canvas.tsx'
 export * from './Fieldset.tsx'
 export * from './Heading.tsx'
 export * from './Input.tsx'

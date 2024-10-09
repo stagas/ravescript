@@ -8,8 +8,9 @@ import { Toast } from '~/src/comp/Toast.tsx'
 import { VerifyEmail } from '~/src/comp/VerifyEmail.tsx'
 import { About } from '~/src/pages/About.tsx'
 import { AssemblyScript } from '~/src/pages/AssemblyScript.tsx'
-import { Canvas } from '~/src/pages/Canvas'
+import { CanvasDemo } from '~/src/pages/CanvasDemo'
 import { Chat } from '~/src/pages/Chat/Chat.tsx'
+import { EditorDemo } from '~/src/pages/EditorDemo.tsx'
 import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
 import { QrCode } from '~/src/pages/QrCode.tsx'
@@ -35,7 +36,8 @@ export function App() {
     '/ui': () => <UiShowcase />,
     '/chat': () => <Chat />,
     '!/ws': () => <WebSockets />,
-    '!/canvas': () => <Canvas width={info.$.canvasWidth} height={info.$.canvasHeight} />,
+    '!/canvas': () => <CanvasDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
+    '/editor': () => <EditorDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/asc': () => <AssemblyScript />,
     '/qrcode': () => <QrCode />,
     '/about': () => <About />,
