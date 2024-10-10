@@ -4,10 +4,15 @@ import { Anim } from '~/src/as/gfx/anim.ts'
 import type { Token } from '~/src/lang/tokenize.ts'
 import { screen } from '~/src/screen.ts'
 import { Canvas } from '~/src/ui/Canvas.tsx'
-import { Point, Widgets } from '~/src/ui/Editor.tsx'
-import { Buffer } from '~/src/ui/editor/buffer.ts'
-import { Caret } from '~/src/ui/editor/caret.ts'
-import { Dims } from '~/src/ui/editor/dims.ts'
+import { Buffer, Caret, Dims, Point, Widgets } from '~/src/ui/editor/index.ts'
+
+interface TokenDrawInfo {
+  point: Point
+  fill: string
+  stroke: string
+}
+
+export type View = ReturnType<typeof View>
 
 export function View({ width, height, dims, caret, buffer, colorize }: {
   width: Signal<number>
@@ -37,6 +42,91 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
   const anim = Anim()
   anim.ticks.add(draw)
 
+  // draw info
+  const tokenDrawInfo = new WeakMap<Token, TokenDrawInfo>()
+  let caretPoint = Point()
+  let extraHeights: number[] = []
+
+  function pointFromLinecol({ line, col }: { line: number, col: number }) {
+    const { charWidth, lineHeight } = dims.info
+
+    const p = Point()
+    p.x = col * charWidth
+
+    let top = 0
+    for (let y = 0; y <= line; y++) {
+      let l = widgets.lines.get(y)
+      if (l) top += l.deco
+      if (y === line) p.y = top
+      top += lineHeight
+      if (l) top += l.subs
+    }
+
+    return p
+  }
+
+  // update token draw info
+  $.fx(() => {
+    const { tokens, linesVisual } = buffer.info
+    const { charWidth, lineHeight } = dims.info
+
+    $()
+
+    const lastVisibleLine = linesVisual.length
+    let eh = 0
+    extraHeights = Array.from({ length: lastVisibleLine }, (_, y) => {
+      let curr = eh
+      const line = linesVisual[y]
+      if (!line.text.trim().length) eh += lineHeight
+      else eh = 0
+      return curr
+    })
+
+    widgets.deco.forEach(w => {
+      const b = w.bounds
+      const p = pointFromLinecol(b)
+      w.rect.x = p.x
+      w.rect.y = p.y - widgets.heights.deco - extraHeights[b.line]
+      w.rect.w = (b.right - b.col) * charWidth
+      w.rect.h = widgets.heights.deco + extraHeights[b.line]
+    })
+
+    widgets.subs.forEach(w => {
+      const b = w.bounds
+      const p = pointFromLinecol(b)
+      w.rect.x = p.x
+      w.rect.y = p.y + lineHeight
+      w.rect.w = (b.right - b.col) * charWidth
+      w.rect.h = widgets.heights.subs
+    })
+
+    widgets.mark.forEach(w => {
+      const b = w.bounds
+      const p = pointFromLinecol(b)
+      w.rect.x = p.x
+      w.rect.y = p.y
+      w.rect.w = (b.right - b.col) * charWidth
+      w.rect.h = lineHeight
+    })
+
+    tokens.forEach(token => {
+      const point = pointFromLinecol(token)
+      const { fill, stroke } = colorize(token)
+      tokenDrawInfo.set(token, {
+        point,
+        fill,
+        stroke,
+      })
+    })
+  })
+
+  $.fx(() => {
+    const { tokens } = buffer.info
+    const { x, y } = caret.visual
+    $()
+    caretPoint = pointFromLinecol({ line: y, col: x })
+  })
+
   // wait for fonts to load
   document.fonts.ready.then(() => {
     info.c = c
@@ -46,40 +136,6 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
     dims.info.charWidth = metrics.width
     dims.info.charHeight = Math.ceil(metrics.fontBoundingBoxDescent - metrics.fontBoundingBoxAscent)
   })
-
-  const p: Point = Point()
-
-  function pointFromLinecol({ line, col }: { line: number, col: number }, charWidth: number, lineHeight: number) {
-    p.x = 1 + col * charWidth
-    p.y = 1 + line * lineHeight
-    return p
-  }
-
-  function draw() {
-    const { c, width, height } = $.of(info)
-    const { charWidth, lineHeight } = dims.info
-    const { y: cy } = caret.info.visual
-
-    // draw widgets
-    widgets.draw()
-
-    // clear editor
-    c.clearRect(0, 0, width, height)
-
-    // highlight line
-    c.fillStyle = '#333'
-    c.fillRect(0, Math.floor(cy * lineHeight), width, lineHeight - 2)
-
-    // draw text
-    buffer.info.tokens.forEach(token => {
-      const p = pointFromLinecol(token, charWidth, lineHeight)
-      const { fill, stroke } = colorize(token)
-      drawText(c, p, token.text, fill, .025, stroke)
-    })
-
-    // draw caret
-    caret.draw(c)
-  }
 
   // initialize canvas context settings
   $.fx(() => {
@@ -110,6 +166,39 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
     $()
     anim.info.epoch++
   })
+
+  function draw() {
+    const { c, width, height } = $.of(info)
+    const { charWidth, lineHeight } = dims.info
+    const { y: cy } = caret.visual
+
+    // clear editor
+    c.clearRect(0, 0, width, height)
+
+    c.save()
+    c.translate(1, 1)
+
+    // draw active line
+    c.fillStyle = '#333'
+    c.fillRect(0, caretPoint.y, width, lineHeight - 2)
+
+    // draw text
+    c.save()
+    c.translate(1, 1)
+    buffer.info.tokens.forEach(token => {
+      const d = tokenDrawInfo.get(token)
+      if (d) drawText(c, d.point, token.text, d.fill, .025, d.stroke)
+    })
+    c.restore()
+
+    // draw widgets
+    widgets.draw()
+
+
+    // draw caret
+    caret.draw(c, caretPoint)
+    c.restore()
+  }
 
   return { el, info, widgets, anim }
 }

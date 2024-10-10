@@ -5,7 +5,7 @@ import { Button } from '~/src/ui/Button.tsx'
 
 export function AnimMode({ anim }: { anim: Anim }) {
   return <div class="flex items-center self-start gap-2">
-    <span>Anim Mode:</span>
+    <span>anim:</span>
     <Button onclick={() => state.animCycle?.()} class="flex flex-row items-center justify-between gap-1">
       {() => <div class={cn(
         'rounded-[100%] w-2 h-2',

@@ -3,7 +3,7 @@ import { AnimMode } from '~/src/comp/AnimMode.tsx'
 import { Token, tokenize } from '~/src/lang/tokenize.ts'
 import { screen } from '~/src/screen.ts'
 import { theme } from '~/src/theme.ts'
-import { Editor, type WordWrapProcessor } from '~/src/ui/Editor.tsx'
+import { Editor, Widget, type WordWrapProcessor } from '~/src/ui/Editor.tsx'
 import { H2 } from '~/src/ui/Heading.tsx'
 
 export function EditorDemo({ width, height }: {
@@ -14,7 +14,7 @@ export function EditorDemo({ width, height }: {
 
   const wordWrapProcessor: WordWrapProcessor = {
     pre(input: string) {
-      return input.replace(/\[(\w+)([^\]]+)\]/g, (_: any, word: string, chunk: string) => {
+      return input.replace(/\[(\w+)([^\]\n]+)\]/g, (_: any, word: string, chunk: string) => {
         const c = chunk.replace(/\s/g, '\u0000')
         return `[${word}${c}]`
       })
@@ -30,6 +30,8 @@ export function EditorDemo({ width, height }: {
     width,
     height,
     code: `\
+
+
 [sin 300] [tri 444] [sqr 555] @ \
 [lp 300 .8] [dly 16 1 /] [ppd (3 4 5)] \
 [ar 10 50] *
@@ -57,10 +59,48 @@ export function EditorDemo({ width, height }: {
     width: info.$.width,
     height: info.$.height,
     code: info.$.code,
-    colorize: colorize,
-    tokenize: tokenize,
-    wordWrapProcessor: wordWrapProcessor,
+    colorize,
+    tokenize,
+    wordWrapProcessor,
   })
+
+  const shapes = editor.widgets.gfx.createShapes()
+  editor.widgets.gfx.scene.add(shapes)
+
+  const d1 = Widget()
+  function drawRect(this: Widget, c: CanvasRenderingContext2D) {
+    const r = this.rect
+    c.strokeStyle = '#666'
+    c.strokeRect(r.x, r.y, r.w, r.h)
+  }
+  d1.draw = drawRect
+  d1.bounds.line = 2
+  d1.bounds.bottom = 2
+  d1.bounds.right = 9
+  d1.bounds.length = 9
+  editor.widgets.deco.add(d1)
+
+  const d2 = Widget()
+  const box = shapes.Box(d2.rect)
+  box.view.color = 0xff00ff
+  // d2.draw = () => {}
+  d2.bounds.line = 2
+  d2.bounds.col = 10
+  d2.bounds.bottom = 2
+  d2.bounds.right = 19
+  d2.bounds.length = 9
+  editor.widgets.deco.add(d2)
+
+  const d3 = Widget()
+  d3.draw = drawRect
+  d3.bounds.line = 2
+  d3.bounds.col = 10
+  d3.bounds.bottom = 2
+  d3.bounds.right = 19
+  d3.bounds.length = 9
+  editor.widgets.subs.add(d3)
+
+  editor.widgets.update()
 
   const el = <div>
     <div class="flex items-center justify-between">

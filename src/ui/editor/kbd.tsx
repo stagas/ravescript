@@ -24,7 +24,7 @@ export function Kbd({ buffer, caret }: {
     "
   /> as HTMLTextAreaElement
 
-  const ignoredKeys = 'cvxjrtn=+-'
+  const ignoredKeys = 'zycvxjrtn=+-'
 
   // read keyboard input
   $.fx(() => [

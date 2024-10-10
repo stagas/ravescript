@@ -173,17 +173,16 @@ export function Caret({ buffer, dims, misc }: {
     caret.visualXIntent = caret.visual.x
   }
 
-  function draw(c: CanvasRenderingContext2D) {
+  function draw(c: CanvasRenderingContext2D, point: Point) {
     const { isVisible } = caret
     if (!isVisible) return
 
-    const { caretWidth, charWidth, charHeight, lineHeight } = dims.info
-    const { x, y } = caret.visual
+    const { caretWidth, charHeight } = dims.info
 
     c.fillStyle = '#fff'
     c.fillRect(
-      x * charWidth,
-      y * lineHeight + .5,
+      point.x,
+      point.y + .5,
       caretWidth,
       charHeight
     )
