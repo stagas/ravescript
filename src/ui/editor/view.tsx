@@ -1,17 +1,19 @@
 import { Sigui, type Signal } from 'sigui'
 import { drawText } from 'utils'
+import type { Token } from '~/src/lang/tokenize.ts'
 import { screen } from '~/src/screen.ts'
 import { Canvas } from '~/src/ui/Canvas.tsx'
 import { Buffer } from '~/src/ui/editor/buffer.ts'
 import { Caret } from '~/src/ui/editor/caret.ts'
 import { Dims } from '~/src/ui/editor/dims.ts'
 
-export function View({ width, height, dims, caret, buffer }: {
+export function View({ width, height, dims, caret, buffer, colorize }: {
   width: Signal<number>
   height: Signal<number>
   dims: Dims
   caret: Caret
   buffer: Buffer
+  colorize: (token: Token) => { fill: string, stroke: string }
 }) {
   using $ = Sigui()
 
@@ -38,7 +40,7 @@ export function View({ width, height, dims, caret, buffer }: {
 
   // initialize canvas context settings
   $.fx(() => {
-    const { pr, c, width, height } = $.of(info)
+    const { c, pr, width, height } = $.of(info)
     $()
     c.scale(pr, pr)
     c.textBaseline = 'top'
@@ -73,8 +75,16 @@ export function View({ width, height, dims, caret, buffer }: {
     c.fillRect(0, Math.floor(cy * lineHeight), width, lineHeight - 2)
 
     // draw text
-    buffer.info.linesVisual.forEach((line, y) => {
-      drawText(c, { x: 1, y: 1 + y * lineHeight }, line.text, '#888', .025, '#888')
+    buffer.info.tokens.forEach(token => {
+      const p = {
+        x: 1 + token.col * charWidth,
+        y: 1 + token.line * lineHeight
+      }
+      const { fill, stroke } = colorize(token)
+      drawText(c, p,
+        token.text, fill,
+        .025, stroke
+      )
     })
 
     // draw caret

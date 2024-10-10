@@ -1,4 +1,5 @@
 import { Sigui, type Signal } from 'sigui'
+import type { Source, Token } from '~/src/lang/tokenize.ts'
 import { parseWords, WORD, type Point } from '~/src/ui/editor/util/index.ts'
 
 export interface Line {
@@ -14,15 +15,25 @@ export type Buffer = ReturnType<typeof Buffer>
 
 function identity(x: any) { return x }
 
-export function Buffer({ code, wordWrapProcessor = { pre: identity, post: identity } }: {
+export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, post: identity } }: {
   code: Signal<string>,
+  tokenize: (source: Source) => Generator<Token, void, unknown>
   wordWrapProcessor?: WordWrapProcessor
 }) {
   using $ = Sigui()
 
   const info = $({
-    code,
     maxColumns: 10,
+    code,
+    get codeVisual() {
+      return info.linesVisual.map(line => line.text).join('\n')
+    },
+    get source() {
+      return { code: info.codeVisual }
+    },
+    get tokens() {
+      return [...tokenize(info.source)]
+    },
     get words() {
       return parseWords(WORD, info.code)
     },

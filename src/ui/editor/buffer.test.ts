@@ -1,9 +1,10 @@
 import { $ } from 'sigui'
+import { tokenize } from '~/src/lang/tokenize.ts'
 import { Buffer } from '~/src/ui/editor/buffer.ts'
 
 function B(code: string, maxWidth: number) {
   const info = $({ code })
-  const b = Buffer({ code: info.$.code })
+  const b = Buffer({ code: info.$.code, tokenize })
   b.info.maxColumns = maxWidth
   return b
 }
