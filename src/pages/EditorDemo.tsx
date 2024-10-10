@@ -1,4 +1,5 @@
 import { Sigui, type Signal } from 'sigui'
+import { AnimMode } from '~/src/comp/AnimMode.tsx'
 import { Token, tokenize } from '~/src/lang/tokenize.ts'
 import { screen } from '~/src/screen.ts'
 import { theme } from '~/src/theme.ts'
@@ -52,18 +53,20 @@ export function EditorDemo({ width, height }: {
     return { fill, stroke }
   }
 
-  const editor = <Editor
-    width={info.$.width}
-    height={info.$.height}
-    code={info.$.code}
-    colorize={colorize}
-    tokenize={tokenize}
-    wordWrapProcessor={wordWrapProcessor}
-  /> as Element & { focus(): void }
+  const editor = Editor({
+    width: info.$.width,
+    height: info.$.height,
+    code: info.$.code,
+    colorize: colorize,
+    tokenize: tokenize,
+    wordWrapProcessor: wordWrapProcessor,
+  })
 
   const el = <div>
-    <H2>Editor demo</H2>
-
+    <div class="flex items-center justify-between">
+      <H2>Editor demo</H2>
+      <AnimMode anim={editor.anim} />
+    </div>
     {editor}
   </div>
 

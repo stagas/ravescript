@@ -1,16 +1,18 @@
 import { Sigui, type Signal } from 'sigui'
+import { cn } from '~/lib/cn.ts'
 import { screen } from '~/src/screen.ts'
 
-export function Canvas({ width, height }: {
+export function Canvas({ width, height, class: className }: {
   width: Signal<number>
   height: Signal<number>
+  class?: string
 }) {
   using $ = Sigui()
 
   const canvas = <canvas
     width="1"
     height="1"
-    class="touch-none"
+    class={cn('touch-none', className)}
   /> as HTMLCanvasElement
 
   const info = $({

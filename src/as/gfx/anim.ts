@@ -5,8 +5,8 @@ const DEBUG = false //true
 
 export enum AnimMode {
   Auto = 'auto',
-  Started = 'started',
-  Paused = 'paused',
+  On = 'on',
+  Off = 'off',
 }
 
 const Modes = Object.values(AnimMode)
@@ -68,7 +68,7 @@ export function Anim() {
     const { epoch, mode } = info
     $()
     DEBUG && console.log('[anim]', mode, epoch)
-    if (mode === AnimMode.Paused) {
+    if (mode === AnimMode.Off) {
       stop()
     }
     else {

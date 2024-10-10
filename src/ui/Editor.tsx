@@ -1,7 +1,7 @@
 import { Sigui, type Signal } from 'sigui'
 import { dom, isMobile } from 'utils'
 import type { Source, Token } from '~/src/lang/tokenize.ts'
-import { Buffer, Caret, Dims, Kbd, Misc, View, type WordWrapProcessor } from '~/src/ui/editor/index.ts'
+import { Buffer, Caret, Dims, Kbd, Misc, View, Widgets, type WordWrapProcessor } from '~/src/ui/editor/index.ts'
 
 export * from '~/src/ui/editor/index.ts'
 
@@ -59,5 +59,5 @@ export function Editor({ code, width, height, colorize, tokenize, wordWrapProces
     {kbd}
   </div> as HTMLDivElement
 
-  return { el, focus }
+  return { el, focus, buffer, anim: view.anim, widgets: view.widgets }
 }

@@ -1,9 +1,9 @@
 import { Sigui, type Signal } from 'sigui'
+import { cn } from '~/lib/cn.ts'
 import { Anim } from '~/src/as/gfx/anim.ts'
-import { Shapes } from '~/src/as/gfx/shapes.ts'
-import { Sketch } from '~/src/as/gfx/sketch.ts'
-import { Matrix, Rect } from '~/src/as/gfx/types.ts'
-import { WebGL } from '~/src/as/gfx/webgl.ts'
+import { Gfx } from '~/src/as/gfx/gfx.ts'
+import { Rect } from '~/src/as/gfx/types.ts'
+import { AnimMode } from '~/src/comp/AnimMode.tsx'
 import { state } from '~/src/state.ts'
 import { Button } from '~/src/ui/Button.tsx'
 import { Canvas } from '~/src/ui/Canvas.tsx'
@@ -16,15 +16,14 @@ export function WebGLDemo({ width, height }: {
   using $ = Sigui()
 
   const canvas = <Canvas width={width} height={height} /> as HTMLCanvasElement
-  const matrix = Matrix()
-  const view = Rect(0, 0, width, height)
-  const webgl = WebGL(view, canvas, true)
-  const sketch = Sketch(webgl.GL, view)
-  const shapes = Shapes(view, matrix)
+
+  const gfx = Gfx({ width, height, canvas })
+
   const anim = Anim()
-  sketch.scene.add(shapes)
-  webgl.add($, sketch)
-  anim.ticks.add(webgl.draw)
+  anim.ticks.add(gfx.draw)
+
+  const shapes = gfx.createShapes()
+  gfx.scene.add(shapes)
 
   function Box() {
     const boxRect = Rect(10, 10, 20, 20)
@@ -51,10 +50,7 @@ export function WebGLDemo({ width, height }: {
   return <div>
     <div class="flex items-center justify-between">
       <H2>WebGL Demo</H2>
-      <div class="flex items-center self-start gap-2">
-        <span>Anim Mode:</span>
-        <Button onclick={() => state.animCycle?.()}>{() => state.animMode}</Button>
-      </div>
+      <AnimMode anim={anim} />
     </div>
     {canvas}
   </div>

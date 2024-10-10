@@ -60,6 +60,15 @@ export namespace Token {
     'g'
   )
 
+  export interface Bounds {
+    line: number
+    col: number
+    right: number
+    bottom: number
+    index: number
+    length: number
+  }
+
   export const Empty: Token = {
     type: 0,
     text: '',
@@ -90,7 +99,7 @@ export namespace Token {
     return Close[token.text as keyof typeof Close].charCodeAt(0)
   }
 
-  export function bounds(tokens: Token[]) {
+  export function bounds(tokens: Token[]): Bounds {
     let line: number = Infinity
     let col: number = Infinity
     let right: number = 0

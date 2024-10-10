@@ -94,9 +94,12 @@ export function Caret({ buffer, dims, misc }: {
 
   function moveHome() {
     const { linesVisual } = buffer.info
-    const bx = beginOfLine(linesVisual[caret.visual.y].text)
+    const bx = beginOfLine(linesVisual[caret.visual.y]?.text ?? '')
     const vx = bx === caret.visual.x ? 0 : bx
-    const { x, y } = buffer.visualPointToLogicalPoint({ x: vx, y: caret.visual.y })
+    const { x, y } = buffer.visualPointToLogicalPoint({
+      x: vx,
+      y: caret.visual.y
+    })
     caret.x = x
     caret.y = y
     $.flush()
@@ -105,7 +108,10 @@ export function Caret({ buffer, dims, misc }: {
 
   function moveEnd() {
     const { linesVisual } = buffer.info
-    const { x, y } = buffer.visualPointToLogicalPoint({ x: linesVisual[caret.visual.y].text.length, y: caret.visual.y })
+    const { x, y } = buffer.visualPointToLogicalPoint({
+      x: linesVisual[caret.visual.y]?.text.length ?? 0,
+      y: caret.visual.y
+    })
     caret.x = x
     caret.y = y
     $.flush()

@@ -18,6 +18,7 @@ export function getNetworkAddress(options: { port: string }) {
 export const VitePrintAddress = (): Plugin => ({
   name: 'print-address',
   configureServer(server) {
+    let its = 0
     let timeout: any
     const printUrls = (origin: string) => {
       clearTimeout(timeout)
@@ -25,7 +26,7 @@ export const VitePrintAddress = (): Plugin => ({
       const { port } = url
       timeout = setTimeout(() => {
         const network = getNetworkAddress({ port })
-        qrcode.generate(network, { small: true })
+        its++ % 5 === 0 && qrcode.generate(network, { small: true })
         console.log(url.href)
         console.log(network)
       }, 500)
