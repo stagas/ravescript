@@ -1,7 +1,6 @@
 import { Sigui, type Signal } from 'sigui'
 import { screen } from '~/src/screen.ts'
-import type { WordWrapProcessor } from '~/src/ui/editor/buffer.ts'
-import { Editor } from '~/src/ui/editor/Editor'
+import { Editor, type WordWrapProcessor } from '~/src/ui/Editor.tsx'
 import { H2 } from '~/src/ui/Heading.tsx'
 
 export function EditorDemo({ width, height }: {

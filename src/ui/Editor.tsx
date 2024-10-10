@@ -1,11 +1,8 @@
 import { Sigui, type Signal } from 'sigui'
 import { dom, isMobile } from 'utils'
-import { Buffer, type WordWrapProcessor } from '~/src/ui/editor/buffer.ts'
-import { Caret } from '~/src/ui/editor/caret.ts'
-import { Dims } from '~/src/ui/editor/dims.ts'
-import { Kbd } from '~/src/ui/editor/kbd.tsx'
-import { Misc } from '~/src/ui/editor/misc.ts'
-import { View } from '~/src/ui/editor/view.tsx'
+import { Buffer, Caret, Dims, Kbd, Misc, View, type WordWrapProcessor } from '~/src/ui/editor/index.ts'
+
+export * from '~/src/ui/editor/index.ts'
 
 export function Editor({ code, width, height, wordWrapProcessor }: {
   code: Signal<string>
