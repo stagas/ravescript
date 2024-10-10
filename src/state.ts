@@ -1,54 +1,68 @@
-import { $, fx } from 'sigui'
+import { $, fx, storage } from 'sigui'
 import type { z } from 'zod'
 import type { UserSession } from '~/api/auth/types.ts'
 import type { UiChannel } from '~/api/chat/types.ts'
 import type { Channels } from '~/api/models.ts'
+import { AnimMode } from '~/src/as/gfx/anim.ts'
 import { env } from '~/src/env.ts'
 import { screen } from '~/src/screen.ts'
 import { link } from '~/src/ui/Link.tsx'
 
-export let state = $({
-  container: null as null | HTMLElement,
-  get containerWidth() {
+class State {
+  // container
+  container: HTMLElement | null = null
+  get containerWidth(): number {
     const { width } = screen
-    const { container } = state
+    const { container } = this
     if (!container) return width
     const article = container.getElementsByTagName('article')[0] as HTMLElement
     const style = window.getComputedStyle(article)
     return article.getBoundingClientRect().width
       - parseFloat(style.paddingLeft)
       - parseFloat(style.paddingRight)
-  },
+  }
 
-  url: link.$.url,
-  get pathname() {
+  // url
+  url: typeof link.$.url
+  get pathname(): string {
     return state.url.pathname
-  },
-  get search() {
+  }
+  get search(): string {
     return state.url.search
-  },
-  get searchParams() {
-    return new URLSearchParams(state.search)
-  },
-  get apiUrl() {
+  }
+  get searchParams(): URLSearchParams {
+    return new URLSearchParams(this.search)
+  }
+  get apiUrl(): string {
     const url = new URL(env.VITE_API_URL)
-    if (state.search.includes('api2')) {
+    if (this.search.includes('api2')) {
       url.port = '8001'
     }
     return url.href
-  },
+  }
 
-  user: undefined as undefined | null | UserSession,
+  // app
+  user?: UserSession | null
 
-  channelsList: [] as Pick<z.infer<typeof Channels>, 'name'>[],
-  channels: [] as UiChannel[],
-  currentChannelName: null as null | string,
-  get currentChannel() {
-    return state.channels.find(c => c.name === state.currentChannelName)
-  },
+  channelsList: Pick<z.infer<typeof Channels>, 'name'>[] = []
+  channels: UiChannel[] = []
+  currentChannelName?: string | null
 
-  toastMessages: [] as { message?: string, stack?: string }[],
-})
+  get currentChannel(): UiChannel | undefined {
+    return this.channels.find(c => c.name === this.currentChannelName)
+  }
+
+  toastMessages: { message?: string, stack?: string }[] = []
+
+  animMode = storage(AnimMode.Auto)
+  animCycle?: () => void
+
+  constructor() {
+    this.url = link.$.url
+  }
+}
+
+export let state = $(new State)
 
 // fx(() => {
 //   const { container } = $.of(state)

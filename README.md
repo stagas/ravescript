@@ -64,7 +64,7 @@
 - [x] AssemblyScript
 - [x] WebAudio
   - [x] Wasm AudioWorklet
-- [ ] WebGL
+- [x] WebGL
 - [x] WebRTC
 - [x] QRCode
 - [ ] Maps

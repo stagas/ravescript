@@ -30,7 +30,7 @@ export function EditorDemo({ width, height }: {
     height,
     code: `\
 [sin 300] [tri 444] [sqr 555] @ \
-[lp 300 .8] [dly 16 1 /] [pp 3 4 5] \
+[lp 300 .8] [dly 16 1 /] [ppd (3 4 5)] \
 [ar 10 50] *
 `,
   })

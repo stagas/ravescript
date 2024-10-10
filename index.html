@@ -1,21 +1,31 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, interactive-widget=resizes-content">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, interactive-widget=resizes-content"
+    />
 
-    <link rel="icon" href="/favicon.ico" sizes="48x48">
-    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png">
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fustat:wght@200..800&family=IBM+Plex+Mono&display=block" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fustat:wght@200..800&family=IBM+Plex+Mono&display=block"
+      rel="stylesheet"
+    />
 
     <link rel="stylesheet" href="/style.css" />
     <title>Vasi</title>
   </head>
   <body>
-    <span style="font-family:'IBM Plex Mono'"></span>
+    <script type="module">
+      // KEEP: required for AssemblyScript interop.
+      globalThis.unmanaged = () => {};
+    </script>
+    <span style="font-family: 'IBM Plex Mono'"></span>
     <div id="container"></div>
     <script src="./src/client.tsx" type="module"></script>
     <script src="./lib/watcher.ts" type="module"></script>

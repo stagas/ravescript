@@ -117,6 +117,16 @@ export default ({ mode }) => {
         '--transform', './vendor/as-transform-unroll.js',
       ]
     }),
+    ViteAssemblyScript({
+      configFile: 'asconfig-gfx.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/gfx',
+      srcEntryFile: 'as/assembly/gfx/index.ts',
+      mapFile: './as/build/gfx.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+      ]
+    }),
   ]
 
   return defineConfig({

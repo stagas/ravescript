@@ -15,9 +15,9 @@ import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
 import { QrCode } from '~/src/pages/QrCode.tsx'
 import { UiShowcase } from '~/src/pages/UiShowcase.tsx'
+import { WebGLDemo } from '~/src/pages/WebGLDemo.tsx'
 import { WebSockets } from '~/src/pages/WebSockets.tsx'
 import { whoami } from '~/src/rpc/auth.ts'
-import { screen } from '~/src/screen.ts'
 import { state } from '~/src/state.ts'
 import { go, Link } from '~/src/ui/Link.tsx'
 
@@ -38,6 +38,7 @@ export function App() {
     '/chat': () => <Chat />,
     '!/ws': () => <WebSockets />,
     '!/canvas': () => <CanvasDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
+    '/webgl': () => <WebGLDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/editor': () => <EditorDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/asc': () => <AssemblyScript />,
     '/qrcode': () => <QrCode />,
