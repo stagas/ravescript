@@ -28,7 +28,7 @@ export function Messages({ showChannelsOverlay }: { showChannelsOverlay: Signal<
     onkeydown={e => e.key === 'Enter' && sendMessage()}
   /> as HTMLInputElement
 
-  const chatMessages = <div class="overflow-y-scroll leading-[19px]">
+  const chatMessages = <div class="overflow-y-scroll leading-[19px]" onclick={focus}>
     <div class="flex flex-col justify-end min-h-[calc(100dvh-8.75rem)]">
       {() => emptyMsg.concat(state.currentChannel?.messages ?? []).concat(emptyMsg).map(message =>
         <div class="flex gap-1.5">
@@ -46,14 +46,16 @@ export function Messages({ showChannelsOverlay }: { showChannelsOverlay: Signal<
     })
   }
 
+  function focus() {
+    scrollToBottom()
+    input.focus({ preventScroll: true })
+  }
+
   $.fx(() => {
     const { currentChannel } = $.of(state)
     const { messages } = currentChannel
     $()
-    requestAnimationFrame(() => {
-      scrollToBottom()
-      input.focus({ preventScroll: true })
-    })
+    requestAnimationFrame(focus)
   })
 
   $.fx(() => dom.on(input, 'focus', () => {
@@ -81,7 +83,7 @@ export function Messages({ showChannelsOverlay }: { showChannelsOverlay: Signal<
 
   const emptyMsg: ChatMessage[] = [{ type: 'message', nick: '', text: '' }]
 
-  return <div class={cn(
+  const el = <div class={cn(
     'w-full pt-1.5 pb-2.5 flex flex-col max-h-[calc(100dvh-4rem)]',
     { 'w-[70%]': screen.md },
   )} onclick={() => info.showChannelsOverlay = false}>
@@ -108,9 +110,12 @@ export function Messages({ showChannelsOverlay }: { showChannelsOverlay: Signal<
     </H3>
 
     {chatMessages}
+
     <div class="flex flex-row items-center gap-1">
       <span class="font-bold" style={{ color: colorizeNick(state.user?.nick) }}>{() => state.user?.nick}</span>
       {input}
     </div>
   </div>
+
+  return { el, focus }
 }

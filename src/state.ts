@@ -9,6 +9,16 @@ import { link } from '~/src/ui/Link.tsx'
 
 export let state = $({
   container: null as null | HTMLElement,
+  get containerWidth() {
+    const { width } = screen
+    const { container } = state
+    if (!container) return width
+    const article = container.getElementsByTagName('article')[0] as HTMLElement
+    const style = window.getComputedStyle(article)
+    return article.getBoundingClientRect().width
+      - parseFloat(style.paddingLeft)
+      - parseFloat(style.paddingRight)
+  },
 
   url: link.$.url,
   get pathname() {

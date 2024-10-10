@@ -35,7 +35,7 @@ export function CanvasDemo({ width, height }: {
   }
 
   $.fx(() => {
-    const { pr, c } = $.of(info)
+    const { pr, c, width, height } = $.of(info)
     $()
     c.scale(pr, pr)
     c.textBaseline = 'top'

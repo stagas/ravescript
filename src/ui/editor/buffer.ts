@@ -1,85 +1,108 @@
 import { Sigui, type Signal } from 'sigui'
-import type { Point } from '~/src/ui/editor/util/index.ts'
+import { parseWords, WORD, type Point } from '~/src/ui/editor/util/index.ts'
 
-export interface TextLine {
+export interface Line {
   text: string
   br?: true
 }
 
-export function TextBuffer({ code }: { code: Signal<string> }) {
+export interface WordWrapProcessor {
+  pre(s: string): string
+  post(s: string): string
+}
+export type Buffer = ReturnType<typeof Buffer>
+
+function identity(x: any) { return x }
+
+export function Buffer({ code, wordWrapProcessor = { pre: identity, post: identity } }: {
+  code: Signal<string>,
+  wordWrapProcessor?: WordWrapProcessor
+}) {
   using $ = Sigui()
 
   const info = $({
     code,
-    maxWidth: 10,
+    maxColumns: 10,
+    get words() {
+      return parseWords(WORD, info.code)
+    },
     get lines() {
       return info.code.split('\n')
     },
-    get linesVisual(): TextLine[] {
-      const { code, maxWidth } = info
+    get linesVisual(): Line[] {
+      const { code, maxColumns } = info
       $()
+      return wordWrap()
+    }
+  })
 
-      const wrapped: TextLine[] = []
+  function wordWrap(): Line[] {
+    let { code, maxColumns } = info
 
-      let line = ''
-      let word = ''
-      let x = 0
+    const wrapped: Line[] = []
+    let line = ''
+    let word = ''
+    let x = 0
 
-      function push() {
-        const joined = line + word
-        if (joined.length > maxWidth) {
-          wrapped.push({ text: line })
-          if (word.length) wrapped.push({ text: word })
-        }
-        else {
-          wrapped.push({ text: joined })
-        }
+    code = wordWrapProcessor.pre(code)
+
+    function push() {
+      const joined = line + word
+      if (joined.length > maxColumns) {
+        wrapped.push({ text: line })
+        if (word.length) wrapped.push({ text: word })
+      }
+      else {
+        wrapped.push({ text: joined })
+      }
+      word = ''
+      line = ''
+      x = 0
+    }
+
+    for (let i = 0; i < code.length; i++) {
+      const c = code[i]
+      if (c === '\n') {
+        wrapped.push({ text: line + word, br: true })
         word = ''
         line = ''
         x = 0
       }
-
-      for (let i = 0; i < code.length; i++) {
-        const c = code[i]
-        if (c === '\n') {
-          wrapped.push({ text: line + word, br: true })
+      else if (c === ' ') {
+        if (x >= maxColumns) {
+          push()
+          word = c
+        }
+        else {
+          line += word + c
           word = ''
+        }
+      }
+      else {
+        if (word.length === maxColumns) {
+          wrapped.push({ text: word })
+          word = ''
+          x = 0
+        }
+        word += c
+        if (line.length && (line + word).length >= maxColumns) {
+          wrapped.push({ text: line })
           line = ''
           x = 0
         }
-        else if (c === ' ') {
-          if (x >= maxWidth) {
-            push()
-            word = c
-          }
-          else {
-            line += word + c
-            word = ''
-          }
-        }
-        else {
-          if (word.length === maxWidth) {
-            wrapped.push({ text: word })
-            word = ''
-            x = 0
-          }
-          word += c
-          if (line.length && (line + word).length >= maxWidth) {
-            wrapped.push({ text: line })
-            line = ''
-            x = 0
-          }
-        }
-        x++
       }
-
-      if (line.length || word.length || word.length === code.length) {
-        push()
-      }
-
-      return wrapped
+      x++
     }
-  })
+
+    if (line.length || word.length || word.length === code.length) {
+      push()
+    }
+
+    return wrapped.map(line => {
+      line.text = wordWrapProcessor.post(line.text)
+      return line
+    })
+  }
 
   function indexToPoint(index: number): Point {
     const { lines } = info
@@ -115,15 +138,14 @@ export function TextBuffer({ code }: { code: Signal<string> }) {
       const lineLength = line.text.length + (line.br ? 1 : 0)
 
       if (idx + lineLength > index) {
-        // The caret is on this line
         const x = index - idx
         return { x, y }
       }
 
-      idx += lineLength  // +1 for newline character
+      idx += lineLength
     }
 
-    // If we've gone through all lines and haven't found the position,
+    // if we've gone through all lines and haven't found the position,
     // return the end of the last line
     const line = linesVisual.at(-1)
     return {
@@ -162,6 +184,16 @@ export function TextBuffer({ code }: { code: Signal<string> }) {
 
     if (y >= linesVisual.length) return info.code.length
 
+    let line = linesVisual[y]
+    x = Math.min(
+      x,
+      line.text.length
+      - (line.br || y === linesVisual.length - 1
+        ? 0
+        : 1
+      )
+    )
+
     let index = 0
 
     // sum up the lengths of all previous lines
@@ -171,7 +203,6 @@ export function TextBuffer({ code }: { code: Signal<string> }) {
     }
 
     // add the x position of the current line
-    const line = linesVisual[y]
     index += Math.min(x, line.text.length)
 
     return index

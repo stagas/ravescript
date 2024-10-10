@@ -17,6 +17,7 @@ import { QrCode } from '~/src/pages/QrCode.tsx'
 import { UiShowcase } from '~/src/pages/UiShowcase.tsx'
 import { WebSockets } from '~/src/pages/WebSockets.tsx'
 import { whoami } from '~/src/rpc/auth.ts'
+import { screen } from '~/src/screen.ts'
 import { state } from '~/src/state.ts'
 import { go, Link } from '~/src/ui/Link.tsx'
 
@@ -27,7 +28,7 @@ export function App() {
 
   const info = $({
     bg: 'transparent',
-    canvasWidth: 500,
+    canvasWidth: state.$.containerWidth,
     canvasHeight: 500,
   })
 
@@ -95,7 +96,7 @@ export function App() {
       </div>
     </Header>
 
-    <div class="p-3.5">
+    <article class="p-3.5">
       {() => {
         if (state.user === undefined) return <div>Loading...</div>
 
@@ -104,6 +105,6 @@ export function App() {
 
         return <div>404 Not found</div>
       }}
-    </div>
+    </article>
   </main>
 }

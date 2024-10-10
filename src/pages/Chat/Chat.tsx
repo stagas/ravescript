@@ -149,12 +149,16 @@ export function Chat() {
       .catch(console.error)
   })
 
-  return <div class="h-[calc(100dvh-4.5rem)] flex">
+  const messages = Messages({ showChannelsOverlay: info.$.showChannelsOverlay })
+
+  const el = <div class="h-[calc(100dvh-4.5rem)] flex">
     {() => screen.md || info.showChannelsOverlay
       ? <Channels overlay={info.showChannelsOverlay} />
       : <div />
     }
-    <Messages showChannelsOverlay={info.$.showChannelsOverlay} />
+
+    {messages.el}
+
     {() => screen.md ? <Users onUserClick={nick => {
       info.videoCallType = 'offer'
       info.videoCallTargetNick = nick
@@ -170,4 +174,6 @@ export function Chat() {
       <div />
     }
   </div>
+
+  return { el, focus: messages.focus }
 }

@@ -1,10 +1,10 @@
 import { $ } from 'sigui'
-import { TextBuffer } from '~/src/ui/editor/text-buffer'
+import { Buffer } from '~/src/ui/editor/buffer.ts'
 
 function B(code: string, maxWidth: number) {
   const info = $({ code })
-  const b = TextBuffer({ code: info.$.code })
-  b.info.maxWidth = maxWidth
+  const b = Buffer({ code: info.$.code })
+  b.info.maxColumns = maxWidth
   return b
 }
 
@@ -105,7 +105,7 @@ describe('TextBuffer', () => {
   })
 
   describe('visualPointToIndex / indexToVisualPoint / indexToPoint', () => {
-    it('splits to multiple lines if text exceeds maxLineLength twice', () => {
+    it('works', () => {
       const b = B(`\
 hello world
 lorem ipsum
@@ -188,40 +188,20 @@ lorem ipsum
   describe('indexToVisualPoint', () => {
     it('splits to multiple lines if text exceeds maxLineLength twice', () => {
       const b = B(`\
-hello world
-lorem ipsum`, 10)
+aaa
+bbbbb ccccccc`, 10)
       {
-        const p = b.indexToVisualPoint(21)
-        expect(p).toEqual({ x: 3, y: 3 })
+        const i = b.visualPointToIndex({ x: 7, y: 2 })
+        expect(i).toEqual(17)
+        const j = b.indexToVisualPoint(17)
+        expect(j).toEqual({ x: 7, y: 2 })
       }
-      // {
-      //   const i = b.visualPointToIndex({ x: 3, y: 2 })
-      //   expect(i).toEqual(15)
-      // }
-      // {
-      //   const i = b.visualPointToIndex({ x: 3, y: 1 })
-      //   expect(i).toEqual(9)
-      // }
-      // {
-      //   const i = b.visualPointToIndex({ x: 3, y: 0 })
-      //   expect(i).toEqual(3)
-      // }
+      {
+        const i = b.visualPointToIndex({ x: 7, y: 1 })
+        expect(i).toEqual(9)
+        const j = b.indexToVisualPoint(9)
+        expect(j).toEqual({ x: 5, y: 1 })
+      }
     })
   })
-
-  // describe('visualPointToIndex', () => {
-  //   it('splits to multiple lines if text exceeds maxLineLength twice', () => {
-  //     const b = B('hello world lorem ipsum', 10)
-  //     {
-  //       const i = b.visualPointToIndex({ x: 3, y: 3 })
-  //       console.log(b.info.linesVisual.map(l => l.text))
-  //       expect(i).toEqual(21)
-  //     }
-  //     {
-  //       const i = b.visualPointToIndex({ x: 3, y: 2 })
-  //       console.log(b.info.linesVisual.map(l => l.text))
-  //       expect(i).toEqual(15)
-  //     }
-  //   })
-  // })
 })

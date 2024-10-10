@@ -35,7 +35,7 @@ export function AssemblyScript() {
     <br />
     Worker: {() => info.fromWorker}
     <br />
-    <Button onclick={() => pkgPlayer.play()}>Play</Button>
-    <Button onclick={() => pkgPlayer.stop()}>Stop</Button>
+    <Button onpointerdown={() => pkgPlayer.play()}>Play</Button>
+    <Button onpointerdown={() => pkgPlayer.stop()}>Stop</Button>
   </div>
 }
