@@ -62,6 +62,7 @@ void main() {
   pos /= u_screen * 0.5;
   pos -= 1.0;
   pos.y *= -1.0;
+
   gl_Position = vec4(pos, 0.0, 1.0);
 
   v_color = a_color;

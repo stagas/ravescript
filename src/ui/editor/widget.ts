@@ -72,7 +72,7 @@ export function Widgets({ width, height, c, glCanvas }: {
 export type Widget = ReturnType<typeof Widget>
 
 export function Widget() {
-  const rect = Rect()
+  const rect = Rect(0, 0, 1, 1)
   const bounds = Bounds()
   function draw(c: CanvasRenderingContext2D) { }
   return { rect, bounds, draw }

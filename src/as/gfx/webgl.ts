@@ -1,6 +1,6 @@
+import type { Rect } from 'gfx'
 import { GL, initGL } from 'gl-util'
 import { Sigui } from 'sigui'
-import { Rect } from '~/src/as/gfx/types.ts'
 
 const DEBUG = true
 

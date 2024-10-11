@@ -1,9 +1,7 @@
+import { wasm, WasmMatrix, type Matrix, type Rect } from 'gfx'
 import { Sigui } from 'sigui'
 import { PointLike, Struct } from 'utils'
-import { Box, Line, Params, ShapeOpts, Wave, type Notes } from '~/as/assembly/gfx/sketch-shared.ts'
-import type { Matrix, Rect } from '~/src/as/gfx/types.ts'
-import { WasmMatrix } from '~/src/as/gfx/wasm-matrix.ts'
-import wasm from '~/src/as/gfx/wasm.ts'
+import { ShapeOpts, type Box, type Line, type Notes, type Params, type Wave } from '~/as/assembly/gfx/sketch-shared.ts'
 
 export namespace Shape {
   // Box

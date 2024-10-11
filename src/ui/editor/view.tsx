@@ -24,29 +24,37 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
 }) {
   using $ = Sigui()
 
-  const canvas = <Canvas
-    width={width}
-    height={height}
-    class="absolute top-0 left-0 rendering-pixelated"
-  /> as HTMLCanvasElement
-
-  const glCanvas = <Canvas
-    width={width}
-    height={height}
-    class="absolute top-0 left-0 rendering-pixelated"
-  /> as HTMLCanvasElement
-
-  const el = <div class="relative">
-    {canvas}
-    {glCanvas}
-  </div> as HTMLDivElement
-
   const info = $({
     c: null as null | CanvasRenderingContext2D,
     pr: screen.$.pr,
     width,
     height,
+    svgs: new Set<SVGElement>()
   })
+
+  const canvas = <Canvas
+    width={width}
+    height={height}
+    class="absolute top-0 left-0"
+  /> as HTMLCanvasElement
+
+  const glCanvas = <Canvas
+    width={width}
+    height={height}
+    class="absolute top-0 left-0"
+  /> as HTMLCanvasElement
+
+  const svg = <svg
+    width={width}
+    height={height}
+    class="absolute top-0 left-0"
+  >{() => [...info.svgs]}</svg> as SVGSVGElement
+
+  const el = <div class="relative">
+    {canvas}
+    {glCanvas}
+    {svg}
+  </div> as HTMLDivElement
 
   const c = canvas.getContext('2d')!
 
@@ -88,6 +96,8 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
 
     $()
 
+    widgets.update()
+
     const lastVisibleLine = linesVisual.length
     let eh = 0
     extraHeights = Array.from({ length: lastVisibleLine }, (_, y) => {
@@ -119,10 +129,10 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
     widgets.mark.forEach(w => {
       const b = w.bounds
       const p = pointFromLinecol(b)
-      w.rect.x = p.x
-      w.rect.y = p.y
-      w.rect.w = ((b.right - b.col) * charWidth) | 0
-      w.rect.h = lineHeight
+      w.rect.x = p.x - 1
+      w.rect.y = p.y - 1
+      w.rect.w = (((b.right - b.col) * charWidth) | 0) + 2.75
+      w.rect.h = (lineHeight) - .5
     })
 
     tokens.forEach(token => {

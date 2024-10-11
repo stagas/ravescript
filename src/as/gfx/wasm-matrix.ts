@@ -1,6 +1,5 @@
+import { wasm, type Matrix, type Rect } from 'gfx'
 import { Sigui } from 'sigui'
-import type { Matrix, Rect } from '~/src/as/gfx/types.ts'
-import wasm from '~/src/as/gfx/wasm.ts'
 
 const DEBUG = false
 

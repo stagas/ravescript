@@ -41,9 +41,15 @@
     "allowJs": true,
     "strict": true,
     "paths": {
+      "editor": [
+        "./src/ui/editor/index.ts"
+      ],
+      "gfx": [
+        "./src/as/gfx/index.ts"
+      ],
       "~/*": [
         "./*"
-      ],
+      ]
     }
   }
 }

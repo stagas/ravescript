@@ -1,11 +1,7 @@
+import { type Shapes, fragment, MeshInfo, Rect, vertex, wasm } from 'gfx'
 import { GL } from 'gl-util'
 import { Sigui } from 'sigui'
 import { MAX_GL_INSTANCES } from '~/as/assembly/gfx/sketch-shared.ts'
-import { fragment, vertex } from '~/src/as/gfx/glsl.ts'
-import { MeshInfo } from '~/src/as/gfx/mesh-info.ts'
-import type { Shapes } from '~/src/as/gfx/shapes.ts'
-import { Rect } from '~/src/as/gfx/types.ts'
-import wasm from '~/src/as/gfx/wasm.ts'
 
 const DEBUG = true
 

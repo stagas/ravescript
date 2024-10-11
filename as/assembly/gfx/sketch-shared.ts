@@ -1,6 +1,7 @@
 const PAGE_BYTES = 1024
 export const MAX_BYTES = PAGE_BYTES * 32
 export const MAX_GL_INSTANCES = MAX_BYTES >> 2
+export const WAVE_MIPMAPS = 13
 
 export enum VertOpts {
   Box /* */ = 0b001,
@@ -22,8 +23,6 @@ export enum ShapeOpts {
   InfY /*     */ = 0b0001_0000_0000_0000,
   Shadow /*   */ = 0b0010_0000_0000_0000,
 }
-
-export const WAVE_MIPMAPS = 13
 
 @unmanaged
 export class Shape {

@@ -1,8 +1,5 @@
+import { Matrix, Rect, Shapes, Sketch, WebGL } from 'gfx'
 import { Sigui, type Signal } from 'sigui'
-import { Shapes } from '~/src/as/gfx/shapes.ts'
-import { Sketch } from '~/src/as/gfx/sketch.ts'
-import { Matrix, Rect } from '~/src/as/gfx/types.ts'
-import { WebGL } from '~/src/as/gfx/webgl.ts'
 
 export function Gfx({ width, height, canvas }: {
   width: Signal<number>

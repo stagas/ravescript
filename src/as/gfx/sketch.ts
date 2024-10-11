@@ -1,8 +1,5 @@
+import { SketchInfo, wasm, type Rect, type Shapes } from 'gfx'
 import { GL } from 'gl-util'
-import type { Shapes } from '~/src/as/gfx/shapes.ts'
-import { SketchInfo } from '~/src/as/gfx/sketch-info.ts'
-import { type Rect } from '~/src/as/gfx/types.ts'
-import wasm from '~/src/as/gfx/wasm.ts'
 
 const DEBUG = true
 

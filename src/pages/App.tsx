@@ -29,7 +29,7 @@ export function App() {
   const info = $({
     bg: 'transparent',
     canvasWidth: state.$.containerWidth,
-    canvasHeight: 500,
+    canvasHeight: 800,
   })
 
   const router = CachingRouter({

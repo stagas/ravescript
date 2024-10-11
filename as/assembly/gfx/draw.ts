@@ -382,6 +382,194 @@ export function draw(
       //
       // Wave
       //
+      // case ShapeOpts.Wave: {
+      //   wave = changetype<Wave>(ptr)
+
+      //   const x = f32(wave.x * ma + me)
+      //   const y = f32(wave.y * md + mf)
+      //   const w = f32(wave.w * ma - x_gap)
+      //   const h = f32(wave.h * md - 1)
+
+      //   // check if visible
+      //   if (x > width
+      //     || y > height
+      //     || x + w < 0
+      //     || y + h < 0
+      //   ) continue
+
+      //   //
+      //   // sample coeff for zoom level
+      //   //
+      //   let sample_coeff: f64 = f64((NUM_SAMPLES / wave.coeff / 2.0) / ma)
+
+      //   //
+      //   // setup wave pointers
+      //   //
+      //   let p = i32(wave.floats$)
+      //   let p_index: i32 = 0
+      //   let n: f64 = 0
+      //   let n_len = f64(wave.len)
+
+      //   //
+      //   // determine right edge
+      //   //
+      //   let right = x + w
+
+      //   //
+      //   // determine left edge (cx)
+      //   //
+      //   let cx: f64 = f64(x)
+      //   let ox: f32 = 0
+      //   // if left edge is offscreen
+      //   if (cx < 0) {
+      //     ox = -x
+      //     cx = 0
+      //   }
+
+      //   //
+      //   // determine width (cw)
+      //   //
+      //   let cw: f32 = w
+      //   let ow: f32 = 0
+      //   // if right edge if offscreen
+      //   if (right > width) {
+      //     // logf(444)
+      //     ow = right - width
+      //     cw = f32(width - cx)
+      //     right = width
+      //   }
+      //   // or if left edge is offscreen
+      //   else if (x < 0) {
+      //     cw -= ox
+      //   }
+
+      //   let x_step: f64 = f64(ma / NUM_SAMPLES)
+      //   let n_step: f64 = 1.0
+      //   let mul: f64 = 1.0
+      //   let lw: f32 = 1.1
+
+      //   let waveMode: WaveMode = WaveMode.Scaled
+
+      //   for (let i = 0; i < WAVE_MIPMAPS; i++) {
+      //     const threshold = WAVE_MIPMAPS_THRESHOLD / (2 ** i)
+      //     if (ma < threshold) {
+      //       waveMode = WaveMode.Normal
+      //       p_index += i32(Math.floor(n_len))
+      //       n_len = Math.floor(n_len / 2.0)
+      //       mul *= 2.0
+      //       x_step *= 2.0
+      //       lw = 1.1 - (0.8 * (1 -
+      //         (f32(ma / WAVE_MIPMAPS_THRESHOLD) ** .35)
+      //       ))
+      //     }
+      //     else {
+      //       break
+      //     }
+      //   }
+
+      //   n_step = sample_coeff / (mul / x_step)
+
+      //   p += p_index << 2
+
+      //   const hh: f32 = h / 2
+      //   const yh = y + hh
+
+      //   // advance the pointer if left edge is offscreen
+      //   if (ox) {
+      //     n += Math.floor(ox / x_step)
+      //   }
+      //   n = Math.floor(n)
+
+      //   let nx = (n * n_step) % n_len
+
+      //   switch (waveMode) {
+      //     case WaveMode.Scaled: {
+      //       let nfrac = nx - Math.floor(nx)
+
+      //       let x0 = f32(cx)
+      //       let y0 = yh + readSampleLerp(p, f32(nx), nfrac) * hh
+
+      //       if (opts & ShapeOpts.Join) {
+      //         sketch.drawLine(
+      //           px, py,
+      //           x0, y0,
+      //           wave.color, wave.alpha,
+      //           lw
+      //         )
+      //       }
+
+      //       do {
+      //         cx += x_step
+      //         nx += n_step
+      //         if (nx >= n_len) nx -= n_len
+
+      //         nfrac = nx - Math.floor(nx)
+
+      //         const x1 = f32(cx)
+      //         const y1 = yh + readSampleLerp(p, f32(nx), nfrac) * hh
+
+      //         sketch.drawLine(
+      //           x0, y0,
+      //           x1, y1,
+      //           wave.color, wave.alpha,
+      //           lw
+      //         )
+
+      //         x0 = x1
+      //         y0 = y1
+      //       } while (cx < right)
+
+      //       px = x0
+      //       py = y0
+
+      //       break
+      //     }
+
+      //     case WaveMode.Normal: {
+      //       let s = f32.load(p + (i32(nx) << 2))
+
+      //       // move to v0
+      //       let x0 = f32(cx)
+      //       let y0 = yh + s * hh
+
+      //       if (opts & ShapeOpts.Join) {
+      //         sketch.drawLine(
+      //           px, py,
+      //           x0, y0,
+      //           wave.color, wave.alpha,
+      //           lw
+      //         )
+      //       }
+
+      //       do {
+      //         cx += x_step
+      //         nx += n_step
+      //         if (nx >= n_len) nx -= n_len
+
+      //         const x1 = f32(cx)
+      //         const y1 = yh + f32.load(p + (i32(nx) << 2)) * hh
+
+      //         sketch.drawLine(
+      //           x0, y0,
+      //           x1, y1,
+      //           wave.color, wave.alpha,
+      //           lw
+      //         )
+
+      //         x0 = x1
+      //         y0 = y1
+      //       } while (cx < right)
+
+      //       px = x0
+      //       py = y0
+
+      //       break
+      //     }
+      //   }
+
+      //   continue
+      // }
+
       case ShapeOpts.Wave: {
         wave = changetype<Wave>(ptr)
 
@@ -397,175 +585,44 @@ export function draw(
           || y + h < 0
         ) continue
 
-        //
-        // sample coeff for zoom level
-        //
-        let sample_coeff: f64 = f64((NUM_SAMPLES / wave.coeff / 2.0) / ma)
-
-        //
-        // setup wave pointers
-        //
+        let nx: f32 = 0
         let p = i32(wave.floats$)
-        let p_index: i32 = 0
-        let n: f64 = 0
-        let n_len = f64(wave.len)
 
-        //
-        // determine right edge
-        //
+        let x_step: f32 = .5
+        let s: f32 = f32.load(p + (i32(nx) << 2))
+        let n_step = wave.coeff / (1.0 / x_step)
+
+        let cx = x
         let right = x + w
 
-        //
-        // determine left edge (cx)
-        //
-        let cx: f64 = f64(x)
-        let ox: f32 = 0
-        // if left edge is offscreen
-        if (cx < 0) {
-          ox = -x
-          cx = 0
-        }
+        let x0 = cx
+        let y0 = y + h * (s * 0.5 + 0.5)
 
-        //
-        // determine width (cw)
-        //
-        let cw: f32 = w
-        let ow: f32 = 0
-        // if right edge if offscreen
-        if (right > width) {
-          // logf(444)
-          ow = right - width
-          cw = f32(width - cx)
-          right = width
-        }
-        // or if left edge is offscreen
-        else if (x < 0) {
-          cw -= ox
-        }
+        let lw = wave.lw
 
-        let x_step: f64 = f64(ma / NUM_SAMPLES)
-        let n_step: f64 = 1.0
-        let mul: f64 = 1.0
-        let lw: f32 = 1.1
+        let x1: f32
+        let y1: f32
 
-        let waveMode: WaveMode = WaveMode.Scaled
+        do {
+          cx += x_step
+          nx += n_step
+          if (cx >= right) break
 
-        for (let i = 0; i < WAVE_MIPMAPS; i++) {
-          const threshold = WAVE_MIPMAPS_THRESHOLD / (2 ** i)
-          if (ma < threshold) {
-            waveMode = WaveMode.Normal
-            p_index += i32(Math.floor(n_len))
-            n_len = Math.floor(n_len / 2.0)
-            mul *= 2.0
-            x_step *= 2.0
-            lw = 1.1 - (0.8 * (1 -
-              (f32(ma / WAVE_MIPMAPS_THRESHOLD) ** .35)
-            ))
-          }
-          else {
-            break
-          }
-        }
+          s = f32.load(p + (i32(nx) << 2))
 
-        n_step = sample_coeff / (mul / x_step)
+          x1 = cx
+          y1 = y + h * (s * 0.5 + 0.5)
 
-        p += p_index << 2
+          sketch.drawLine(
+            x0, y0,
+            x1, y1,
+            wave.color, wave.alpha,
+            lw
+          )
 
-        const hh: f32 = h / 2
-        const yh = y + hh
-
-        // advance the pointer if left edge is offscreen
-        if (ox) {
-          n += Math.floor(ox / x_step)
-        }
-        n = Math.floor(n)
-
-        let nx = (n * n_step) % n_len
-
-        switch (waveMode) {
-          case WaveMode.Scaled: {
-            let nfrac = nx - Math.floor(nx)
-
-            let x0 = f32(cx)
-            let y0 = yh + readSampleLerp(p, f32(nx), nfrac) * hh
-
-            if (opts & ShapeOpts.Join) {
-              sketch.drawLine(
-                px, py,
-                x0, y0,
-                wave.color, wave.alpha,
-                lw
-              )
-            }
-
-            do {
-              cx += x_step
-              nx += n_step
-              if (nx >= n_len) nx -= n_len
-
-              nfrac = nx - Math.floor(nx)
-
-              const x1 = f32(cx)
-              const y1 = yh + readSampleLerp(p, f32(nx), nfrac) * hh
-
-              sketch.drawLine(
-                x0, y0,
-                x1, y1,
-                wave.color, wave.alpha,
-                lw
-              )
-
-              x0 = x1
-              y0 = y1
-            } while (cx < right)
-
-            px = x0
-            py = y0
-
-            break
-          }
-
-          case WaveMode.Normal: {
-            let s = f32.load(p + (i32(nx) << 2))
-
-            // move to v0
-            let x0 = f32(cx)
-            let y0 = yh + s * hh
-
-            if (opts & ShapeOpts.Join) {
-              sketch.drawLine(
-                px, py,
-                x0, y0,
-                wave.color, wave.alpha,
-                lw
-              )
-            }
-
-            do {
-              cx += x_step
-              nx += n_step
-              if (nx >= n_len) nx -= n_len
-
-              const x1 = f32(cx)
-              const y1 = yh + f32.load(p + (i32(nx) << 2)) * hh
-
-              sketch.drawLine(
-                x0, y0,
-                x1, y1,
-                wave.color, wave.alpha,
-                lw
-              )
-
-              x0 = x1
-              y0 = y1
-            } while (cx < right)
-
-            px = x0
-            py = y0
-
-            break
-          }
-        }
+          x0 = x1
+          y0 = y1
+        } while (cx < right)
 
         continue
       }

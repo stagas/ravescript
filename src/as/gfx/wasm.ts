@@ -19,7 +19,7 @@ function setFlushSketchFn(fn: (count: number) => void) {
   flushSketchFn = fn
 }
 
-const wasm = await instantiate(mod, {
+const wasmInstance = await instantiate(mod, {
   env: {
     log: console.log,
     flushSketch(count: number) {
@@ -28,6 +28,6 @@ const wasm = await instantiate(mod, {
   }
 })
 
-const { alloc } = initWasm(wasm)
+const { alloc } = initWasm(wasmInstance)
 
-export default Object.assign(wasm, { alloc, setFlushSketchFn })
+export const wasm = Object.assign(wasmInstance, { alloc, setFlushSketchFn })
