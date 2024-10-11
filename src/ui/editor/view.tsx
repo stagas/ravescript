@@ -24,9 +24,22 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
 }) {
   using $ = Sigui()
 
-  const canvas = <Canvas width={width} height={height} class="absolute top-0 left-0" /> as HTMLCanvasElement
-  const glCanvas = <Canvas width={width} height={height} class="absolute top-0 left-0" /> as HTMLCanvasElement
-  const el = <div class="relative">{canvas}{glCanvas}</div> as HTMLDivElement
+  const canvas = <Canvas
+    width={width}
+    height={height}
+    class="absolute top-0 left-0 rendering-pixelated"
+  /> as HTMLCanvasElement
+
+  const glCanvas = <Canvas
+    width={width}
+    height={height}
+    class="absolute top-0 left-0 rendering-pixelated"
+  /> as HTMLCanvasElement
+
+  const el = <div class="relative">
+    {canvas}
+    {glCanvas}
+  </div> as HTMLDivElement
 
   const info = $({
     c: null as null | CanvasRenderingContext2D,
@@ -59,8 +72,11 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
       if (l) top += l.deco
       if (y === line) p.y = top
       top += lineHeight
-      if (l) top += l.subs
+      if (l) top += l.subs + 2
     }
+
+    p.x = Math.floor(p.x + 1)
+    p.y = Math.floor(p.y + 1)
 
     return p
   }
@@ -87,16 +103,16 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
       const p = pointFromLinecol(b)
       w.rect.x = p.x
       w.rect.y = p.y - widgets.heights.deco - extraHeights[b.line]
-      w.rect.w = (b.right - b.col) * charWidth
-      w.rect.h = widgets.heights.deco + extraHeights[b.line]
+      w.rect.w = ((b.right - b.col) * charWidth) | 0
+      w.rect.h = widgets.heights.deco + extraHeights[b.line] - .5
     })
 
     widgets.subs.forEach(w => {
       const b = w.bounds
       const p = pointFromLinecol(b)
       w.rect.x = p.x
-      w.rect.y = p.y + lineHeight
-      w.rect.w = (b.right - b.col) * charWidth
+      w.rect.y = p.y + lineHeight - 1
+      w.rect.w = ((b.right - b.col) * charWidth) | 0
       w.rect.h = widgets.heights.subs
     })
 
@@ -105,12 +121,13 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
       const p = pointFromLinecol(b)
       w.rect.x = p.x
       w.rect.y = p.y
-      w.rect.w = (b.right - b.col) * charWidth
+      w.rect.w = ((b.right - b.col) * charWidth) | 0
       w.rect.h = lineHeight
     })
 
     tokens.forEach(token => {
       const point = pointFromLinecol(token)
+      point.y += 1
       const { fill, stroke } = colorize(token)
       tokenDrawInfo.set(token, {
         point,
@@ -142,6 +159,7 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
     const { c, pr, width, height } = $.of(info)
     $()
     c.scale(pr, pr)
+    c.imageSmoothingEnabled = false
     c.textBaseline = 'top'
     c.textRendering = 'optimizeLegibility'
     c.miterLimit = 1.5
@@ -175,29 +193,21 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
     // clear editor
     c.clearRect(0, 0, width, height)
 
-    c.save()
-    c.translate(1, 1)
-
     // draw active line
     c.fillStyle = '#333'
     c.fillRect(0, caretPoint.y, width, lineHeight - 2)
 
     // draw text
-    c.save()
-    c.translate(1, 1)
     buffer.info.tokens.forEach(token => {
       const d = tokenDrawInfo.get(token)
       if (d) drawText(c, d.point, token.text, d.fill, .025, d.stroke)
     })
-    c.restore()
 
     // draw widgets
     widgets.draw()
 
-
     // draw caret
     caret.draw(c, caretPoint)
-    c.restore()
   }
 
   return { el, info, widgets, anim }

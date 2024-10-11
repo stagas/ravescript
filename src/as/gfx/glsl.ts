@@ -56,7 +56,7 @@ void main() {
     pos = (transform * vec3(quad, 1.0)).xy * u_pr;
   }
   else {
-    pos = (a_vert.xy + a_vert.zw * quad) * u_pr;
+    pos = ceil((a_vert.xy + a_vert.zw * quad) * u_pr);
   }
 
   pos /= u_screen * 0.5;
@@ -67,7 +67,6 @@ void main() {
   v_color = a_color;
 }
 `
-
 export const fragment = /*glsl*/`
 #version 300 es
 

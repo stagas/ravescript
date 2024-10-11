@@ -70,8 +70,9 @@ export function EditorDemo({ width, height }: {
   const d1 = Widget()
   function drawRect(this: Widget, c: CanvasRenderingContext2D) {
     const r = this.rect
-    c.strokeStyle = '#666'
-    c.strokeRect(r.x, r.y, r.w, r.h)
+    c.lineWidth = 1
+    c.fillStyle = theme.colors.sky[500]
+    c.fillRect(r.x, r.y, r.w - .75, r.h - .75)
   }
   d1.draw = drawRect
   d1.bounds.line = 2
