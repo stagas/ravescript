@@ -28,6 +28,7 @@ export function Caret({ buffer, misc }: {
   $.fx(() => {
     const { index } = caret
     $()
+    caret.blinkReset++
     assign(caret.visual, buffer.indexToVisualPoint(index))
     assign(caret, buffer.indexToLogicalPoint(index))
   })
@@ -37,7 +38,13 @@ export function Caret({ buffer, misc }: {
     const { x, y } = caret.visual
     $()
     caret.index = buffer.visualPointToIndex({ x, y })
-    caret.blinkReset++
+  })
+
+  // set index from logical point
+  $.fx(() => {
+    const { x, y } = caret
+    $()
+    caret.index = buffer.logicalPointToIndex({ x, y })
   })
 
   // blink caret
@@ -92,10 +99,22 @@ export function Caret({ buffer, misc }: {
 
   function moveUpDown(dy: number) {
     const { linesVisual } = buffer.info
-    const newY = caret.visual.y + dy
+    let newX = caret.visualXIntent
+    let newY = caret.visual.y + dy
+    if (newY < 0) {
+      if (caret.visual.y === 0) newX = 0
+      newY = 0
+    }
+    const lastY = linesVisual.length - 1
+    if (newY > lastY) {
+      if (caret.visual.y === lastY) {
+        newX = linesVisual[lastY].text.length
+      }
+      newY = lastY
+    }
     if (newY >= 0 && newY <= linesVisual.length) {
       caret.index = buffer.visualPointToIndex({
-        x: caret.visualXIntent,
+        x: newX,
         y: newY
       })
     }

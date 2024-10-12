@@ -1,7 +1,7 @@
+import { Buffer, Caret, Dims, History, Kbd, Misc, Mouse, Selection, View, type WordWrapProcessor } from 'editor'
 import { Sigui, type Signal } from 'sigui'
 import { dom, isMobile } from 'utils'
 import type { Source, Token } from '~/src/lang/tokenize.ts'
-import { Buffer, Caret, Dims, History, Kbd, Misc, Mouse, Selection, View, type WordWrapProcessor } from 'editor'
 
 export function Editor({ code, width, height, colorize, tokenize, wordWrapProcessor }: {
   code: Signal<string>
@@ -14,13 +14,13 @@ export function Editor({ code, width, height, colorize, tokenize, wordWrapProces
   using $ = Sigui()
 
   const misc = Misc()
-  const dims = Dims()
+  const dims = Dims({ width, height })
   const buffer = Buffer({ code, tokenize, wordWrapProcessor })
   const caret = Caret({ buffer, misc })
   const selection = Selection({ buffer, caret })
   const history = History({ selection, buffer, caret })
-  const kbd = Kbd({ selection, buffer, caret, history })
-  const view = View({ width, height, selection, caret, dims, buffer, colorize })
+  const kbd = Kbd({ misc, dims, selection, buffer, caret, history })
+  const view = View({ selection, caret, dims, buffer, colorize })
   const mouse = Mouse({ selection, caret, view })
 
   // focus/blur

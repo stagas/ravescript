@@ -26,6 +26,7 @@ export interface Token<T = any> {
 export namespace Token {
   export enum Type {
     Newline = 'Newline',
+    Realnewline = 'Realnewline',
     Whitespace = 'Whitespace',
     Native = 'Native',
     String = 'String',
@@ -40,6 +41,7 @@ export namespace Token {
 
   export const typesEntries = [
     [Type.Newline, /(\n)/],
+    [Type.Realnewline, /(\r)/],
     [Type.Whitespace, /(\s+?)/],
     [Type.Native, /(`[a-z]+`)/],
     [Type.String, /('[^'\n]*['\n])/],
@@ -49,7 +51,7 @@ export namespace Token {
     [Type.Number, /([0-9]+[dhk][0-9]*|[0-9]+\.[0-9]+|\.?[0-9]+)/],
     [Type.BlockComment, /(\[;|\(;|{;)/],
     [Type.Op, /(\*=|\+=|:=|\+|-|\*|\/|\^|%|!|=|\{|\}|\(|\)|\[|\]|:|\.)/],
-    [Type.Comment, /(;[^\n]*)/],
+    [Type.Comment, /(;)/],
     [Type.Any, /(.+?)/],
   ] as const
 
@@ -136,6 +138,7 @@ export function* tokenize(source: Source): Generator<Token, void, unknown> {
   let slice: string
   let open: keyof typeof Token.Close
   let close: typeof Token.Close[keyof typeof Token.Close]
+  let commenting = false
   const length = Token.typesEntries.length + 1
   const it = code.matchAll(Token.regexp)
   outer: for (match of it) {
@@ -144,6 +147,9 @@ export function* tokenize(source: Source): Generator<Token, void, unknown> {
       if (text != null) {
         type = Token.typesEntries[i - 1][0]
         switch (type) {
+          case Token.Type.Realnewline:
+            commenting = false
+            break
           case Token.Type.Whitespace:
             break
           case Token.Type.Newline:
@@ -204,10 +210,12 @@ export function* tokenize(source: Source): Generator<Token, void, unknown> {
             }
             break
           }
+          case Token.Type.Comment:
+            commenting = true
           default:
             col = match.index! - lineIndex
             yield {
-              type,
+              type: commenting ? Token.Type.Comment : type,
               text,
               line,
               col,

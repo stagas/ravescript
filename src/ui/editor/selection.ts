@@ -59,21 +59,15 @@ export function Selection({ buffer, caret }: {
     assign(info.end, pointToLinecol(buffer.indexToVisualPoint(endIndex)))
   })
 
-  function begin() {
+  function reset() {
     info.start.line = info.end.line = caret.visual.y
     info.start.col = info.end.col = caret.visual.x
     $.flush()
   }
 
-  function finish() {
+  function toCaret() {
     info.end.line = caret.visual.y
     info.end.col = caret.visual.x
-    $.flush()
-  }
-
-  function clear() {
-    info.start.line = info.end.line = 0
-    info.start.col = info.end.col = 0
     $.flush()
   }
 
@@ -83,7 +77,7 @@ export function Selection({ buffer, caret }: {
     caret.index = startIndex
     $.flush()
     buffer.code = code.slice(0, startIndex) + code.slice(endIndex)
-    clear()
+    reset()
     $.flush()
   }
 
@@ -155,9 +149,8 @@ export function Selection({ buffer, caret }: {
     isActive: info.$.isActive,
     text: info.$.text,
     sorted: info.sorted,
-    begin,
-    finish,
-    clear,
+    reset,
+    toCaret,
     deleteText,
     selectAll,
     selectWord,

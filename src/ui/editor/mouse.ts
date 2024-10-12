@@ -56,10 +56,11 @@ export function Mouse({ selection, caret, view }: {
 
       switch (info.count) {
         case 1: {
-          selection.clear()
+          selection.reset()
           Object.assign(caret, info.linecol)
+          caret.visualXIntent = caret.col
           $.flush()
-          selection.begin()
+          selection.reset()
           break
         }
         case 2: {
@@ -75,7 +76,7 @@ export function Mouse({ selection, caret, view }: {
           break
         }
         default: {
-          selection.clear()
+          selection.reset()
           info.count = 0
           break
         }
@@ -95,7 +96,7 @@ export function Mouse({ selection, caret, view }: {
       if (info.buttons & MouseButtons.Left) {
         Object.assign(caret, info.linecol)
         $.flush()
-        selection.finish()
+        selection.toCaret()
       }
     })),
   ])

@@ -13,3 +13,7 @@ export function Linecol() {
 export function pointToLinecol(p: Point): Linecol {
   return { line: p.y, col: p.x }
 }
+
+export function linecolToPoint(linecol: Linecol): Point {
+  return { x: linecol.col, y: linecol.line }
+}

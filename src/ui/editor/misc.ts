@@ -7,6 +7,8 @@ export function Misc() {
 
   const info = $({
     isFocus: false,
+    commentSingle: ';',
+    commentDouble: ['[;', ']'],
   })
 
   return { info }

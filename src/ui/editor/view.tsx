@@ -15,9 +15,7 @@ interface TokenDrawInfo {
 
 export type View = ReturnType<typeof View>
 
-export function View({ width, height, selection, caret, dims, buffer, colorize }: {
-  width: Signal<number>
-  height: Signal<number>
+export function View({ selection, caret, dims, buffer, colorize }: {
   selection: Selection
   caret: Caret
   dims: Dims
@@ -25,6 +23,8 @@ export function View({ width, height, selection, caret, dims, buffer, colorize }
   colorize: (token: Token) => { fill: string, stroke: string }
 }) {
   using $ = Sigui()
+
+  const { width, height } = dims.info.$
 
   const info = $({
     c: null as null | CanvasRenderingContext2D,

@@ -30,7 +30,7 @@ export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, po
       return info.code.length
     },
     get codeVisual() {
-      return info.linesVisual.map(line => line.text).join('\n')
+      return info.linesVisual.map(line => line.text + (line.br ? '\r' : '')).join('\n')
     },
     get source() {
       return { code: info.codeVisual }
@@ -189,7 +189,7 @@ export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, po
       x = lines[y].length
     }
     else {
-      x = Math.min(x, lines[y].length)
+      x = Math.min(x, lines[y]?.length ?? 0)
     }
 
     const before = lines
@@ -239,6 +239,11 @@ export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, po
     return indexToLogicalPoint(index)
   }
 
+  function logicalPointToVisualPoint(point: Point): Point {
+    const index = logicalPointToIndex(point)
+    return indexToVisualPoint(index)
+  }
+
   function wordUnderVisualPoint(point: Point): RegExpExecArray | undefined {
     const { x, y } = point
     const words = parseWords(TOKEN, info.linesVisual[y].text)
@@ -262,6 +267,7 @@ export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, po
     logicalPointToIndex,
     visualPointToIndex,
     visualPointToLogicalPoint,
+    logicalPointToVisualPoint,
     wordUnderVisualPoint,
   })
 }
