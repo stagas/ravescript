@@ -1,10 +1,11 @@
+import { Point, Widgets, type Buffer, type Caret, type Dims, type Linecol, type Selection } from 'editor'
 import { Sigui, type Signal } from 'sigui'
-import { drawText } from 'utils'
+import { clamp, drawText } from 'utils'
 import { Anim } from '~/src/as/gfx/anim.ts'
 import type { Token } from '~/src/lang/tokenize.ts'
 import { screen } from '~/src/screen.ts'
+import { theme } from '~/src/theme.ts'
 import { Canvas } from '~/src/ui/Canvas.tsx'
-import { Buffer, Caret, Dims, Point, Widgets } from '~/src/ui/editor/index.ts'
 
 interface TokenDrawInfo {
   point: Point
@@ -14,11 +15,12 @@ interface TokenDrawInfo {
 
 export type View = ReturnType<typeof View>
 
-export function View({ width, height, dims, caret, buffer, colorize }: {
+export function View({ width, height, selection, caret, dims, buffer, colorize }: {
   width: Signal<number>
   height: Signal<number>
-  dims: Dims
+  selection: Selection
   caret: Caret
+  dims: Dims
   buffer: Buffer
   colorize: (token: Token) => { fill: string, stroke: string }
 }) {
@@ -32,43 +34,29 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
     svgs: new Set<SVGElement>()
   })
 
-  const canvas = <Canvas
-    width={width}
-    height={height}
-    class="absolute top-0 left-0"
-  /> as HTMLCanvasElement
+  const canvas = <Canvas width={width} height={height} class="absolute top-0 left-0" /> as HTMLCanvasElement
+  const glCanvas = <Canvas width={width} height={height} class="absolute top-0 left-0" /> as HTMLCanvasElement
+  const svg = <svg width={width} height={height} class="absolute top-0 left-0" >{() =>
+    [...info.svgs]
+  }</svg> as SVGSVGElement
 
-  const glCanvas = <Canvas
-    width={width}
-    height={height}
-    class="absolute top-0 left-0"
-  /> as HTMLCanvasElement
-
-  const svg = <svg
-    width={width}
-    height={height}
-    class="absolute top-0 left-0"
-  >{() => [...info.svgs]}</svg> as SVGSVGElement
-
-  const el = <div class="relative">
+  const el = <div class="relative cursor-text">
     {canvas}
     {glCanvas}
     {svg}
   </div> as HTMLDivElement
 
   const c = canvas.getContext('2d')!
-
   const widgets = Widgets({ width, height, c, glCanvas })
-
   const anim = Anim()
   anim.ticks.add(draw)
 
-  // draw info
+  // drawing info
   const tokenDrawInfo = new WeakMap<Token, TokenDrawInfo>()
-  let caretPoint = Point()
+  let caretViewPoint = Point()
   let extraHeights: number[] = []
 
-  function pointFromLinecol({ line, col }: { line: number, col: number }) {
+  function viewPointFromLinecol({ line, col }: Linecol): Point {
     const { charWidth, lineHeight } = dims.info
 
     const p = Point()
@@ -87,6 +75,34 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
     p.y = Math.floor(p.y + 1)
 
     return p
+  }
+
+  function linecolFromViewPoint({ x, y }: Point): Linecol {
+    const { charWidth, lineHeight } = dims.info
+    const { linesVisual } = buffer.info
+
+    let top = 0
+    out: {
+      for (let i = 0; i <= linesVisual.length; i++) {
+        if (y < top) {
+          y = i - 1
+          break out
+        }
+
+        let l = widgets.lines.get(i)
+        if (l) {
+          top += l.deco
+          top += l.subs + 2
+        }
+        top += lineHeight
+      }
+      y = linesVisual.length - 1
+    }
+
+    const line = clamp(0, linesVisual.length - 1, y)
+    const col = clamp(0, linesVisual[y]?.text.length ?? 0, Math.round((x - 3) / charWidth))
+
+    return { line, col }
   }
 
   // update token draw info
@@ -110,7 +126,7 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
 
     widgets.deco.forEach(w => {
       const b = w.bounds
-      const p = pointFromLinecol(b)
+      const p = viewPointFromLinecol(b)
       w.rect.x = p.x
       w.rect.y = p.y - widgets.heights.deco - extraHeights[b.line]
       w.rect.w = ((b.right - b.col) * charWidth) | 0
@@ -119,7 +135,7 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
 
     widgets.subs.forEach(w => {
       const b = w.bounds
-      const p = pointFromLinecol(b)
+      const p = viewPointFromLinecol(b)
       w.rect.x = p.x
       w.rect.y = p.y + lineHeight - 1
       w.rect.w = ((b.right - b.col) * charWidth) | 0
@@ -128,7 +144,7 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
 
     widgets.mark.forEach(w => {
       const b = w.bounds
-      const p = pointFromLinecol(b)
+      const p = viewPointFromLinecol(b)
       w.rect.x = p.x - 1
       w.rect.y = p.y - 1
       w.rect.w = (((b.right - b.col) * charWidth) | 0) + 2.75
@@ -136,7 +152,7 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
     })
 
     tokens.forEach(token => {
-      const point = pointFromLinecol(token)
+      const point = viewPointFromLinecol(token)
       point.y += 1
       const { fill, stroke } = colorize(token)
       tokenDrawInfo.set(token, {
@@ -147,11 +163,12 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
     })
   })
 
+  // update caret view point
   $.fx(() => {
     const { tokens } = buffer.info
     const { x, y } = caret.visual
     $()
-    caretPoint = pointFromLinecol({ line: y, col: x })
+    caretViewPoint = viewPointFromLinecol({ line: y, col: x })
   })
 
   // wait for fonts to load
@@ -181,44 +198,78 @@ export function View({ width, height, dims, caret, buffer, colorize }: {
     const { width } = info
     const { charWidth } = dims.info
     $()
-    buffer.info.maxColumns = width / charWidth
+    buffer.info.maxColumns = Math.floor(width / charWidth)
   })
 
-  // draw everything
+  // trigger draw
   $.fx(() => {
     const { c, pr, width, height } = $.of(info)
     const { code } = buffer.info
     const { caretWidth, charWidth, charHeight, lineHeight } = dims.info
     const { isVisible: isCaretVisible } = caret.info
     const { x: cx, y: cy } = caret.info.visual
+    const { start: { line: sl, col: sc }, end: { line: el, col: ec } } = selection.info
     $()
     anim.info.epoch++
   })
 
-  function draw() {
-    const { c, width, height } = $.of(info)
-    const { charWidth, lineHeight } = dims.info
-    const { y: cy } = caret.visual
+  function drawClear() {
+    c.clearRect(0, 0, info.width, info.height)
+  }
 
-    // clear editor
-    c.clearRect(0, 0, width, height)
-
-    // draw active line
+  function drawActiveLine() {
     c.fillStyle = '#333'
-    c.fillRect(0, caretPoint.y, width, lineHeight - 2)
+    c.fillRect(0, caretViewPoint.y, info.width, dims.info.lineHeight - 2)
+  }
 
-    // draw text
+  function drawSelection() {
+    if (!selection.isActive) return
+    const { lineHeight } = dims.info
+    const { start, end } = selection.sorted
+    const brPadding = 5
+    c.fillStyle = theme.colors.blue[800]
+    for (let line = start.line; line <= end.line; line++) {
+      const c1 = line === start.line ? start.col : 0
+      const c2 = line === end.line ? end.col : buffer.linesVisual[line].text.length
+      const p1 = viewPointFromLinecol({ line, col: c1 })
+      const p2 = viewPointFromLinecol({ line, col: c2 })
+      c.fillRect(p1.x, p1.y, p2.x - p1.x + (line === end.line ? 0 : brPadding), lineHeight)
+    }
+  }
+
+  function drawCode() {
     buffer.info.tokens.forEach(token => {
       const d = tokenDrawInfo.get(token)
       if (d) drawText(c, d.point, token.text, d.fill, .025, d.stroke)
     })
-
-    // draw widgets
-    widgets.draw()
-
-    // draw caret
-    caret.draw(c, caretPoint)
   }
 
-  return { el, info, widgets, anim }
+  function drawCaret() {
+    if (!caret.info.isVisible) return
+    const { caretWidth, charHeight } = dims.info
+    c.fillStyle = '#fff'
+    c.fillRect(
+      caretViewPoint.x,
+      caretViewPoint.y + .5,
+      caretWidth,
+      charHeight
+    )
+  }
+
+  function draw() {
+    drawClear()
+    drawActiveLine()
+    drawSelection()
+    drawCode()
+    widgets.draw()
+    drawCaret()
+  }
+
+  return {
+    el,
+    info,
+    widgets,
+    anim,
+    linecolFromViewPoint
+  }
 }

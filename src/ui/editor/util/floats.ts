@@ -1,4 +1,4 @@
-import wasm from '~/src/as/gfx/wasm.ts'
+import { wasm } from 'gfx'
 import { WAVE_MIPMAPS } from '~/as/assembly/gfx/sketch-shared.ts'
 
 export type Floats = ReturnType<typeof Floats>

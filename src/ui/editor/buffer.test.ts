@@ -105,7 +105,7 @@ describe('TextBuffer', () => {
     })
   })
 
-  describe('visualPointToIndex / indexToVisualPoint / indexToPoint', () => {
+  describe('visualPointToIndex / indexToVisualPoint / indexToLogicalPoint', () => {
     it('works', () => {
       const b = B(`\
 hello world
@@ -119,7 +119,7 @@ lorem ipsum
           expect(p).toEqual({ x: 0, y: 4 })
         }
         {
-          const p = b.indexToPoint(24)
+          const p = b.indexToLogicalPoint(24)
           expect(p).toEqual({ x: 0, y: 2 })
         }
       }
@@ -131,7 +131,7 @@ lorem ipsum
           expect(p).toEqual({ x: 0, y: 1 })
         }
         {
-          const p = b.indexToPoint(6)
+          const p = b.indexToLogicalPoint(6)
           expect(p).toEqual({ x: 6, y: 0 })
         }
       }
@@ -143,7 +143,7 @@ lorem ipsum
           expect(p).toEqual({ x: 3, y: 3 })
         }
         {
-          const p = b.indexToPoint(21)
+          const p = b.indexToLogicalPoint(21)
           expect(p).toEqual({ x: 9, y: 1 })
         }
       }
@@ -155,7 +155,7 @@ lorem ipsum
           expect(p).toEqual({ x: 3, y: 2 })
         }
         {
-          const p = b.indexToPoint(15)
+          const p = b.indexToLogicalPoint(15)
           expect(p).toEqual({ x: 3, y: 1 })
         }
       }
@@ -167,7 +167,7 @@ lorem ipsum
           expect(p).toEqual({ x: 3, y: 1 })
         }
         {
-          const p = b.indexToPoint(9)
+          const p = b.indexToLogicalPoint(9)
           expect(p).toEqual({ x: 9, y: 0 })
         }
       }
@@ -179,7 +179,7 @@ lorem ipsum
           expect(p).toEqual({ x: 3, y: 0 })
         }
         {
-          const p = b.indexToPoint(3)
+          const p = b.indexToLogicalPoint(3)
           expect(p).toEqual({ x: 3, y: 0 })
         }
       }

@@ -14,7 +14,7 @@ export interface Mesh {
 }
 
 export function WebGL(view: Rect, canvas: HTMLCanvasElement, alpha = false) {
-  DEBUG && console.log('[webgl] create')
+  DEBUG && console.debug('[webgl] create')
   using $ = Sigui()
 
   const GL = initGL(canvas, {
@@ -48,7 +48,7 @@ export function WebGL(view: Rect, canvas: HTMLCanvasElement, alpha = false) {
   }
 
   $.fx(() => () => {
-    DEBUG && console.log('[webgl] dispose')
+    DEBUG && console.debug('[webgl] dispose')
     meshes.clear()
     GL.reset()
   })

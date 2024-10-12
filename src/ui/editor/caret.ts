@@ -1,15 +1,12 @@
+import type { Buffer, Misc } from 'editor'
+import { beginOfLine, Point } from 'editor'
 import { Sigui } from 'sigui'
-import type { Dims } from '~/src/ui/editor/dims.ts'
-import type { Misc } from '~/src/ui/editor/misc.ts'
-import type { Buffer } from '~/src/ui/editor/buffer.ts'
-import { beginOfLine } from '~/src/ui/editor/util/index.ts'
-import { Point } from '~/src/ui/editor/util/types.ts'
+import { assign } from 'utils'
 
 export type Caret = ReturnType<typeof Caret>
 
-export function Caret({ buffer, dims, misc }: {
+export function Caret({ buffer, misc }: {
   buffer: Buffer,
-  dims: Dims,
   misc: Misc,
 }) {
   using $ = Sigui()
@@ -27,20 +24,20 @@ export function Caret({ buffer, dims, misc }: {
 
   const caret = info
 
-  $.fx(() => {
-    const { code } = buffer.info
-    const { x, y } = caret
-    $()
-    caret.index = buffer.pointToIndex(caret)
-  })
-
-  // calculate caret visual point from logical.
+  // set caret points from index
   $.fx(() => {
     const { index } = caret
     $()
-    const { x, y } = buffer.indexToVisualPoint(index)
-    caret.visual.x = x
-    caret.visual.y = y
+    assign(caret.visual, buffer.indexToVisualPoint(index))
+    assign(caret, buffer.indexToLogicalPoint(index))
+  })
+
+  // set index from visual point
+  $.fx(() => {
+    const { x, y } = caret.visual
+    $()
+    caret.index = buffer.visualPointToIndex({ x, y })
+    caret.blinkReset++
   })
 
   // blink caret
@@ -60,35 +57,19 @@ export function Caret({ buffer, dims, misc }: {
   })
 
   function doBackspace() {
-    const { lines } = buffer.info
-    // at greater than line length, remove char
-    if (caret.x > 0) {
-      const line = lines[caret.y]
-      lines[caret.y] = line.slice(0, caret.x - 1) + line.slice(caret.x)
-      buffer.updateFromLines()
-      caret.x--
+    if (caret.index > 0) {
+      const { code } = buffer
+      buffer.code = code.slice(0, caret.index - 1) + code.slice(caret.index)
       $.flush()
-      caret.visualXIntent = caret.visual.x
-    }
-    // at start of line, merge with previous line
-    else if (caret.y > 0) {
-      const line = lines[caret.y]
-      caret.x = lines[caret.y - 1].length
-      lines[caret.y - 1] += line
-      lines.splice(caret.y, 1)
-      buffer.updateFromLines()
-      caret.y--
-      $.flush()
-      caret.visualXIntent = caret.visual.x
+      moveLeft()
     }
   }
 
   function doDelete() {
-    const { lines } = buffer.info
-    const line = lines[caret.y]
-    if (caret.x < line.length) {
-      lines[caret.y] = line.slice(0, caret.x) + line.slice(caret.x + 1)
-      buffer.updateFromLines()
+    const { code } = buffer
+    const { index } = caret
+    if (index < code.length) {
+      buffer.code = code.slice(0, index) + code.slice(index + 1)
     }
   }
 
@@ -96,64 +77,36 @@ export function Caret({ buffer, dims, misc }: {
     const { linesVisual } = buffer.info
     const bx = beginOfLine(linesVisual[caret.visual.y]?.text ?? '')
     const vx = bx === caret.visual.x ? 0 : bx
-    const { x, y } = buffer.visualPointToLogicalPoint({
+    caret.index = buffer.visualPointToIndex({
       x: vx,
       y: caret.visual.y
     })
-    caret.x = x
-    caret.y = y
-    $.flush()
-    caret.visualXIntent = caret.visual.x
   }
 
   function moveEnd() {
-    const { linesVisual } = buffer.info
-    const { x, y } = buffer.visualPointToLogicalPoint({
-      x: linesVisual[caret.visual.y]?.text.length ?? 0,
+    caret.index = buffer.visualPointToIndex({
+      x: buffer.info.linesVisual[caret.visual.y]?.text.length ?? 0,
       y: caret.visual.y
     })
-    caret.x = x
-    caret.y = y
-    $.flush()
-    caret.visualXIntent = caret.visual.x
   }
 
   function moveUpDown(dy: number) {
     const { linesVisual } = buffer.info
     const newY = caret.visual.y + dy
     if (newY >= 0 && newY <= linesVisual.length) {
-      const { x, y } = buffer.visualPointToLogicalPoint({
+      caret.index = buffer.visualPointToIndex({
         x: caret.visualXIntent,
         y: newY
       })
-      caret.x = x
-      caret.y = y
     }
   }
 
   function moveLeft() {
-    const { lines } = buffer.info
-    if (caret.x > 0) caret.x--
-    else if (caret.y > 0) {
-      caret.y--
-      caret.x = lines[caret.y].length
-    }
-    $.flush()
-    caret.visualXIntent = caret.visual.x
+    if (caret.index > 0) --caret.index
   }
 
   function moveRight() {
-    const { lines } = buffer.info
-    const line = lines[caret.y]
-    if (caret.x < line.length) {
-      caret.x++
-    }
-    else if (caret.y < lines.length - 1) {
-      caret.y++
-      caret.x = 0
-    }
-    $.flush()
-    caret.visualXIntent = caret.visual.x
+    if (caret.index < buffer.length) ++caret.index
   }
 
   function moveByWord(dir: number) {
@@ -166,32 +119,24 @@ export function Caret({ buffer, dims, misc }: {
         break
       }
     }
-    const p = buffer.indexToPoint(index)
-    caret.x = p.x
-    caret.y = p.y
-    $.flush()
-    caret.visualXIntent = caret.visual.x
+    caret.index = index
   }
 
-  function draw(c: CanvasRenderingContext2D, point: Point) {
-    const { isVisible } = caret
-    if (!isVisible) return
-
-    const { caretWidth, charHeight } = dims.info
-
-    c.fillStyle = '#fff'
-    c.fillRect(
-      point.x,
-      point.y + .5,
-      caretWidth,
-      charHeight
-    )
+  function insert(key: string) {
+    const { code } = buffer
+    buffer.code =
+      code.slice(0, caret.index)
+      + key
+      + code.slice(caret.index)
+    $.flush()
   }
 
   return $({
     info,
     x: caret.$.x,
     y: caret.$.y,
+    line: caret.visual.$.y,
+    col: caret.visual.$.x,
     index: caret.$.index,
     visual: caret.$.visual,
     visualXIntent: caret.$.visualXIntent,
@@ -203,6 +148,6 @@ export function Caret({ buffer, dims, misc }: {
     moveLeft,
     moveRight,
     moveByWord,
-    draw,
+    insert,
   })
 }

@@ -1,6 +1,6 @@
 import { Sigui, type Signal } from 'sigui'
 import type { Source, Token } from '~/src/lang/tokenize.ts'
-import { parseWords, WORD, type Point } from '~/src/ui/editor/util/index.ts'
+import { parseWords, TOKEN, WORD, type Point } from 'editor'
 
 export interface Line {
   text: string
@@ -25,6 +25,10 @@ export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, po
   const info = $({
     maxColumns: 10,
     code,
+    lines: [] as string[],
+    get length() {
+      return info.code.length
+    },
     get codeVisual() {
       return info.linesVisual.map(line => line.text).join('\n')
     },
@@ -37,14 +41,25 @@ export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, po
     get words() {
       return parseWords(WORD, info.code)
     },
-    get lines() {
-      return info.code.split('\n')
-    },
     get linesVisual(): Line[] {
       const { code, maxColumns } = info
       $()
       return wordWrap()
     }
+  })
+
+  // split code into lines
+  $.fx(() => {
+    const { code } = info
+    $()
+    info.lines = code.split('\n')
+  })
+
+  // join lines into code
+  $.fx(() => {
+    const { lines } = info
+    $()
+    info.code = lines.join('\n')
   })
 
   function wordWrap(): Line[] {
@@ -90,7 +105,7 @@ export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, po
         }
       }
       else {
-        if (word.length === maxColumns) {
+        if (word.length >= maxColumns) {
           wrapped.push({ text: word })
           word = ''
           x = 0
@@ -115,7 +130,7 @@ export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, po
     })
   }
 
-  function indexToPoint(index: number): Point {
+  function indexToLogicalPoint(index: number): Point {
     const { lines } = info
 
     let currentIndex = 0
@@ -165,7 +180,7 @@ export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, po
     }
   }
 
-  function pointToIndex(point: Point): number {
+  function logicalPointToIndex(point: Point): number {
     const { lines } = info
     let { x, y } = point
 
@@ -221,20 +236,32 @@ export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, po
 
   function visualPointToLogicalPoint(point: Point): Point {
     const index = visualPointToIndex(point)
-    return indexToPoint(index)
+    return indexToLogicalPoint(index)
   }
 
-  function updateFromLines() {
-    info.code = info.lines.join('\n')
+  function wordUnderVisualPoint(point: Point): RegExpExecArray | undefined {
+    const { x, y } = point
+    const words = parseWords(TOKEN, info.linesVisual[y].text)
+    for (let i = 0, word: RegExpExecArray, next: any; i < words.length; i++) {
+      word = words[i]
+      next = i < words.length - 1 ? words[i + 1] : { index: Infinity }
+      if (x >= word.index && x < next.index) {
+        return word
+      }
+    }
   }
 
-  return {
+  return $({
     info,
-    updateFromLines,
-    indexToPoint,
+    code,
+    length: info.$.length,
+    lines: info.$.lines,
+    linesVisual: info.$.linesVisual,
+    indexToLogicalPoint,
     indexToVisualPoint,
-    pointToIndex,
+    logicalPointToIndex,
     visualPointToIndex,
-    visualPointToLogicalPoint
-  }
+    visualPointToLogicalPoint,
+    wordUnderVisualPoint,
+  })
 }

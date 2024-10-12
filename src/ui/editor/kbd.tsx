@@ -1,15 +1,16 @@
+import { Buffer, type Caret, type History, type Selection } from 'editor'
 import { Sigui } from 'sigui'
 import { dom } from 'utils'
-import { Buffer } from '~/src/ui/editor/buffer.ts'
-import type { Caret } from '~/src/ui/editor/caret.ts'
 
-export function Kbd({ buffer, caret }: {
+export function Kbd({ selection, buffer, caret, history }: {
+  selection: Selection
   buffer: Buffer
   caret: Caret
+  history: History
 }) {
   using $ = Sigui()
 
-  const el = <textarea
+  const textarea = <textarea
     spellcheck="false"
     autocorrect="off"
     autocapitalize="off"
@@ -24,88 +25,201 @@ export function Kbd({ buffer, caret }: {
     "
   /> as HTMLTextAreaElement
 
-  const ignoredKeys = 'zycvxjrtn=+-'
+  const ignoredKeys = 'cvxjrtn=+-'
+
+  const { withHistory, withHistoryDebounced, undo, redo } = history
+
+  const handleKey = $.fn((ev: KeyboardEvent) => {
+    if (ev.ctrlKey && ignoredKeys.includes(ev.key.toLowerCase())) return
+
+    ev.preventDefault()
+
+    caret.info.blinkReset++
+
+    let { key } = ev
+    const ctrl = ev.ctrlKey || ev.metaKey
+    const alt = ev.altKey
+    let shift = ev.shiftKey
+
+    if (key === 'Enter') key = '\n'
+
+    function withSelection(fn: () => void, force = false) {
+      if (!shift && selection.isActive) selection.clear()
+      if (force || (shift && !selection.isActive)) {
+        selection.begin()
+      }
+      fn()
+      $.flush()
+      if (force || shift) {
+        selection.finish()
+      }
+    }
+
+    function withIntent(fn: () => void) {
+      fn()
+      $.flush()
+      caret.info.visualXIntent = caret.visual.x
+    }
+
+    if (key.length === 1) {
+      if (ctrl) {
+        // ctrl + a = select all
+        if (key === 'a') return selection.selectAll()
+
+        // ctrl + shift + d =
+        //   with no selection: duplicate line
+        //   with selection: duplicate selection
+        else if (shift && key === 'D') {
+          return withHistoryDebounced(() => {
+            const { index } = caret
+            if (selection.isActive) {
+              const { length } = selection.text
+              caret.insert(selection.text)
+              caret.index += length
+              selection.info.startIndex += length
+              selection.info.endIndex += length
+            }
+            else {
+              caret.index = buffer.logicalPointToIndex({ x: 0, y: caret.y })
+              $.flush()
+              const line = buffer.info.lines[caret.y] + '\n'
+              caret.insert(line)
+              caret.index = index + line.length
+            }
+          })
+        }
+
+        else if (key === 'z') return undo()
+        else if (key === 'y') return redo()
+      }
+
+      // with selection: replace selection
+      if (selection.isActive) {
+        return withHistory(() => {
+          selection.deleteText()
+          handleKey(ev)
+        })
+      }
+
+      // insert character
+      withHistoryDebounced(() =>
+        withIntent(() => {
+          caret.insert(key)
+          caret.moveRight()
+        })
+      )
+    }
+    else {
+      // backspace
+      //   with selection: delete selection
+      //   with no selection: delete character before caret
+      if (key === 'Backspace') {
+        withHistoryDebounced(() => {
+          if (selection.isActive) return selection.deleteText()
+          if (ctrl) {
+            withSelection(() => caret.moveByWord(-1), true)
+            return selection.deleteText()
+          }
+          withIntent(caret.doBackspace)
+        })
+      }
+      // delete
+      //   with selection: delete selection
+      //   with no selection: delete character after caret
+      else if (key === 'Delete') {
+        withHistoryDebounced(() => {
+          if (selection.isActive) return selection.deleteText()
+          if (ctrl) {
+            withSelection(() => caret.moveByWord(+1), true)
+            return selection.deleteText()
+          }
+          if (shift) {
+            // delete line
+            selection.selectLine()
+            $.flush()
+            selection.endIndex++
+            $.flush()
+            selection.deleteText()
+            return
+          }
+          caret.doDelete()
+        })
+      }
+      // home
+      else if (key === 'Home') {
+        withSelection(() => withIntent(caret.moveHome))
+      }
+      // end
+      else if (key === 'End') {
+        withSelection(() => withIntent(caret.moveEnd))
+      }
+      // arrow up/down
+      else if (key === 'ArrowUp' || key === 'ArrowDown') {
+        withSelection(() =>
+          caret.moveUpDown(key === 'ArrowUp' ? -1 : +1)
+        )
+      }
+      // arrow left
+      else if (key === 'ArrowLeft') {
+        withSelection(() =>
+          withIntent(() => {
+            if (ctrl) caret.moveByWord(-1)
+            else caret.moveLeft()
+          })
+        )
+      }
+      // arrow right
+      else if (key === 'ArrowRight') {
+        withSelection(() =>
+          withIntent(() => {
+            if (ctrl) caret.moveByWord(+1)
+            else caret.moveRight()
+          })
+        )
+      }
+    }
+  })
 
   // read keyboard input
   $.fx(() => [
     // mobile
-    dom.on(el, 'input', $.fn((ev: InputEvent) => {
-      if (ev.data) {
-        el.dispatchEvent(new KeyboardEvent('keydown', { key: ev.data }))
-        el.value = ''
+    dom.on(textarea, 'input', $.fn((ev: Event) => {
+      const inputEvent = ev as InputEvent
+      if (inputEvent.data) {
+        textarea.dispatchEvent(new KeyboardEvent('keydown', { key: inputEvent.data }))
+        textarea.value = ''
       }
-    }) as any),
+    })),
 
     // desktop
-    dom.on(el, 'keydown', $.fn((ev: KeyboardEvent) => {
-      if (ev.ctrlKey && ignoredKeys.includes(ev.key.toLowerCase())) return
+    dom.on(textarea, 'keydown', handleKey),
 
+    // clipboard
+    dom.on(textarea, 'paste', $.fn((ev: ClipboardEvent) => {
       ev.preventDefault()
-
-      caret.info.blinkReset++
-
-      const { code, lines, linesVisual } = buffer.info
-
-      const { key } = ev
-      const ctrl = ev.ctrlKey || ev.metaKey
-      const alt = ev.altKey
-      const shift = ev.shiftKey
-
-      // insert character
-      if (key.length === 1) {
-        const line = lines[caret.y]
-        lines[caret.y] = line.slice(0, caret.x) + key + line.slice(caret.x)
-        buffer.updateFromLines()
-        caret.x++
-        $.flush()
-        caret.visualXIntent = caret.visual.x
-      }
-      else {
-        // handle enter
-        if (key === 'Enter') {
-          const line = lines[caret.y]
-          lines[caret.y] = line.slice(0, caret.x)
-          lines.splice(caret.y + 1, 0, line.slice(caret.x))
-          buffer.updateFromLines()
-          caret.y++
-          caret.x = 0
+      const text = ev.clipboardData?.getData('text/plain')
+      if (text) {
+        withHistory(() => {
+          selection.begin()
+          caret.insert(text)
+          caret.index += text.length
           $.flush()
-          caret.visualXIntent = caret.visual.x
-        }
-        // handle backspace
-        else if (key === 'Backspace') {
-          caret.doBackspace()
-        }
-        // handle delete
-        else if (key === 'Delete') {
-          caret.doDelete()
-        }
-        // handle home
-        else if (key === 'Home') {
-          caret.moveHome()
-        }
-        // handle end
-        else if (key === 'End') {
-          caret.moveEnd()
-        }
-        // handle arrow keys
-        else if (key === 'ArrowUp' || key === 'ArrowDown') {
-          const newY = key === 'ArrowUp'
-            ? caret.visual.y - 1
-            : caret.visual.y + 1
-          caret.moveUpDown(key === 'ArrowUp' ? -1 : +1)
-        }
-        else if (key === 'ArrowLeft') {
-          if (ctrl) caret.moveByWord(-1)
-          else caret.moveLeft()
-        }
-        else if (key === 'ArrowRight') {
-          if (ctrl) caret.moveByWord(+1)
-          else caret.moveRight()
-        }
+          selection.finish()
+        })
       }
-    }))
+    })),
+
+    dom.on(textarea, 'copy', $.fn((ev: ClipboardEvent) => {
+      ev.preventDefault()
+      ev.clipboardData?.setData('text/plain', selection.text)
+    })),
+
+    dom.on(textarea, 'cut', $.fn((ev: ClipboardEvent) => {
+      ev.preventDefault()
+      ev.clipboardData?.setData('text/plain', selection.text)
+      withHistory(selection.deleteText)
+    })),
   ])
 
-  return el
+  return textarea
 }

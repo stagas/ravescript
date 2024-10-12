@@ -1,11 +1,8 @@
 import { Sigui, type Signal } from 'sigui'
-import { cn } from '~/lib/cn.ts'
 import { Anim } from '~/src/as/gfx/anim.ts'
 import { Gfx } from '~/src/as/gfx/gfx.ts'
 import { Rect } from '~/src/as/gfx/types.ts'
 import { AnimMode } from '~/src/comp/AnimMode.tsx'
-import { state } from '~/src/state.ts'
-import { Button } from '~/src/ui/Button.tsx'
 import { Canvas } from '~/src/ui/Canvas.tsx'
 import { H2 } from '~/src/ui/Heading.tsx'
 

@@ -10,7 +10,7 @@ export function SketchInfo(GL: GL, view: Rect) {
 
   const { gl, attrib } = GL
 
-  DEBUG && console.log('[sketch] MAX_GL_INSTANCES:', MAX_GL_INSTANCES)
+  DEBUG && console.debug('[sketch] MAX_GL_INSTANCES:', MAX_GL_INSTANCES)
 
   const info = MeshInfo(GL, {
     vertex,

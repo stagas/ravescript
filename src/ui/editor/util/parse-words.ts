@@ -1,4 +1,4 @@
-export function parseWords(regexp: RegExp, text: any) {
+export function parseWords(regexp: RegExp, text: string) {
   regexp.lastIndex = 0
   let word
   const words: RegExpExecArray[] = []

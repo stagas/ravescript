@@ -132,6 +132,10 @@ export default ({ mode }) => {
   return defineConfig({
     clearScreen: false,
     server: {
+      watch: {
+        // KEEP: this option fixes hmr for an unknown reason
+        usePolling: true
+      },
       host: 'devito.test',
       fs: {
         allow: [

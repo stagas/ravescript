@@ -73,99 +73,75 @@ export function EditorDemo({ width, height }: {
   const shapes = editor.widgets.gfx.createShapes()
   editor.widgets.gfx.scene.add(shapes)
 
-  ///////////////////
-  const floats = Object.assign(
-    wasm.alloc(Float32Array, waveform.length),
-    { len: waveform.length }
-  )
-  floats.set(waveform)
+  // ///////////////////
+  // const floats = Object.assign(
+  //   wasm.alloc(Float32Array, waveform.length),
+  //   { len: waveform.length }
+  // )
+  // floats.set(waveform)
 
-  $.fx(() => {
-    const { tokens } = editor.buffer.info
-    $()
-    const gens: Token[][] = []
+  // $.fx(() => {
+  //   const { tokens } = editor.buffer.info
+  //   $()
+  //   const gens: Token[][] = []
 
-    let depth = 0
-    let gen: Token[] = []
-    for (const token of tokens) {
-      if (token.text === '[') {
-        depth++
-      }
-      else if (token.text === ']') {
-        gen.push(token)
-        depth--
-        if (!depth) {
-          gens.push(gen)
-          gen = []
-        }
-      }
-      if (depth) gen.push(token)
-    }
+  //   let depth = 0
+  //   let gen: Token[] = []
+  //   for (const token of tokens) {
+  //     if (token.text === '[') {
+  //       depth++
+  //     }
+  //     else if (token.text === ']') {
+  //       gen.push(token)
+  //       depth--
+  //       if (!depth) {
+  //         gens.push(gen)
+  //         gen = []
+  //       }
+  //     }
+  //     if (depth) gen.push(token)
+  //   }
 
-    // const decos = gens.map(gen => {
-    //   const d = WaveSvgWidget()
-    //   d.info.floats = floats
-    //   Object.assign(d.widget.bounds, Token.bounds(gen))
-    //   editor.widgets.deco.add(d.widget)
-    //   editor.view.info.svgs.add(d.svg)
-    //   editor.view.info.svgs = new Set(editor.view.info.svgs)
-    //   return d
-    // })
+  //   if (!gens.length) return
 
-    // const decos = gens.map(gen => {
-    //   const d = WaveCanvasWidget()
-    //   d.info.floats = floats
-    //   Object.assign(d.widget.bounds, Token.bounds(gen))
-    //   editor.widgets.deco.add(d.widget)
-    //   return d
-    // })
+  //   const d = WaveCanvasWidget()
+  //   d.info.floats = floats
+  //   Object.assign(d.widget.bounds, Token.bounds(gens[0]))
+  //   editor.widgets.deco.add(d.widget)
 
-    // const decos = gens.map(gen => {
-    //   const d = WaveGlWidget(shapes)
-    //   d.info.floats = floats
-    //   Object.assign(d.widget.bounds, Token.bounds(gen))
-    //   editor.widgets.deco.add(d.widget)
-    //   return d
-    // })
+  //   const d2 = WaveGlWidget(shapes)
+  //   d2.info.floats = floats
+  //   Object.assign(d2.widget.bounds, Token.bounds(gens[1]))
+  //   editor.widgets.deco.add(d2.widget)
 
-    const d = WaveCanvasWidget()
-    d.info.floats = floats
-    Object.assign(d.widget.bounds, Token.bounds(gens[0]))
-    editor.widgets.deco.add(d.widget)
+  //   const d3 = WaveSvgWidget()
+  //   d3.info.floats = floats
+  //   Object.assign(d3.widget.bounds, Token.bounds(gens[2]))
+  //   editor.widgets.deco.add(d3.widget)
+  //   editor.view.info.svgs.add(d3.svg)
+  //   editor.view.info.svgs = new Set(editor.view.info.svgs)
 
-    const d2 = WaveGlWidget(shapes)
-    d2.info.floats = floats
-    Object.assign(d2.widget.bounds, Token.bounds(gens[1]))
-    editor.widgets.deco.add(d2.widget)
-
-    const d3 = WaveSvgWidget()
-    d3.info.floats = floats
-    Object.assign(d3.widget.bounds, Token.bounds(gens[2]))
-    editor.widgets.deco.add(d3.widget)
-    editor.view.info.svgs.add(d3.svg)
-    editor.view.info.svgs = new Set(editor.view.info.svgs)
-
-    return () => {
-      // decos.forEach(d => {
-      editor.widgets.deco.delete(d.widget)
-      //   d.dispose()
-      // })
-      editor.widgets.deco.delete(d2.widget)
-      d2.dispose()
-      editor.widgets.deco.delete(d3.widget)
-      editor.view.info.svgs.delete(d3.svg)
-      editor.view.info.svgs = new Set(editor.view.info.svgs)
-    }
-  })
-  editor.widgets.update()
-
-  let t = 101
-  // editor.anim.ticks.add(() => {
-  floats.set(makeWaveform(2048, t += 1, 1 + Math.sin(t * 0.025) * 59))
-  //   return true
+  //   return () => {
+  //     // decos.forEach(d => {
+  //     editor.widgets.deco.delete(d.widget)
+  //     //   d.dispose()
+  //     // })
+  //     editor.widgets.deco.delete(d2.widget)
+  //     d2.dispose()
+  //     editor.widgets.deco.delete(d3.widget)
+  //     editor.view.info.svgs.delete(d3.svg)
+  //     editor.view.info.svgs = new Set(editor.view.info.svgs)
+  //   }
   // })
+  // editor.widgets.update()
 
-  ///////////////////
+  // let t = 101
+  // // editor.anim.ticks.add(() => {
+  // floats.set(makeWaveform(2048, t += 1, 1 + Math.sin(t * 0.025) * 59))
+  // //   return true
+  // // })
+
+  // ///////////////////
 
   const el = <div>
     <div class="flex items-center justify-between">

@@ -2,7 +2,6 @@ import { Sigui, type Signal } from 'sigui'
 import { Gfx } from '~/src/as/gfx/gfx.ts'
 import { Rect } from '~/src/as/gfx/types.ts'
 import type { Token } from '~/src/lang/tokenize.ts'
-import type { Point } from '~/src/ui/editor/util/types.ts'
 
 function Bounds(): Token.Bounds {
   using $ = Sigui()
@@ -47,11 +46,10 @@ export function Widgets({ width, height, c, glCanvas }: {
     lines.clear()
     types.forEach(type => {
       widgets[type].forEach(w => {
-        for (let y = w.bounds.line; y <= w.bounds.bottom; y++) {
-          let line = lines.get(y)
-          if (!line) lines.set(y, line = { deco: 0, subs: 0, mark: 0 })
-          line[type] = heights[type]
-        }
+        let y = w.bounds.line
+        let line = lines.get(y)
+        if (!line) lines.set(y, line = { deco: 0, subs: 0, mark: 0 })
+        line[type] = heights[type]
       })
     })
   }

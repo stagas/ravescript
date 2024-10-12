@@ -1,8 +1,9 @@
-import { $, fx, storage } from 'sigui'
+import { $, storage } from 'sigui'
 import type { z } from 'zod'
 import type { UserSession } from '~/api/auth/types.ts'
 import type { UiChannel } from '~/api/chat/types.ts'
 import type { Channels } from '~/api/models.ts'
+import { lorem, loremRandomWord } from '~/lib/lorem.ts'
 import { AnimMode } from '~/src/as/gfx/anim.ts'
 import { env } from '~/src/env.ts'
 import { screen } from '~/src/screen.ts'
@@ -64,29 +65,26 @@ class State {
 
 export let state = $(new State)
 
-// fx(() => {
-//   const { container } = $.of(state)
-//   const { width, height } = screen
-//   $()
-//   container.style.width = width + 'px'
-//   container.style.height = height + 'px'
-// })
-
 export function setState(newState: any) {
   state = newState
 }
 
-// const channels = ['general', 'random', 'dev']
-// // const channels = Array.from({ length: 50 + (Math.random() * 50 | 0) }).map(() => loremRandomWord())
-// state.channels = channels.sort().map(name => $({
-//   name,
-//   users: Array.from({ length: 50 + (Math.random() * 50 | 0) }).map(() => ({
-//     nick: loremRandomWord(),
-//   })),
-//   messages: Array.from({ length: 100 }).map((_, i) => ({
-//     nick: loremRandomWord(),
-//     text: lorem((Math.random() ** 2.5) * 20 + 1),
-//   }))
-// }))
+function seedFakeChannels() {
+  const channels = ['general', 'random', 'dev']
+  // const channels = Array.from({ length: 50 + (Math.random() * 50 | 0) }).map(() => loremRandomWord())
+  state.channels = channels.sort().map(name => $({
+    name,
+    users: Array.from({ length: 50 + (Math.random() * 50 | 0) }).map(() => ({
+      nick: loremRandomWord(),
+    })),
+    messages: Array.from({ length: 100 }).map((_, i) => ({
+      type: 'message',
+      nick: loremRandomWord(),
+      text: lorem((Math.random() ** 2.5) * 20 + 1),
+    }))
+  }))
 
-// state.currentChannelName = state.channels[0].name
+  state.currentChannelName = state.channels[0].name
+}
+
+// seedFakeChannels()
