@@ -266,6 +266,8 @@ export function Kbd({ misc, dims, selection, buffer, caret, history }: {
     const { y: y1 } = p1
     const { y: y2 } = p2
 
+    if (y1 === 0 && dy < 0) return
+    if (y2 === buffer.lines.length - 1 && dy > 0) return
     if (y1 + dy < 0) dy = -y1
     if (y2 + dy >= buffer.lines.length) dy = buffer.lines.length - y2
     if (!dy) return
@@ -332,6 +334,7 @@ export function Kbd({ misc, dims, selection, buffer, caret, history }: {
             })
           )
         }
+
         // ctrl + ; = toggle block comment
         else if (key === ';') {
           return withHistoryDebounced(() =>

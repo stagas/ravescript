@@ -1,6 +1,11 @@
 import { Sigui, type Signal } from 'sigui'
 import type { Source, Token } from '~/src/lang/tokenize.ts'
-import { parseWords, TOKEN, WORD, type Point } from 'editor'
+// KEEP: imports are not from 'editor' because of bun test
+// loading singletons that access the window object
+import { type Dims } from '~/src/ui/editor/dims.ts'
+import { parseWords } from '~/src/ui/editor/util/parse-words.ts'
+import { TOKEN, WORD } from '~/src/ui/editor/util/regexp.ts'
+import { type Point } from '~/src/ui/editor/util/types.ts'
 
 export interface Line {
   text: string
@@ -15,15 +20,16 @@ export type Buffer = ReturnType<typeof Buffer>
 
 function identity(x: any) { return x }
 
-export function Buffer({ code, tokenize, wordWrapProcessor = { pre: identity, post: identity } }: {
-  code: Signal<string>,
+export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identity, post: identity } }: {
+  dims: Dims
+  code: Signal<string>
   tokenize: (source: Source) => Generator<Token, void, unknown>
   wordWrapProcessor?: WordWrapProcessor
 }) {
   using $ = Sigui()
 
   const info = $({
-    maxColumns: 10,
+    maxColumns: dims.info.$.pageWidth,
     code,
     lines: [] as string[],
     get length() {

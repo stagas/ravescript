@@ -1,5 +1,4 @@
-import type { Buffer, Misc } from 'editor'
-import { beginOfLine, Point } from 'editor'
+import { beginOfLine, Point, type Buffer, type Misc } from 'editor'
 import { Sigui } from 'sigui'
 import { assign } from 'utils'
 

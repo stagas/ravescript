@@ -1,6 +1,5 @@
+import { Gfx, Rect } from 'gfx'
 import { Sigui, type Signal } from 'sigui'
-import { Gfx } from '~/src/as/gfx/gfx.ts'
-import { Rect } from '~/src/as/gfx/types.ts'
 import type { Token } from '~/src/lang/tokenize.ts'
 
 function Bounds(): Token.Bounds {

@@ -1,7 +1,7 @@
 import { Point, Widgets, type Buffer, type Caret, type Dims, type Linecol, type Selection } from 'editor'
-import { Sigui, type Signal } from 'sigui'
-import { clamp, drawText } from 'utils'
-import { Anim } from '~/src/as/gfx/anim.ts'
+import { Anim } from 'gfx'
+import { Sigui } from 'sigui'
+import { assign, clamp, drawText } from 'utils'
 import type { Token } from '~/src/lang/tokenize.ts'
 import { screen } from '~/src/screen.ts'
 import { theme } from '~/src/theme.ts'
@@ -68,7 +68,7 @@ export function View({ selection, caret, dims, buffer, colorize }: {
       if (l) top += l.deco
       if (y === line) p.y = top
       top += lineHeight
-      if (l) top += l.subs + 2
+      if (l?.subs) top += l.subs + 2
     }
 
     p.x = Math.floor(p.x + 1)
@@ -168,7 +168,11 @@ export function View({ selection, caret, dims, buffer, colorize }: {
     const { tokens } = buffer.info
     const { x, y } = caret.visual
     $()
-    caretViewPoint = viewPointFromLinecol({ line: y, col: x })
+    // NOTE: bugfix while toggling block comments caret wasn't updated.
+    //  there must be a real solution to this but for now this works.
+    queueMicrotask(() => {
+      assign(caretViewPoint, viewPointFromLinecol({ line: y, col: x }))
+    })
   })
 
   // wait for fonts to load
@@ -193,21 +197,13 @@ export function View({ selection, caret, dims, buffer, colorize }: {
     c.font = '16px "IBM Plex Mono", monospace'
   })
 
-  // adjust text columns width based on view width
-  $.fx(() => {
-    const { width } = info
-    const { charWidth } = dims.info
-    $()
-    buffer.info.maxColumns = Math.floor(width / charWidth)
-  })
-
   // trigger draw
   $.fx(() => {
     const { c, pr, width, height } = $.of(info)
     const { code } = buffer.info
     const { caretWidth, charWidth, charHeight, lineHeight } = dims.info
     const { isVisible: isCaretVisible } = caret.info
-    const { x: cx, y: cy } = caret.info.visual
+    const { x: cx, y: cy } = caret.visual
     const { start: { line: sl, col: sc }, end: { line: el, col: ec } } = selection.info
     $()
     anim.info.epoch++

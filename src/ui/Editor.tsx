@@ -15,7 +15,7 @@ export function Editor({ code, width, height, colorize, tokenize, wordWrapProces
 
   const misc = Misc()
   const dims = Dims({ width, height })
-  const buffer = Buffer({ code, tokenize, wordWrapProcessor })
+  const buffer = Buffer({ dims, code, tokenize, wordWrapProcessor })
   const caret = Caret({ buffer, misc })
   const selection = Selection({ buffer, caret })
   const history = History({ selection, buffer, caret })

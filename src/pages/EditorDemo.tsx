@@ -36,11 +36,17 @@ export function EditorDemo({ width, height }: {
     width,
     height,
     code: `\
+
+
+
+[dly 16 1 /]
+
+
+
 [sin 300] [tri 111] [tri 222] [tri 333] [tri 444] [tri 555] [tri 666]
     [saw 123]
   [sqr 555] @
 [lp 300 .8]
-[dly 16 1 /]
 [ppd (3 4 5)]
 [ar 10 50] *`,
   })
