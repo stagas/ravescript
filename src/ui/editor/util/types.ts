@@ -1,3 +1,9 @@
+export type Rect = ReturnType<typeof Rect>
+
+export function Rect() {
+  return { x: 0, y: 0, w: 0, h: 0 }
+}
+
 export type Point = ReturnType<typeof Point>
 
 export function Point() {

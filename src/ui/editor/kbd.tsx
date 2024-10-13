@@ -1,6 +1,6 @@
 import { beginOfLine, Buffer, escapeRegExp, findMatchingBrackets, linecolToPoint, pointToLinecol, type Caret, type Dims, type History, type Misc, type Selection } from 'editor'
 import { Sigui } from 'sigui'
-import { assign, dom } from 'utils'
+import { assign } from 'utils'
 
 export function Kbd({ misc, dims, selection, buffer, caret, history }: {
   misc: Misc
@@ -11,21 +11,6 @@ export function Kbd({ misc, dims, selection, buffer, caret, history }: {
   history: History
 }) {
   using $ = Sigui()
-
-  const textarea = <textarea
-    spellcheck="false"
-    autocorrect="off"
-    autocapitalize="off"
-    autocomplete="off"
-    virtualkeyboardpolicy="auto"
-    class="
-      fixed right-0 top-0 opacity-0 w-[50px] h-[50px]
-      pointer-events-none caret-transparent
-      border-none outline-none
-      resize-none p-0 whitespace-pre
-      overflow-hidden z-50
-    "
-  /> as HTMLTextAreaElement
 
   const ignoredKeys = 'cvxjrtn=+-'
 
@@ -472,46 +457,5 @@ export function Kbd({ misc, dims, selection, buffer, caret, history }: {
     }
   })
 
-  // read keyboard input
-  $.fx(() => [
-    // mobile
-    dom.on(textarea, 'input', $.fn((ev: Event) => {
-      const inputEvent = ev as InputEvent
-      if (inputEvent.data) {
-        textarea.dispatchEvent(new KeyboardEvent('keydown', { key: inputEvent.data }))
-        textarea.value = ''
-      }
-    })),
-
-    // desktop
-    dom.on(textarea, 'keydown', handleKey),
-
-    // clipboard
-    dom.on(textarea, 'paste', $.fn((ev: ClipboardEvent) => {
-      ev.preventDefault()
-      const text = ev.clipboardData?.getData('text/plain')
-      if (text) {
-        withHistory(() => {
-          selection.reset()
-          caret.insert(text)
-          caret.index += text.length
-          $.flush()
-          selection.toCaret()
-        })
-      }
-    })),
-
-    dom.on(textarea, 'copy', $.fn((ev: ClipboardEvent) => {
-      ev.preventDefault()
-      ev.clipboardData?.setData('text/plain', selection.text)
-    })),
-
-    dom.on(textarea, 'cut', $.fn((ev: ClipboardEvent) => {
-      ev.preventDefault()
-      ev.clipboardData?.setData('text/plain', selection.text)
-      withHistory(selection.deleteText)
-    })),
-  ])
-
-  return textarea
+  return { handleKey }
 }

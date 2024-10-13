@@ -1,4 +1,4 @@
-import type { WordWrapProcessor } from 'editor'
+import { Rect, type WordWrapProcessor } from 'editor'
 import { wasm } from 'gfx'
 import { Sigui, type Signal } from 'sigui'
 import { AnimMode } from '~/src/comp/AnimMode.tsx'
@@ -43,7 +43,7 @@ export function EditorDemo({ width, height }: {
 
 
 
-[sin 300] [tri 111] [tri 222] [tri 333] [tri 444] [tri 555] [tri 666]
+[sin 3000000000000000] [tri 1111111] [tri 222] [tri 333] [tri 444] [tri 555] [tri 666]
     [saw 123]
   [sqr 555] @
 [lp 300 .8]
@@ -77,83 +77,92 @@ export function EditorDemo({ width, height }: {
     wordWrapProcessor,
   })
 
-  const shapes = editor.widgets.gfx.createShapes()
-  editor.widgets.gfx.scene.add(shapes)
-
-  ///////////////////
-  const floats = Object.assign(
-    wasm.alloc(Float32Array, waveform.length),
-    { len: waveform.length }
-  )
-  floats.set(waveform)
-
-  $.fx(() => {
-    const { tokens } = editor.buffer.info
-    $()
-    const gens: Token[][] = []
-
-    let depth = 0
-    let gen: Token[] = []
-    for (const token of tokens) {
-      if (token.text === '[') {
-        depth++
-      }
-      else if (token.text === ']') {
-        gen.push(token)
-        depth--
-        if (!depth) {
-          gens.push(gen)
-          gen = []
-        }
-      }
-      if (depth) gen.push(token)
-    }
-
-    if (!gens.length) return
-
-    const d = WaveCanvasWidget()
-    d.info.floats = floats
-    Object.assign(d.widget.bounds, Token.bounds(gens[0]))
-    editor.widgets.deco.add(d.widget)
-
-    const d2 = WaveGlWidget(shapes)
-    d2.info.floats = floats
-    Object.assign(d2.widget.bounds, Token.bounds(gens[1]))
-    editor.widgets.deco.add(d2.widget)
-
-    const d3 = WaveSvgWidget()
-    d3.info.floats = floats
-    Object.assign(d3.widget.bounds, Token.bounds(gens[2]))
-    editor.widgets.deco.add(d3.widget)
-    editor.view.info.svgs.add(d3.svg)
-    editor.view.info.svgs = new Set(editor.view.info.svgs)
-
-    return () => {
-      // decos.forEach(d => {
-      editor.widgets.deco.delete(d.widget)
-      //   d.dispose()
-      // })
-      editor.widgets.deco.delete(d2.widget)
-      d2.dispose()
-      editor.widgets.deco.delete(d3.widget)
-      editor.view.info.svgs.delete(d3.svg)
-      editor.view.info.svgs = new Set(editor.view.info.svgs)
-    }
+  const pane2Info = $({
+    code: 'hello\nworld'
   })
-  editor.widgets.update()
+  const pane2 = editor.createPane({
+    rect: $(Rect(), { x: 0, y: 210, w: 200, h: 200 }),
+    code: pane2Info.$.code,
+  })
+  editor.addPane(pane2)
 
-  let t = 101
-  // editor.anim.ticks.add(() => {
-  floats.set(makeWaveform(2048, t += 1, 1 + Math.sin(t * 0.025) * 59))
-  //   return true
+  // const shapes = editor.widgets.gfx.createShapes()
+  // editor.widgets.gfx.scene.add(shapes)
+
+  // ///////////////////
+  // const floats = Object.assign(
+  //   wasm.alloc(Float32Array, waveform.length),
+  //   { len: waveform.length }
+  // )
+  // floats.set(waveform)
+
+  // $.fx(() => {
+  //   const { tokens } = editor.buffer.info
+  //   $()
+  //   const gens: Token[][] = []
+
+  //   let depth = 0
+  //   let gen: Token[] = []
+  //   for (const token of tokens) {
+  //     if (token.text === '[') {
+  //       depth++
+  //     }
+  //     else if (token.text === ']') {
+  //       gen.push(token)
+  //       depth--
+  //       if (!depth) {
+  //         gens.push(gen)
+  //         gen = []
+  //       }
+  //     }
+  //     if (depth) gen.push(token)
+  //   }
+
+  //   if (!gens.length) return
+
+  //   const d = WaveCanvasWidget()
+  //   d.info.floats = floats
+  //   Object.assign(d.widget.bounds, Token.bounds(gens[0]))
+  //   editor.widgets.deco.add(d.widget)
+
+  //   const d2 = WaveGlWidget(shapes)
+  //   d2.info.floats = floats
+  //   Object.assign(d2.widget.bounds, Token.bounds(gens[1]))
+  //   editor.widgets.deco.add(d2.widget)
+
+  //   const d3 = WaveSvgWidget()
+  //   d3.info.floats = floats
+  //   Object.assign(d3.widget.bounds, Token.bounds(gens[2]))
+  //   editor.widgets.deco.add(d3.widget)
+  //   editor.view.info.svgs.add(d3.svg)
+  //   editor.view.info.svgs = new Set(editor.view.info.svgs)
+
+  //   return () => {
+  //     // decos.forEach(d => {
+  //     editor.widgets.deco.delete(d.widget)
+  //     //   d.dispose()
+  //     // })
+  //     editor.widgets.deco.delete(d2.widget)
+  //     d2.dispose()
+  //     editor.widgets.deco.delete(d3.widget)
+  //     editor.view.info.svgs.delete(d3.svg)
+  //     editor.view.info.svgs = new Set(editor.view.info.svgs)
+  //   }
   // })
+  // editor.widgets.update()
 
-  ///////////////////
+  // let t = 101
+  // // editor.anim.ticks.add(() => {
+  // floats.set(makeWaveform(2048, t += 1, 1 + Math.sin(t * 0.025) * 59))
+  // //   return true
+  // // })
+
+  // ///////////////////
 
   const el = <div>
     <div class="flex items-center justify-between">
       <H2>Editor demo</H2>
-      <AnimMode anim={editor.anim} />
+      <AnimMode anim={editor.view.anim} />
     </div>
     {editor}
   </div>

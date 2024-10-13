@@ -1,5 +1,5 @@
-import { Gfx, Rect } from 'gfx'
-import { Sigui, type Signal } from 'sigui'
+import { Rect } from 'gfx'
+import { Sigui } from 'sigui'
 import type { Token } from '~/src/lang/tokenize.ts'
 
 function Bounds(): Token.Bounds {
@@ -15,14 +15,9 @@ interface WidgetLineInfo {
 
 export type Widgets = ReturnType<typeof Widgets>
 
-export function Widgets({ width, height, c, glCanvas }: {
-  width: Signal<number>
-  height: Signal<number>
+export function Widgets({ c }: {
   c: CanvasRenderingContext2D
-  glCanvas: HTMLCanvasElement
 }) {
-  const gfx = Gfx({ width, height, canvas: glCanvas })
-
   const deco = new Set<Widget>()
   const subs = new Set<Widget>()
   const mark = new Set<Widget>()
@@ -58,10 +53,9 @@ export function Widgets({ width, height, c, glCanvas }: {
     deco.forEach(widgetDraw)
     subs.forEach(widgetDraw)
     mark.forEach(widgetDraw)
-    gfx.draw()
   }
 
-  const widgets = { gfx, update, draw, deco, subs, mark, heights, lines }
+  const widgets = { update, draw, deco, subs, mark, heights, lines }
 
   return widgets
 }

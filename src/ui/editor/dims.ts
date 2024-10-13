@@ -1,16 +1,16 @@
 import { Sigui, type Signal } from 'sigui'
+import type { Rect } from 'editor'
+import { clamp } from 'utils'
 
 export type Dims = ReturnType<typeof Dims>
 
-export function Dims({ width, height }: {
-  width: Signal<number>,
-  height: Signal<number>,
+export function Dims({ rect }: {
+  rect: Rect
 }) {
   using $ = Sigui()
 
   const info = $({
-    width,
-    height,
+    rect,
 
     caretWidth: 1.5,
 
@@ -19,12 +19,11 @@ export function Dims({ width, height }: {
 
     lineHeight: 19,
 
-    get pageHeight() {
-      return Math.floor(info.height / info.lineHeight)
-    },
-    get pageWidth() {
-      return Math.floor(info.width / info.charWidth)
-    }
+    pageHeight: 1,
+    pageWidth: 1,
+
+    scrollX: 0,
+    scrollY: 0,
   })
 
   return { info }

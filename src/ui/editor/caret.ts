@@ -1,12 +1,12 @@
-import { beginOfLine, Point, type Buffer, type Misc } from 'editor'
+import { beginOfLine, Point, type Buffer, type PaneInfo } from 'editor'
 import { Sigui } from 'sigui'
 import { assign } from 'utils'
 
 export type Caret = ReturnType<typeof Caret>
 
-export function Caret({ buffer, misc }: {
+export function Caret({ paneInfo, buffer }: {
+  paneInfo: PaneInfo,
   buffer: Buffer,
-  misc: Misc,
 }) {
   using $ = Sigui()
 
@@ -48,10 +48,13 @@ export function Caret({ buffer, misc }: {
 
   // blink caret
   $.fx(() => {
-    const { isFocus } = misc.info
+    const { isFocus } = paneInfo
     const { isBlink, blinkReset } = caret
     $()
-    if (!isFocus || !isBlink) return
+    if (!isFocus || !isBlink) {
+      caret.isVisible = false
+      return
+    }
     caret.isVisible = true
     const caretIv = setInterval(() => {
       caret.isVisible = !caret.isVisible

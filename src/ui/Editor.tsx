@@ -1,6 +1,5 @@
-import { Buffer, Caret, Dims, History, Kbd, Misc, Mouse, Selection, View, type WordWrapProcessor } from 'editor'
+import { Input, Misc, Pane, Rect, View, type WordWrapProcessor } from 'editor'
 import { Sigui, type Signal } from 'sigui'
-import { dom, isMobile } from 'utils'
 import type { Source, Token } from '~/src/lang/tokenize.ts'
 
 export function Editor({ code, width, height, colorize, tokenize, wordWrapProcessor }: {
@@ -14,52 +13,66 @@ export function Editor({ code, width, height, colorize, tokenize, wordWrapProces
   using $ = Sigui()
 
   const misc = Misc()
-  const dims = Dims({ width, height })
-  const buffer = Buffer({ dims, code, tokenize, wordWrapProcessor })
-  const caret = Caret({ buffer, misc })
-  const selection = Selection({ buffer, caret })
-  const history = History({ selection, buffer, caret })
-  const kbd = Kbd({ misc, dims, selection, buffer, caret, history })
-  const view = View({ selection, caret, dims, buffer, colorize })
-  const mouse = Mouse({ selection, caret, view })
+  const view = View({ width, height })
 
-  // focus/blur
-  function focus() {
-    kbd.focus({ preventScroll: true })
+  function createPane({ rect, code }: {
+    rect: Rect
+    code: Signal<string>
+  }) {
+    const pane = Pane({
+      misc,
+      view,
+      rect,
+      code,
+      colorize,
+      tokenize,
+      wordWrapProcessor
+    })
+    return pane
   }
 
-  function preventAndFocus(ev: Event) {
-    ev.preventDefault()
-    focus()
+  function addPane(pane: Pane) {
+    info.panes = new Set([...info.panes, pane])
+    view.anim.ticks.add(pane.draw.draw)
   }
 
-  function onFocus() {
-    misc.info.isFocus = caret.info.isBlink = true
+  function removePane(pane: Pane) {
+    info.panes.delete(pane)
+    info.panes = new Set(info.panes)
+    view.anim.ticks.delete(pane.draw.draw)
   }
 
-  function onBlur() {
-    if (mouse.info.isDown) return
-    misc.info.isFocus = caret.info.isVisible = caret.info.isBlink = false
-  }
+  const pane = createPane({
+    rect: $(Rect(), { w: 193, h: 200 }),
+    code,
+  })
 
-  $.fx(() => [
-    dom.on(kbd, 'focus', onFocus),
-    dom.on(kbd, 'blur', onBlur),
-    dom.on(window, 'blur', onBlur),
-  ])
+  const info = $({
+    pane,
+    panes: new Set([pane])
+  })
 
-  $.fx(() => [
-    dom.on(window, 'focus', () => focus()),
-    dom.on(view.el, 'pointerup', preventAndFocus),
-    isMobile() && dom.on(view.el, 'touchend', preventAndFocus),
-  ])
+  const input = Input({
+    misc,
+    view,
+    pane: info.$.pane,
+    panes: info.$.panes,
+  })
 
-  requestAnimationFrame(focus)
+  addPane(pane)
 
   const el = <div>
     {view.el}
-    {kbd}
+    {view.textarea}
   </div> as HTMLDivElement
 
-  return { el, focus, buffer, view, anim: view.anim, widgets: view.widgets }
+  return {
+    el,
+    info,
+    focus: input.focus,
+    view,
+    createPane,
+    addPane,
+    removePane
+  }
 }

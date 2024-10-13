@@ -30,6 +30,7 @@ export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identi
 
   const info = $({
     maxColumns: dims.info.$.pageWidth,
+    wordWrapEnabled: false,
     code,
     lines: [] as string[],
     get length() {
@@ -48,9 +49,11 @@ export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identi
       return parseWords(WORD, info.code)
     },
     get linesVisual(): Line[] {
-      const { code, maxColumns } = info
+      const { code, maxColumns, wordWrapEnabled } = info
       $()
-      return wordWrap()
+      return wordWrapEnabled
+        ? wordWrap()
+        : code.split('\n').map(text => ({ text }))
     }
   })
 
