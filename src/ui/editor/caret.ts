@@ -52,7 +52,7 @@ export function Caret({ paneInfo, buffer }: {
     const { isBlink, blinkReset } = caret
     $()
     if (!isFocus || !isBlink) {
-      caret.isVisible = false
+      // caret.isVisible = false
       return
     }
     caret.isVisible = true

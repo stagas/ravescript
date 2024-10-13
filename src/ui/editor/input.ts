@@ -67,7 +67,7 @@ export function Input({ misc, view, pane, panes }: {
   ])
 
   // mouse
-  const mouse = $({
+  const inputMouse = $({
     isDown: false,
     buttons: 0,
     count: 0,
@@ -100,18 +100,28 @@ export function Input({ misc, view, pane, panes }: {
     })
   )
 
+  function updatePaneMouse(pane: Pane) {
+    assign(pane.mouse.info, {
+      x: inputMouse.x - pane.dims.info.rect.x - pane.dims.info.scrollX,
+      y: inputMouse.y - pane.dims.info.rect.y - pane.dims.info.scrollY,
+    })
+  }
+
   function updateMouseFromEvent(ev: PointerEvent | Touch) {
     const c = el.getBoundingClientRect()
-    mouse.x = ev.pageX - c.left
-    mouse.y = ev.pageY - c.top
+    inputMouse.x = ev.pageX - c.left
+    inputMouse.y = ev.pageY - c.top
+
+    if (info.hoveringPane?.mouse.info.isDown) {
+      updatePaneMouse(info.hoveringPane)
+      return
+    }
+
     out: {
       for (const pane of info.panes) {
-        if (isPointInRect(mouse, pane.dims.info.rect)) {
+        if (isPointInRect(inputMouse, pane.dims.info.rect)) {
           info.hoveringPane = pane
-          assign(pane.mouse.info, {
-            x: mouse.x - pane.dims.info.rect.x - pane.dims.info.scrollX,
-            y: mouse.y - pane.dims.info.rect.y - pane.dims.info.scrollY,
-          })
+          updatePaneMouse(pane)
           break out
         }
       }
@@ -121,14 +131,20 @@ export function Input({ misc, view, pane, panes }: {
 
   $.fx(() => [
     dom.on(el, 'contextmenu', dom.prevent.stop),
+
     dom.on(el, 'wheel', $.fn((ev: WheelEvent) => {
       ev.preventDefault()
       const { deltaX, deltaY } = ev
       const { hoveringPane: pane } = info
       if (!pane) return
-      pane.dims.info.scrollY -= deltaY
-      pane.dims.info.scrollX += deltaX
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        pane.dims.info.scrollY -= deltaY * .35
+      }
+      else {
+        pane.dims.info.scrollX -= deltaX * .35
+      }
     })),
+
     dom.on(el, 'pointerdown', $.fn((ev: PointerEvent) => {
       ev.preventDefault()
       updateMouseFromEvent(ev)
@@ -154,6 +170,7 @@ export function Input({ misc, view, pane, panes }: {
         return
       }
 
+      inputMouse.isDown = true
       mouse.info.isDown = true
 
       clearTimeout(mouse.info.clickTimeout)
@@ -192,6 +209,7 @@ export function Input({ misc, view, pane, panes }: {
     dom.on(window, 'pointerup', $.fn((ev: PointerEvent) => {
       updateMouseFromEvent(ev)
       const { mouse, caret } = info.pane
+      inputMouse.isDown = false
       mouse.info.isDown = false
       mouse.info.buttons = 0
 
@@ -223,7 +241,12 @@ export function Input({ misc, view, pane, panes }: {
   }
 
   function onBlur() {
-    if (mouse.isDown) return
+    if (inputMouse.isDown) {
+      // if (info.pane.info.isFocus) {
+      //   info.pane.caret.info.isVisible = true
+      // }
+      return
+    }
     info.pane.info.isFocus = info.pane.caret.info.isVisible = info.pane.caret.info.isBlink = false
   }
 

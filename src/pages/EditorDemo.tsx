@@ -86,8 +86,8 @@ export function EditorDemo({ width, height }: {
   })
   editor.addPane(pane2)
 
-  // const shapes = editor.widgets.gfx.createShapes()
-  // editor.widgets.gfx.scene.add(shapes)
+  const shapes = editor.view.gfx.createShapes()
+  editor.view.gfx.scene.add(shapes)
 
   // ///////////////////
   // const floats = Object.assign(
