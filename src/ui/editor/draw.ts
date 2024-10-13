@@ -1,4 +1,5 @@
 import { Point, Widgets, type Buffer, type Caret, type Dims, type Linecol, type Selection, type View } from 'editor'
+import { Matrix, Rect } from 'gfx'
 import { Sigui } from 'sigui'
 import { assign, clamp, drawText, randomHex } from 'utils'
 import type { Token } from '~/src/lang/tokenize.ts'
@@ -34,6 +35,18 @@ export function Draw({ view, selection, caret, dims, buffer, colorize }: {
   })
 
   const widgets = Widgets({ c })
+  const webglView = Rect(info.rect.$.x, info.rect.$.y, info.rect.$.w, info.rect.$.h)
+  const webglMatrix = Matrix()
+  const webgl = view.gfx.createContext(webglView, webglMatrix)
+  const webglShapes = webgl.createShapes()
+  webgl.sketch.scene.add(webglShapes)
+  view.anim.ticks.add(webgl.meshes.draw)
+  $.fx(() => {
+    const { scrollX, scrollY } = dims.info
+    $()
+    webglMatrix.e = scrollX
+    webglMatrix.f = scrollY
+  })
 
   // drawing info
   const tokenDrawInfo = new WeakMap<Token, TokenDrawInfo>()
@@ -237,6 +250,7 @@ export function Draw({ view, selection, caret, dims, buffer, colorize }: {
   })
 
   const color = randomHex(3, '2', '5')
+
   function drawClear() {
     const { x, y, w, h } = info.rect
     c.beginPath()
@@ -354,6 +368,8 @@ export function Draw({ view, selection, caret, dims, buffer, colorize }: {
   return {
     info,
     draw,
+    webgl,
+    shapes: webglShapes,
     widgets,
     linecolFromViewPoint
   }

@@ -2,7 +2,7 @@ import { Buffer, Caret, Selection } from 'editor'
 import { Sigui } from 'sigui'
 import { assign, debounce } from 'utils'
 
-const DEBUG = true
+const DEBUG = false
 
 interface Snap {
   buffer: {

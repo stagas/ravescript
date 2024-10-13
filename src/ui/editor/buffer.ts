@@ -53,7 +53,7 @@ export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identi
       $()
       return wordWrapEnabled
         ? wordWrap()
-        : code.split('\n').map(text => ({ text }))
+        : code.split('\n').map(text => ({ text, br: true }))
     }
   })
 

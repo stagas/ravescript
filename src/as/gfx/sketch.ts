@@ -14,7 +14,7 @@ export function Sketch(GL: GL, view: Rect) {
   const { use } = info
 
   function flush(count: number) {
-    // DEBUG && console.log('[sketch] draw', count)
+    DEBUG && console.log('[sketch] draw', count)
     writeGL(count)
     gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, count)
   }
@@ -22,7 +22,7 @@ export function Sketch(GL: GL, view: Rect) {
   function draw() {
     use()
     wasm.setFlushSketchFn(flush)
-    // DEBUG && console.log('[sketch] draw', scene)
+    DEBUG && console.log('[sketch] draw', scene.size)
     for (const shapes of scene) {
       sketchDraw(shapes)
     }

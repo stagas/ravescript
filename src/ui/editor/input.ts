@@ -143,7 +143,7 @@ export function Input({ misc, view, pane, panes }: {
       else {
         pane.dims.info.scrollX -= deltaX * .35
       }
-    })),
+    }), { passive: false }),
 
     dom.on(el, 'pointerdown', $.fn((ev: PointerEvent) => {
       ev.preventDefault()

@@ -48,7 +48,8 @@ export function View({ width, height }: {
   const anim = Anim()
   // anim.ticks.add(draw)
 
-  const gfx = Gfx({ width, height, canvas: glCanvas })
+  const gfx = Gfx({ canvas: glCanvas })
+  // anim.ticks.add(gfx.draw)
 
   const textarea = <textarea
     spellcheck="false"

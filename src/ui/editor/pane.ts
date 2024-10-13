@@ -1,5 +1,5 @@
 import { Buffer, Caret, Dims, Draw, History, Kbd, Misc, Mouse, Selection, type Rect, type WordWrapProcessor } from 'editor'
-import { Sigui, type Signal } from 'sigui'
+import { Sigui, type $, type Signal } from 'sigui'
 import type { Source, Token } from '~/src/lang/tokenize.ts'
 import type { View } from '~/src/ui/editor/view.tsx'
 
@@ -13,7 +13,7 @@ export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProce
   misc: Misc
   view: View
   code: Signal<string>
-  rect: Rect
+  rect: $<Rect>
   colorize: (token: Token) => { fill: string, stroke: string }
   tokenize: (source: Source) => Generator<Token, void, unknown>
   wordWrapProcessor: WordWrapProcessor

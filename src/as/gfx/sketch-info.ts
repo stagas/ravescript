@@ -3,14 +3,14 @@ import { GL } from 'gl-util'
 import { Sigui } from 'sigui'
 import { MAX_GL_INSTANCES } from '~/as/assembly/gfx/sketch-shared.ts'
 
-const DEBUG = true
+const DEBUG = false
 
 export function SketchInfo(GL: GL, view: Rect) {
   using $ = Sigui()
 
   const { gl, attrib } = GL
 
-  DEBUG && console.debug('[sketch] MAX_GL_INSTANCES:', MAX_GL_INSTANCES)
+  DEBUG && console.debug('[sketch-info] MAX_GL_INSTANCES:', MAX_GL_INSTANCES)
 
   const info = MeshInfo(GL, {
     vertex,
@@ -58,7 +58,7 @@ export function SketchInfo(GL: GL, view: Rect) {
     range.end = range.count = count
     GL.writeAttribRange(a_vert, range)
     GL.writeAttribRange(a_style, range)
-    // DEBUG && log('[sketch] write gl begin:', range.begin, 'end:', range.end, 'count:', range.count)
+    // DEBUG && log('[sketch-info] write gl begin:', range.begin, 'end:', range.end, 'count:', range.count)
   }
 
   function finish() {

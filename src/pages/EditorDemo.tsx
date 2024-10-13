@@ -36,14 +36,9 @@ export function EditorDemo({ width, height }: {
     width,
     height,
     code: `\
-
-
-
 [dly 16 1 /]
-
-
-
-[sin 3000000000000000] [tri 1111111] [tri 222] [tri 333] [tri 444] [tri 555] [tri 666]
+[sin 300]
+    [tri 111] [tri 222] [tri 333] [tri 444] [tri 555] [tri 666]
     [saw 123]
   [sqr 555] @
 [lp 300 .8]
@@ -77,87 +72,98 @@ export function EditorDemo({ width, height }: {
     wordWrapProcessor,
   })
 
-  const pane2Info = $({
-    code: 'hello\nworld'
-  })
-  const pane2 = editor.createPane({
-    rect: $(Rect(), { x: 0, y: 210, w: 200, h: 200 }),
-    code: pane2Info.$.code,
-  })
-  editor.addPane(pane2)
-
-  const shapes = editor.view.gfx.createShapes()
-  editor.view.gfx.scene.add(shapes)
-
-  // ///////////////////
-  // const floats = Object.assign(
-  //   wasm.alloc(Float32Array, waveform.length),
-  //   { len: waveform.length }
-  // )
-  // floats.set(waveform)
-
-  // $.fx(() => {
-  //   const { tokens } = editor.buffer.info
-  //   $()
-  //   const gens: Token[][] = []
-
-  //   let depth = 0
-  //   let gen: Token[] = []
-  //   for (const token of tokens) {
-  //     if (token.text === '[') {
-  //       depth++
-  //     }
-  //     else if (token.text === ']') {
-  //       gen.push(token)
-  //       depth--
-  //       if (!depth) {
-  //         gens.push(gen)
-  //         gen = []
-  //       }
-  //     }
-  //     if (depth) gen.push(token)
-  //   }
-
-  //   if (!gens.length) return
-
-  //   const d = WaveCanvasWidget()
-  //   d.info.floats = floats
-  //   Object.assign(d.widget.bounds, Token.bounds(gens[0]))
-  //   editor.widgets.deco.add(d.widget)
-
-  //   const d2 = WaveGlWidget(shapes)
-  //   d2.info.floats = floats
-  //   Object.assign(d2.widget.bounds, Token.bounds(gens[1]))
-  //   editor.widgets.deco.add(d2.widget)
-
-  //   const d3 = WaveSvgWidget()
-  //   d3.info.floats = floats
-  //   Object.assign(d3.widget.bounds, Token.bounds(gens[2]))
-  //   editor.widgets.deco.add(d3.widget)
-  //   editor.view.info.svgs.add(d3.svg)
-  //   editor.view.info.svgs = new Set(editor.view.info.svgs)
-
-  //   return () => {
-  //     // decos.forEach(d => {
-  //     editor.widgets.deco.delete(d.widget)
-  //     //   d.dispose()
-  //     // })
-  //     editor.widgets.deco.delete(d2.widget)
-  //     d2.dispose()
-  //     editor.widgets.deco.delete(d3.widget)
-  //     editor.view.info.svgs.delete(d3.svg)
-  //     editor.view.info.svgs = new Set(editor.view.info.svgs)
-  //   }
+  // const pane2Info = $({
+  //   code: '[hello]\n[world]'
   // })
-  // editor.widgets.update()
-
-  // let t = 101
-  // // editor.anim.ticks.add(() => {
-  // floats.set(makeWaveform(2048, t += 1, 1 + Math.sin(t * 0.025) * 59))
-  // //   return true
-  // // })
+  // const pane2 = editor.createPane({
+  //   rect: $(Rect(), { x: 0, y: 240, w: 200, h: 200 }),
+  //   code: pane2Info.$.code,
+  // })
+  // editor.addPane(pane2)
 
   // ///////////////////
+  const floats = Object.assign(
+    wasm.alloc(Float32Array, waveform.length),
+    { len: waveform.length }
+  )
+  floats.set(waveform)
+
+  const [pane] = editor.info.panes
+  // editor.view.gfx.matrix.f = 20
+  // pane.dims.info.scrollY = -20
+  $.fx(() => {
+    const { tokens } = pane.buffer.info
+    $()
+    const gens: Token[][] = []
+
+    let depth = 0
+    let gen: Token[] = []
+    for (const token of tokens) {
+      if (token.text === '[') {
+        depth++
+      }
+      else if (token.text === ']') {
+        gen.push(token)
+        depth--
+        if (!depth) {
+          gens.push(gen)
+          gen = []
+        }
+      }
+      if (depth) gen.push(token)
+    }
+
+    if (!gens.length) return
+
+    const d = WaveCanvasWidget()
+    d.info.floats = floats
+    Object.assign(d.widget.bounds, Token.bounds(gens[0]))
+    pane.draw.widgets.deco.add(d.widget)
+
+    const d2 = WaveGlWidget(pane.draw.shapes)
+    d2.info.floats = floats
+    Object.assign(d2.widget.bounds, Token.bounds(gens[1]))
+    pane.draw.widgets.deco.add(d2.widget)
+
+    const d3 = WaveSvgWidget()
+    d3.info.floats = floats
+    Object.assign(d3.widget.bounds, Token.bounds(gens[2]))
+    pane.draw.widgets.deco.add(d3.widget)
+
+    const paneSvg = <svg
+      x={pane.dims.info.rect.x}
+      y={pane.dims.info.rect.y}
+      width={pane.dims.info.rect.w}
+      height={pane.dims.info.rect.h}
+      viewBox={() => `${-pane.dims.info.scrollX} ${-pane.dims.info.scrollY} ${pane.dims.info.rect.w} ${pane.dims.info.rect.h}`}
+
+    /> as SVGSVGElement
+    paneSvg.append(d3.svg)
+    editor.view.info.svgs.add(paneSvg)
+    editor.view.info.svgs = new Set(editor.view.info.svgs)
+
+    return () => {
+      pane.draw.widgets.deco.delete(d.widget)
+      pane.draw.widgets.deco.delete(d2.widget)
+      d2.dispose()
+      pane.draw.widgets.deco.delete(d3.widget)
+
+      editor.view.info.svgs.delete(paneSvg)
+      editor.view.info.svgs = new Set(editor.view.info.svgs)
+    }
+  })
+  pane.draw.widgets.update()
+
+  // const d2 = WaveGlWidget(pane2.draw.shapes)
+  // d2.info.floats = floats
+  // Object.assign(d2.widget.bounds, { line: 0, col: 0, right: 5, bottom: 0 })
+  // pane2.draw.widgets.deco.add(d2.widget)
+  // pane2.draw.widgets.update()
+
+  let t = 101
+  floats.set(makeWaveform(2048, t += 1, 1 + Math.sin(t * 0.025) * 59))
+
+  ///////////////////
 
   const el = <div>
     <div class="flex items-center justify-between">

@@ -1,11 +1,10 @@
-import { Sigui, type Signal } from 'sigui'
 import type { Rect } from 'editor'
-import { clamp } from 'utils'
+import { Sigui, type $ } from 'sigui'
 
 export type Dims = ReturnType<typeof Dims>
 
 export function Dims({ rect }: {
-  rect: Rect
+  rect: $<Rect>
 }) {
   using $ = Sigui()
 

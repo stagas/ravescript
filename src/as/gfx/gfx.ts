@@ -1,30 +1,38 @@
-import { Matrix, Rect, Shapes, Sketch, WebGL } from 'gfx'
-import { Sigui, type Signal } from 'sigui'
+import { Matrix, Meshes, Rect, Shapes, Sketch } from 'gfx'
+import { initGL } from 'gl-util'
+import { Sigui } from 'sigui'
 
-export function Gfx({ width, height, canvas }: {
-  width: Signal<number>
-  height: Signal<number>
+const DEBUG = true
+
+export function Gfx({ canvas }: {
   canvas: HTMLCanvasElement
 }) {
   using $ = Sigui()
 
-  const matrix = Matrix()
-  const view = Rect(0, 0, width, height)
-  const webgl = WebGL(view, canvas, true)
-  const sketch = Sketch(webgl.GL, view)
-  webgl.add($, sketch)
+  const GL = initGL(canvas, {
+    antialias: true,
+    alpha: true,
+    preserveDrawingBuffer: true
+  })
 
-  function createShapes() {
-    return Shapes(view, matrix)
+  function createContext(view: Rect, matrix: Matrix) {
+    const meshes = Meshes(GL, view)
+    const sketch = Sketch(GL, view)
+    meshes.add($, sketch)
+
+    function createShapes() {
+      return Shapes(view, matrix)
+    }
+
+    return { meshes, sketch, createShapes }
   }
 
+  $.fx(() => () => {
+    DEBUG && console.debug('[webgl] dispose')
+    GL.reset()
+  })
+
   return {
-    matrix,
-    view,
-    webgl,
-    sketch,
-    draw: webgl.draw,
-    scene: sketch.scene,
-    createShapes
+    createContext
   }
 }
