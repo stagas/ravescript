@@ -1,7 +1,7 @@
 import { SketchInfo, wasm, type Rect, type Shapes } from 'gfx'
 import { GL } from 'gl-util'
 
-const DEBUG = true
+const DEBUG = false
 
 export type Sketch = ReturnType<typeof Sketch>
 
@@ -14,7 +14,7 @@ export function Sketch(GL: GL, view: Rect) {
   const { use } = info
 
   function flush(count: number) {
-    DEBUG && console.log('[sketch] draw', count)
+    DEBUG && console.log('[sketch] flush', count)
     writeGL(count)
     gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, count)
   }

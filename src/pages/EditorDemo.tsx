@@ -72,14 +72,23 @@ export function EditorDemo({ width, height }: {
     wordWrapProcessor,
   })
 
-  // const pane2Info = $({
-  //   code: '[hello]\n[world]'
-  // })
-  // const pane2 = editor.createPane({
-  //   rect: $(Rect(), { x: 0, y: 240, w: 200, h: 200 }),
-  //   code: pane2Info.$.code,
-  // })
-  // editor.addPane(pane2)
+  const pane2Info = $({
+    code: `[hello]
+[world]
+[world]
+[world]
+[world]
+[world]
+[world]
+[world]
+[world]
+`
+  })
+  const pane2 = editor.createPane({
+    rect: $(Rect(), { x: 0, y: 240, w: 200, h: 200 }),
+    code: pane2Info.$.code,
+  })
+  editor.addPane(pane2)
 
   // ///////////////////
   const floats = Object.assign(
@@ -154,11 +163,11 @@ export function EditorDemo({ width, height }: {
   })
   pane.draw.widgets.update()
 
-  // const d2 = WaveGlWidget(pane2.draw.shapes)
-  // d2.info.floats = floats
-  // Object.assign(d2.widget.bounds, { line: 0, col: 0, right: 5, bottom: 0 })
-  // pane2.draw.widgets.deco.add(d2.widget)
-  // pane2.draw.widgets.update()
+  const d2 = WaveGlWidget(pane2.draw.shapes)
+  d2.info.floats = floats
+  Object.assign(d2.widget.bounds, { line: 0, col: 0, right: 5, bottom: 0 })
+  pane2.draw.widgets.deco.add(d2.widget)
+  pane2.draw.widgets.update()
 
   let t = 101
   floats.set(makeWaveform(2048, t += 1, 1 + Math.sin(t * 0.025) * 59))

@@ -2,6 +2,8 @@ import { instantiate } from '~/as/build/gfx.js'
 import url from '~/as/build/gfx.wasm?url'
 import { hexToBinary, initWasm } from '~/src/as/init-wasm.ts'
 
+const DEBUG = false
+
 let mod: WebAssembly.Module
 
 if (import.meta.env && import.meta.env.MODE !== 'production') {
@@ -23,6 +25,7 @@ const wasmInstance = await instantiate(mod, {
   env: {
     log: console.log,
     flushSketch(count: number) {
+      DEBUG && console.debug('[flush]', count)
       flushSketchFn(count)
     }
   }

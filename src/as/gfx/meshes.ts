@@ -2,7 +2,7 @@ import type { Rect } from 'gfx'
 import { GL } from 'gl-util'
 import { Sigui } from 'sigui'
 
-const DEBUG = true
+const DEBUG = false
 
 export interface MeshProps {
   GL: GL
@@ -21,12 +21,12 @@ export function Meshes(GL: GL, view: Rect) {
   const meshes = new Set<Mesh>()
 
   function clear() {
-    gl.viewport(
-      view.x_pr,
-      canvas.height - view.h_pr - view.y_pr,
-      Math.max(0, view.w_pr),
-      Math.max(0, view.h_pr),
-    )
+    const x = view.x_pr
+    const y = canvas.height - view.h_pr - view.y_pr
+    const w = Math.max(0, view.w_pr)
+    const h = Math.max(0, view.h_pr)
+    gl.viewport(x, y, w, h)
+    gl.scissor(x, y, w, h)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   }
 
