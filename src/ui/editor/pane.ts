@@ -6,8 +6,10 @@ import type { View } from '~/src/ui/editor/view.tsx'
 export interface PaneInfo {
   isFocus: boolean
   isHovering: boolean
-  isHoveringScrollbar: boolean
-  isDraggingScrollbar: boolean
+  isHoveringScrollbarX: boolean
+  isHoveringScrollbarY: boolean
+  isDraggingScrollbarX: boolean
+  isDraggingScrollbarY: boolean
 }
 
 export type Pane = ReturnType<typeof Pane>
@@ -29,8 +31,10 @@ export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProce
   const info: PaneInfo = $({
     isFocus: false,
     isHovering: false,
-    isHoveringScrollbar: false,
-    isDraggingScrollbar: false,
+    isHoveringScrollbarX: false,
+    isHoveringScrollbarY: false,
+    isDraggingScrollbarX: false,
+    isDraggingScrollbarY: false,
   } satisfies PaneInfo)
 
   const dims = Dims({ rect })

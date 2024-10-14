@@ -30,7 +30,7 @@ export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identi
 
   const info = $({
     maxColumns: dims.info.$.pageWidth,
-    wordWrapEnabled: true,
+    wordWrapEnabled: false,
     code,
     lines: [] as string[],
     get length() {
