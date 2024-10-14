@@ -5,7 +5,7 @@ import type { Source, Token } from '~/src/lang/tokenize.ts'
 import { type Dims } from '~/src/ui/editor/dims.ts'
 import { parseWords } from '~/src/ui/editor/util/parse-words.ts'
 import { TOKEN, WORD } from '~/src/ui/editor/util/regexp.ts'
-import { type Point } from '~/src/ui/editor/util/types.ts'
+import { linecolToPoint, type Linecol, type Point } from '~/src/ui/editor/util/types.ts'
 
 export interface Line {
   text: string
@@ -265,6 +265,21 @@ export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identi
     }
   }
 
+  function wordUnderIndex(index: number): RegExpExecArray | undefined {
+    const words = parseWords(TOKEN, info.code)
+    for (let i = 0, word: RegExpExecArray, next: any; i < words.length; i++) {
+      word = words[i]
+      next = i < words.length - 1 ? words[i + 1] : { index: Infinity }
+      if (index >= word.index && index < next.index) {
+        return word
+      }
+    }
+  }
+
+  function wordUnderLinecol(linecol: Linecol): RegExpExecArray | undefined {
+    return wordUnderIndex(visualPointToIndex(linecolToPoint(linecol)))
+  }
+
   return $({
     info,
     code,
@@ -278,5 +293,7 @@ export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identi
     visualPointToLogicalPoint,
     logicalPointToVisualPoint,
     wordUnderVisualPoint,
+    wordUnderIndex,
+    wordUnderLinecol,
   })
 }

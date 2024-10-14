@@ -1,6 +1,7 @@
-import { Rect, type WordWrapProcessor } from 'editor'
+import { Rect, type Pane, type WordWrapProcessor } from 'editor'
 import { wasm } from 'gfx'
 import { Sigui, type Signal } from 'sigui'
+import { clamp } from 'utils'
 import { AnimMode } from '~/src/comp/AnimMode.tsx'
 import { Token, tokenize } from '~/src/lang/tokenize.ts'
 import { screen } from '~/src/screen.ts'
@@ -63,6 +64,49 @@ export function EditorDemo({ width, height }: {
     return { fill, stroke }
   }
 
+  const mouse = { x: 0, y: 0 }
+  let number: RegExpMatchArray | undefined
+  let value: number
+  let digits: number
+
+  function onMouseDown(pane: Pane) {
+    const word = pane.buffer.wordUnderLinecol(pane.mouse.info.linecol)
+    if (word && parseFloat(word[0]).toString() === word[0]) {
+      number = word
+      value = parseFloat(number[0])
+      digits = number[0].split('.')[1]?.length ?? 0
+      mouse.x = pane.mouse.info.x
+      mouse.y = pane.mouse.info.y
+      return true
+    }
+  }
+
+  function onMouseMove(pane: Pane) {
+    if (number?.index == null) return
+    const p = pane.mouse.info
+    const dx = mouse.x - p.x
+    const dy = p.y - mouse.y
+    mouse.x = p.x
+    mouse.y = p.y
+    if (value >= 100 && value < 1000) {
+      value -=
+        (Math.abs(dx) ** 1.08) * Math.sign(dx) +
+        (Math.abs(dy) ** 1.08) * Math.sign(dy)
+      const s = clamp(100, parseFloat('999.' + (digits ? '9'.repeat(digits) : '0')), value).toFixed(digits)
+      value = parseFloat(s)
+      const { code } = pane.buffer
+      pane.buffer.code = `${code.slice(0, number.index)}${s}${code.slice(number.index + s.length)}`
+    }
+    return true
+  }
+
+  function onMouseUp(pane: Pane) {
+    if (number) {
+      number = void 0
+      return true
+    }
+  }
+
   const editor = Editor({
     width: info.$.width,
     height: info.$.height,
@@ -70,6 +114,9 @@ export function EditorDemo({ width, height }: {
     colorize,
     tokenize,
     wordWrapProcessor,
+    onMouseDown,
+    onMouseUp,
+    onMouseMove,
   })
 
   const pane2Info = $({
@@ -122,7 +169,7 @@ export function EditorDemo({ width, height }: {
       if (depth) gen.push(token)
     }
 
-    if (!gens.length) return
+    if (gens.length < 2) return
 
     const d = WaveCanvasWidget()
     d.info.floats = floats

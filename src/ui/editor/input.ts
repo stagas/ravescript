@@ -1,11 +1,15 @@
-import { isPointInRect, Linecol, Mouse, type Misc, type Pane, type View } from 'editor'
+import { isPointInRect, type Pane, type Point, type View } from 'editor'
 import { Sigui, type Signal } from 'sigui'
 import { assign, dom, isMobile, MouseButtons } from 'utils'
 
+export interface InputMouse extends Point {
+  isDown: boolean
+  buttons: number
+}
+
 export type Input = ReturnType<typeof Input>
 
-export function Input({ misc, view, pane, panes }: {
-  misc: Misc
+export function Input({ view, pane, panes }: {
   view: View
   pane: Signal<Pane>
   panes: Signal<Set<Pane>>
@@ -34,7 +38,7 @@ export function Input({ misc, view, pane, panes }: {
     // desktop
     dom.on(textarea, 'keydown', ev => info.pane.kbd.handleKey(ev)),
 
-    // clipboard
+    // clipboard paste
     dom.on(textarea, 'paste', $.fn((ev: ClipboardEvent) => {
       ev.preventDefault()
       const text = ev.clipboardData?.getData('text/plain')
@@ -51,12 +55,14 @@ export function Input({ misc, view, pane, panes }: {
       }
     })),
 
+    // clipboard copy
     dom.on(textarea, 'copy', $.fn((ev: ClipboardEvent) => {
       ev.preventDefault()
       const { selection } = info.pane
       ev.clipboardData?.setData('text/plain', selection.text)
     })),
 
+    // clipboard cut
     dom.on(textarea, 'cut', $.fn((ev: ClipboardEvent) => {
       ev.preventDefault()
       const { history, selection } = info.pane
@@ -66,16 +72,13 @@ export function Input({ misc, view, pane, panes }: {
     })),
   ])
 
-  // mouse
-  const inputMouse = $({
+  // input mouse
+  const inputMouse: InputMouse = $({
     isDown: false,
     buttons: 0,
-    count: 0,
     x: 0,
     y: 0,
   })
-
-  const CLICK_TIMEOUT = 350
 
   // update cursor when hovering pane
   $.fx(() => {
@@ -94,6 +97,7 @@ export function Input({ misc, view, pane, panes }: {
     }
   })
 
+  // unset hoveringPane when pointer leaves the window
   $.fx(() =>
     dom.on(document, 'pointerleave', () => {
       info.hoveringPane = null
@@ -101,30 +105,49 @@ export function Input({ misc, view, pane, panes }: {
   )
 
   function updatePaneMouse(pane: Pane) {
+    pane.mouse.info.buttons = inputMouse.buttons
     assign(pane.mouse.info, {
       x: inputMouse.x - pane.dims.info.rect.x - pane.dims.info.scrollX,
       y: inputMouse.y - pane.dims.info.rect.y - pane.dims.info.scrollY,
     })
   }
 
-  function updateMouseFromEvent(ev: PointerEvent | Touch) {
-    const c = el.getBoundingClientRect()
-    inputMouse.x = ev.pageX - c.left
-    inputMouse.y = ev.pageY - c.top
+  function updateInputMouseFromEvent(ev: PointerEvent | TouchEvent) {
+    if (ev instanceof TouchEvent) {
+      const touch = ev.touches[0] ?? { pageX: 0, pageY: 0 }
+      inputMouse.x = touch.pageX
+      inputMouse.y = touch.pageY
+      inputMouse.buttons = MouseButtons.Left
+    }
+    else {
+      inputMouse.x = ev.pageX
+      inputMouse.y = ev.pageY
+      inputMouse.buttons = ev.buttons
+    }
 
-    if (info.hoveringPane?.mouse.info.isDown) {
-      updatePaneMouse(info.hoveringPane)
+    const c = el.getBoundingClientRect()
+    inputMouse.x -= c.left
+    inputMouse.y -= c.top
+
+    // mouse down had started inside a pane
+    // so we update only that pane even if outside of it
+    if (info.pane.mouse.info.isDown) {
+      info.hoveringPane = info.pane
+      updatePaneMouse(info.pane)
       return
     }
 
+    // find the pane mouse is hovering
     out: {
       for (const pane of info.panes) {
         if (isPointInRect(inputMouse, pane.dims.info.rect)) {
+          // found pane
           info.hoveringPane = pane
           updatePaneMouse(pane)
           break out
         }
       }
+      // no pane found under input mouse, unset hoveringPane
       info.hoveringPane = null
     }
   }
@@ -145,87 +168,35 @@ export function Input({ misc, view, pane, panes }: {
       }
     }), { passive: false }),
 
-    dom.on(el, 'pointerdown', $.fn((ev: PointerEvent) => {
-      ev.preventDefault()
-      updateMouseFromEvent(ev)
-
-      const { hoveringPane: pane } = info
-      if (!pane) {
-        // info.pane.info.isFocus = false
-        return
-      }
-
-      info.pane.info.isFocus = false
-      info.pane = pane
-      pane.info.isFocus = true
-
-      const { selection, caret, mouse } = pane
-
-      mouse.info.buttons = ev.buttons
-
-      if (mouse.info.buttons & MouseButtons.Middle) {
-        // TODO: implement middle click
-        return
-      }
-
-      if (mouse.info.buttons & MouseButtons.Right) {
-        // TODO: implement right click
-        return
-      }
-
+    dom.on(el, isMobile() ? 'touchstart' : 'pointerdown', $.fn((ev: PointerEvent | TouchEvent) => {
+      if (!isMobile()) ev.preventDefault()
+      updateInputMouseFromEvent(ev)
       inputMouse.isDown = true
-      mouse.info.isDown = true
 
-      clearTimeout(mouse.info.clickTimeout)
-      mouse.info.clickTimeout = setTimeout(() => mouse.info.count = 0, CLICK_TIMEOUT)
-      mouse.info.count++
+      const { pane, hoveringPane } = info
 
-      switch (mouse.info.count) {
-        case 1: {
-          selection.reset()
-          Object.assign(caret, mouse.info.linecol)
-          caret.visualXIntent = caret.col
-          $.flush()
-          selection.reset()
-          break
-        }
-        case 2: {
-          selection.selectWord()
-          break
-        }
-        case 3: {
-          selection.selectBlock()
-          break
-        }
-        case 4: {
-          selection.selectLine()
-          break
-        }
-        default: {
-          selection.reset()
-          mouse.info.count = 0
-          break
-        }
+      // click outside panes, unset current pane focus
+      if (!hoveringPane) {
+        pane.info.isFocus = false
+        return
       }
-      caret.info.isBlink = false
+
+      pane.info.isFocus = false
+      info.pane = hoveringPane
+      info.pane.mouse.handleDown()
     })),
-    dom.on(window, 'pointerup', $.fn((ev: PointerEvent) => {
-      updateMouseFromEvent(ev)
-      const { mouse, caret } = info.pane
+
+    dom.on(window, isMobile() ? 'touchend' : 'pointerup', $.fn((ev: PointerEvent | TouchEvent) => {
+      ev.preventDefault()
+      updateInputMouseFromEvent(ev)
       inputMouse.isDown = false
-      mouse.info.isDown = false
-      mouse.info.buttons = 0
-
-      caret.info.isBlink = true
+      info.pane.mouse.handleUp()
     })),
-    dom.on(window, 'pointermove', $.fn((ev: PointerEvent) => {
-      updateMouseFromEvent(ev)
-      const { selection, caret, mouse } = info.pane
-      if (mouse.info.buttons & MouseButtons.Left) {
-        Object.assign(caret, mouse.info.linecol)
-        $.flush()
-        selection.toCaret()
-      }
+
+    dom.on(window, isMobile() ? 'touchmove' : 'pointermove', $.fn((ev: PointerEvent | TouchEvent) => {
+      ev.preventDefault()
+      updateInputMouseFromEvent(ev)
+      info.pane.mouse.handleMove()
     })),
   ])
 
@@ -240,17 +211,17 @@ export function Input({ misc, view, pane, panes }: {
   }
 
   function onFocus() {
-    info.pane.info.isFocus = info.pane.caret.info.isBlink = true
+    info.pane.info.isFocus = true
   }
 
   function onBlur() {
     if (inputMouse.isDown) {
-      // if (info.pane.info.isFocus) {
-      //   info.pane.caret.info.isVisible = true
-      // }
-      return
+      if (info.pane.info.isFocus) {
+        info.pane.caret.info.isVisible = false
+        return
+      }
     }
-    info.pane.info.isFocus = info.pane.caret.info.isVisible = info.pane.caret.info.isBlink = false
+    info.pane.info.isFocus = false
   }
 
   $.fx(() => [

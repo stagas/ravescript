@@ -1,34 +1,56 @@
-import { Input, Misc, Pane, Rect, View, type WordWrapProcessor } from 'editor'
+import { Input, Misc, Pane, Rect, View, type InputMouse, type Linecol, type WordWrapProcessor } from 'editor'
 import { Sigui, type $, type Signal } from 'sigui'
 import type { Source, Token } from '~/src/lang/tokenize.ts'
 
-export function Editor({ code, width, height, colorize, tokenize, wordWrapProcessor }: {
+export function Editor({ code, width, height, colorize, tokenize, wordWrapProcessor, onMouseDown, onMouseUp, onMouseMove, }: {
   code: Signal<string>
   width: Signal<number>
   height: Signal<number>
   colorize: (token: Token) => { fill: string, stroke: string }
   tokenize: (source: Source) => Generator<Token, void, unknown>
   wordWrapProcessor: WordWrapProcessor
+  onMouseDown: (pane: Pane) => boolean | void
+  onMouseUp: (pane: Pane) => boolean | void
+  onMouseMove: (pane: Pane) => boolean | void
 }) {
   using $ = Sigui()
 
   const misc = Misc()
   const view = View({ width, height })
 
+  // initial pane
+  const pane = createPane({
+    rect: $(Rect(), { x: 20, y: 20, w: 193, h: 200 }),
+    code,
+  })
+
+  const info = $({
+    pane,
+    panes: new Set([pane])
+  })
+
+  const input = Input({
+    view,
+    pane: info.$.pane,
+    panes: info.$.panes,
+  })
+
   function createPane({ rect, code }: {
     rect: $<Rect>
     code: Signal<string>
   }) {
-    const pane = Pane({
+    return Pane({
       misc,
       view,
       rect,
       code,
       colorize,
       tokenize,
-      wordWrapProcessor
+      wordWrapProcessor,
+      onMouseDown,
+      onMouseUp,
+      onMouseMove,
     })
-    return pane
   }
 
   function addPane(pane: Pane) {
@@ -41,23 +63,6 @@ export function Editor({ code, width, height, colorize, tokenize, wordWrapProces
     info.panes = new Set(info.panes)
     view.anim.ticks.delete(pane.draw.draw)
   }
-
-  const pane = createPane({
-    rect: $(Rect(), { x: 20, y: 20, w: 193, h: 200 }),
-    code,
-  })
-
-  const info = $({
-    pane,
-    panes: new Set([pane])
-  })
-
-  const input = Input({
-    misc,
-    view,
-    pane: info.$.pane,
-    panes: info.$.panes,
-  })
 
   addPane(pane)
 

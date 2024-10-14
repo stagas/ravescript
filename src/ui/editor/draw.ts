@@ -217,12 +217,14 @@ export function Draw({ view, selection, caret, dims, buffer, colorize }: {
   $.fx(() => {
     const { x, y } = caretViewPoint
     const { w, h } = info.rect
-    const { charWidth, charHeight } = dims.info
+    const { charWidth, charHeight, lineHeight } = dims.info
     $()
     const { scrollX, scrollY } = dims.info
 
-    if (y > -scrollY + h - charHeight) dims.info.scrollY = -(y - h + charHeight)
-    if (y < -scrollY) dims.info.scrollY = -y
+    const padY = lineHeight + 1
+
+    if (y > -scrollY + h - charHeight - padY) dims.info.scrollY = -(y - h + charHeight + padY)
+    if (y < -scrollY + padY) dims.info.scrollY = -y + padY
 
     if (x > -scrollX + w - charWidth) dims.info.scrollX = -(x - w + charWidth)
     if (x < -scrollX) dims.info.scrollX = -x

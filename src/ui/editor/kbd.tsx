@@ -1,8 +1,9 @@
-import { beginOfLine, Buffer, escapeRegExp, findMatchingBrackets, linecolToPoint, pointToLinecol, type Caret, type Dims, type History, type Misc, type Selection } from 'editor'
+import { beginOfLine, Buffer, escapeRegExp, findMatchingBrackets, linecolToPoint, pointToLinecol, type Caret, type Dims, type History, type Misc, type PaneInfo, type Selection } from 'editor'
 import { Sigui } from 'sigui'
 import { assign } from 'utils'
 
-export function Kbd({ misc, dims, selection, buffer, caret, history }: {
+export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }: {
+  paneInfo: PaneInfo
   misc: Misc
   dims: Dims
   selection: Selection
@@ -268,6 +269,7 @@ export function Kbd({ misc, dims, selection, buffer, caret, history }: {
   }
 
   const handleKey = $.fn((ev: KeyboardEvent): void => {
+    if (!paneInfo.isFocus) return
     if (ev.ctrlKey && ignoredKeys.includes(ev.key.toLowerCase())) return
 
     ev.preventDefault()

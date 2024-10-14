@@ -9,7 +9,7 @@ export interface PaneInfo {
 
 export type Pane = ReturnType<typeof Pane>
 
-export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProcessor }: {
+export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProcessor, onMouseDown, onMouseUp, onMouseMove, }: {
   misc: Misc
   view: View
   code: Signal<string>
@@ -17,6 +17,9 @@ export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProce
   colorize: (token: Token) => { fill: string, stroke: string }
   tokenize: (source: Source) => Generator<Token, void, unknown>
   wordWrapProcessor: WordWrapProcessor
+  onMouseDown: (pane: Pane) => boolean | void
+  onMouseUp: (pane: Pane) => boolean | void
+  onMouseMove: (pane: Pane) => boolean | void
 }) {
   using $ = Sigui()
 
@@ -29,11 +32,10 @@ export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProce
   const caret = Caret({ paneInfo: info, buffer })
   const selection = Selection({ buffer, caret })
   const history = History({ selection, buffer, caret })
-  const kbd = Kbd({ misc, dims, selection, buffer, caret, history })
+  const kbd = Kbd({ paneInfo: info, misc, dims, selection, buffer, caret, history })
   const draw = Draw({ view, selection, caret, dims, buffer, colorize })
-  const mouse = Mouse({ draw })
-
-  return {
+  const mouse = Mouse({ paneInfo: info, selection, caret, draw })
+  const pane = {
     info,
     dims,
     buffer,
@@ -44,4 +46,8 @@ export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProce
     draw,
     mouse,
   }
+  mouse.onDown = () => onMouseDown(pane)
+  mouse.onUp = () => onMouseUp(pane)
+  mouse.onMove = () => onMouseMove(pane)
+  return pane
 }

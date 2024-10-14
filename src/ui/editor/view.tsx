@@ -42,7 +42,7 @@ export function View({ width, height }: {
     "
   /> as HTMLTextAreaElement
 
-  const el = <div class="editor relative" style={() => ({ cursor: info.cursor })}>
+  const el = <div class="editor relative touch-none" style={() => ({ cursor: info.cursor })}>
     {canvas}
     {glCanvas}
     {svg}

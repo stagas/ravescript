@@ -46,25 +46,6 @@ export function Caret({ paneInfo, buffer }: {
     caret.index = buffer.logicalPointToIndex({ x, y })
   })
 
-  // blink caret
-  $.fx(() => {
-    const { isFocus } = paneInfo
-    const { isBlink, blinkReset } = caret
-    $()
-    if (!isFocus || !isBlink) {
-      // caret.isVisible = false
-      return
-    }
-    caret.isVisible = true
-    const caretIv = setInterval(() => {
-      caret.isVisible = !caret.isVisible
-    }, 500)
-    return () => {
-      caret.isVisible = true
-      clearInterval(caretIv)
-    }
-  })
-
   function doBackspace() {
     if (caret.index > 0) {
       const { code, lines } = buffer
