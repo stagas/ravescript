@@ -357,7 +357,7 @@ export function Kbd({ misc, dims, selection, buffer, caret, history }: {
       withHistoryDebounced(() =>
         withIntent(() => {
           caret.insert(key)
-          caret.moveRight()
+          caret.moveByChars(+1)
         })
       )
     }
@@ -441,7 +441,7 @@ export function Kbd({ misc, dims, selection, buffer, caret, history }: {
         withSelection(() =>
           withIntent(() => {
             if (ctrl) caret.moveByWord(-1)
-            else caret.moveLeft()
+            else caret.moveByChars(-1)
           })
         )
       }
@@ -450,7 +450,7 @@ export function Kbd({ misc, dims, selection, buffer, caret, history }: {
         withSelection(() =>
           withIntent(() => {
             if (ctrl) caret.moveByWord(+1)
-            else caret.moveRight()
+            else caret.moveByChars(+1)
           })
         )
       }

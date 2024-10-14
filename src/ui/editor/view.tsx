@@ -20,36 +20,12 @@ export function View({ width, height }: {
   })
 
   const canvas = <Canvas width={width} height={height} class="absolute top-0 left-0" /> as HTMLCanvasElement
+
   const glCanvas = <Canvas width={width} height={height} class="absolute top-0 left-0" /> as HTMLCanvasElement
+
   const svg = <svg width={width} height={height} class="absolute top-0 left-0" >
     {() => [...info.svgs]}
   </svg> as SVGSVGElement
-
-  const el = <div class="relative" style={() => ({ cursor: info.cursor })}>
-    {canvas}
-    {glCanvas}
-    {svg}
-  </div> as HTMLDivElement
-
-  const c = canvas.getContext('2d')!
-
-  // initialize canvas context settings
-  $.fx(() => {
-    const { pr, width, height } = $.of(info)
-    $()
-    c.scale(pr, pr)
-    c.imageSmoothingEnabled = false
-    c.textBaseline = 'top'
-    c.textRendering = 'optimizeLegibility'
-    c.miterLimit = 1.5
-    c.font = '16px "IBM Plex Mono", monospace'
-  })
-
-  const anim = Anim()
-  // anim.ticks.add(draw)
-
-  const gfx = Gfx({ canvas: glCanvas })
-  // anim.ticks.add(gfx.draw)
 
   const textarea = <textarea
     spellcheck="false"
@@ -66,16 +42,39 @@ export function View({ width, height }: {
     "
   /> as HTMLTextAreaElement
 
+  const el = <div class="editor relative" style={() => ({ cursor: info.cursor })}>
+    {canvas}
+    {glCanvas}
+    {svg}
+    {textarea}
+  </div> as HTMLDivElement
+
+  const c = canvas.getContext('2d')!
+  const gfx = Gfx({ canvas: glCanvas })
+  const anim = Anim()
+
+  // initialize canvas context settings
+  $.fx(() => {
+    const { pr, width, height } = $.of(info)
+    $()
+    c.scale(pr, pr)
+    c.imageSmoothingEnabled = false
+    c.textBaseline = 'top'
+    c.textRendering = 'optimizeLegibility'
+    c.miterLimit = 1.5
+    c.font = '16px "IBM Plex Mono", monospace'
+  })
+
   return $({
-    el,
-    info,
-    canvas,
+    anim,
     c,
+    canvas,
+    el,
+    gfx,
     glCanvas,
+    info,
     svg,
     svgs: info.$.svgs,
-    gfx,
-    anim,
     textarea,
   })
 }

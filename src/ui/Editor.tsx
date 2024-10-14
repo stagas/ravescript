@@ -61,13 +61,8 @@ export function Editor({ code, width, height, colorize, tokenize, wordWrapProces
 
   addPane(pane)
 
-  const el = <div>
-    {view.el}
-    {view.textarea}
-  </div> as HTMLDivElement
-
   return {
-    el,
+    el: view.el,
     info,
     focus: input.focus,
     view,

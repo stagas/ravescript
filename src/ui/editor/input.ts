@@ -150,7 +150,10 @@ export function Input({ misc, view, pane, panes }: {
       updateMouseFromEvent(ev)
 
       const { hoveringPane: pane } = info
-      if (!pane) return
+      if (!pane) {
+        // info.pane.info.isFocus = false
+        return
+      }
 
       info.pane.info.isFocus = false
       info.pane = pane

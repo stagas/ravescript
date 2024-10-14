@@ -1,6 +1,6 @@
 import { beginOfLine, Point, type Buffer, type PaneInfo } from 'editor'
 import { Sigui } from 'sigui'
-import { assign } from 'utils'
+import { assign, clamp } from 'utils'
 
 export type Caret = ReturnType<typeof Caret>
 
@@ -67,10 +67,14 @@ export function Caret({ paneInfo, buffer }: {
 
   function doBackspace() {
     if (caret.index > 0) {
-      const { code } = buffer
-      buffer.code = code.slice(0, caret.index - 1) + code.slice(caret.index)
+      const { code, lines } = buffer
+      let chars = 1
+      if (beginOfLine(lines[caret.y]) === caret.x && caret.x > 0) {
+        chars = (2 - (caret.x % 2))
+      }
+      buffer.code = code.slice(0, caret.index - chars) + code.slice(caret.index)
       $.flush()
-      moveLeft()
+      moveByChars(-chars)
     }
   }
 
@@ -122,12 +126,8 @@ export function Caret({ paneInfo, buffer }: {
     }
   }
 
-  function moveLeft() {
-    if (caret.index > 0) --caret.index
-  }
-
-  function moveRight() {
-    if (caret.index < buffer.length) ++caret.index
+  function moveByChars(chars: number) {
+    caret.index = clamp(0, buffer.length, caret.index + chars)
   }
 
   function moveByWord(dir: number) {
@@ -166,8 +166,7 @@ export function Caret({ paneInfo, buffer }: {
     moveHome,
     moveEnd,
     moveUpDown,
-    moveLeft,
-    moveRight,
+    moveByChars,
     moveByWord,
     insert,
   })
