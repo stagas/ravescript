@@ -80,20 +80,15 @@ export function Input({ view, pane, panes }: {
     y: 0,
   })
 
-  // update cursor when hovering pane
-  $.fx(() => {
-    const { hoveringPane } = info
-    $()
-    view.info.cursor = hoveringPane ? 'text' : 'default'
-  })
-
-  // update view scrollbars when hovering pane
+  // update hovering info
   $.fx(() => {
     const { hoveringPane: pane } = info
     $()
     if (pane) {
-      pane.draw.info.showScrollbars = true
-      return () => pane.draw.info.showScrollbars = false
+      pane.info.isHovering = true
+      return () => {
+        pane.info.isHovering = false
+      }
     }
   })
 
@@ -106,6 +101,10 @@ export function Input({ view, pane, panes }: {
 
   function updatePaneMouse(pane: Pane) {
     pane.mouse.info.buttons = inputMouse.buttons
+    assign(pane.mouse.info.actual, {
+      x: inputMouse.x - pane.dims.info.rect.x,
+      y: inputMouse.y - pane.dims.info.rect.y,
+    })
     assign(pane.mouse.info, {
       x: inputMouse.x - pane.dims.info.rect.x - pane.dims.info.scrollX,
       y: inputMouse.y - pane.dims.info.rect.y - pane.dims.info.scrollY,

@@ -1,11 +1,12 @@
-import { Linecol, type Caret, type Draw, type InputMouse, type PaneInfo, type Selection } from 'editor'
+import { Linecol, Point, type Caret, type Dims, type Draw, type PaneInfo, type Selection } from 'editor'
 import { Sigui } from 'sigui'
 import { assign, MouseButtons } from 'utils'
 
 const CLICK_TIMEOUT = 350
 
-export function Mouse({ paneInfo, selection, caret, draw }: {
+export function Mouse({ paneInfo, dims, selection, caret, draw }: {
   paneInfo: PaneInfo
+  dims: Dims
   selection: Selection
   caret: Caret
   draw: Draw
@@ -19,6 +20,7 @@ export function Mouse({ paneInfo, selection, caret, draw }: {
     count: 0,
     x: 0,
     y: 0,
+    actual: $(Point()),
     linecol: $(Linecol()),
   })
 
@@ -51,9 +53,25 @@ export function Mouse({ paneInfo, selection, caret, draw }: {
     }
   })
 
+  let scrollbarPointStart = 0
+  let scrollbarScrollStart = 0
+
+  $.fx(() => {
+    const { x, y } = info.actual
+    $()
+    if (x >= dims.info.rect.w - dims.info.scrollbarHandleSize) {
+      paneInfo.isHoveringScrollbar = true
+    }
+    else if (!paneInfo.isDraggingScrollbar) {
+      paneInfo.isHoveringScrollbar = false
+    }
+  })
+
   function handleDown() {
     $.flush()
+
     info.isDown = true
+
     if (mouse.onDown()) return
 
     paneInfo.isFocus = true
@@ -69,6 +87,15 @@ export function Mouse({ paneInfo, selection, caret, draw }: {
     }
 
     clearTimeout(info.clickTimeout)
+
+    // handle scrollbar down
+    if (paneInfo.isHoveringScrollbar) {
+      paneInfo.isDraggingScrollbar = true
+      scrollbarPointStart = info.actual.y
+      scrollbarScrollStart = dims.info.scrollY
+      return
+    }
+
     info.clickTimeout = setTimeout(() => info.count = 0, CLICK_TIMEOUT)
 
     info.count++
@@ -96,7 +123,10 @@ export function Mouse({ paneInfo, selection, caret, draw }: {
 
   function handleUp() {
     $.flush()
+
     info.isDown = false
+    paneInfo.isDraggingScrollbar = false
+
     if (mouse.onUp()) return
 
     info.buttons = 0
@@ -105,6 +135,15 @@ export function Mouse({ paneInfo, selection, caret, draw }: {
 
   function handleMove() {
     $.flush()
+
+    if (paneInfo.isDraggingScrollbar) {
+      const { h: outerHeight } = dims.info.rect
+      const { y: innerHeight } = dims.info.innerSize
+      const coeff = outerHeight / innerHeight
+      dims.info.scrollY = scrollbarScrollStart - ((info.actual.y - scrollbarPointStart) / coeff)
+      return
+    }
+
     if (mouse.onMove()) return
 
     if (info.buttons & MouseButtons.Left) {

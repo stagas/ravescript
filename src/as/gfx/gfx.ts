@@ -28,7 +28,7 @@ export function Gfx({ canvas }: {
   }
 
   $.fx(() => () => {
-    DEBUG && console.debug('[webgl] dispose')
+    DEBUG && console.debug('[gfx] dispose')
     GL.reset()
   })
 

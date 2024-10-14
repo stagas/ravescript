@@ -1,4 +1,4 @@
-import { Point, Widgets, type Buffer, type Caret, type Dims, type Linecol, type Selection, type View } from 'editor'
+import { Point, Widgets, type Buffer, type Caret, type Dims, type Linecol, type PaneInfo, type Selection, type View } from 'editor'
 import { Matrix, Rect } from 'gfx'
 import { Sigui } from 'sigui'
 import { assign, clamp, drawText, randomHex } from 'utils'
@@ -14,7 +14,8 @@ interface TokenDrawInfo {
 
 export type Draw = ReturnType<typeof Draw>
 
-export function Draw({ view, selection, caret, dims, buffer, colorize }: {
+export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize }: {
+  paneInfo: PaneInfo
   view: View
   selection: Selection
   caret: Caret
@@ -52,9 +53,7 @@ export function Draw({ view, selection, caret, dims, buffer, colorize }: {
   const tokenDrawInfo = new WeakMap<Token, TokenDrawInfo>()
   let caretViewPoint = $(Point())
   let extraHeights: number[] = []
-  let innerSize = Point()
   const textPadding = 5
-  const scrollbarSize = 5
 
   function viewPointFromLinecol({ line, col }: Linecol): Point {
     const { charWidth, lineHeight } = dims.info
@@ -193,7 +192,7 @@ export function Draw({ view, selection, caret, dims, buffer, colorize }: {
   $.fx(() => {
     const { w, h } = info.rect
     const { linesVisual } = buffer.info
-    const { lineHeight } = dims.info
+    const { charWidth, lineHeight, innerSize } = dims.info
     $()
     innerSize.x = 0
     innerSize.y = 0
@@ -206,11 +205,30 @@ export function Draw({ view, selection, caret, dims, buffer, colorize }: {
 
   // update scroll
   $.fx(() => {
-    const { rect: { w, h }, scrollX, scrollY } = dims.info
+    const { rect: { w, h }, scrollX, scrollY, innerSize } = dims.info
     const { x, y } = innerSize
     $()
     dims.info.scrollX = clamp(-(x - w), 0, scrollX)
     dims.info.scrollY = clamp(-(y - h), 0, scrollY)
+  })
+
+  // update show scrollbars when hovering pane
+  $.fx(() => {
+    const { isHovering } = paneInfo
+    $()
+    if (isHovering) {
+      info.showScrollbars = true
+      return () => info.showScrollbars = false
+    }
+  })
+
+  // update cursor
+  $.fx(() => {
+    const { isHovering, isHoveringScrollbar, isDraggingScrollbar } = paneInfo
+    $()
+    view.info.cursor = !isHovering || (isHoveringScrollbar || isDraggingScrollbar)
+      ? 'default'
+      : 'text'
   })
 
   // keep caret in view by adjusting scroll when caret is moving
@@ -242,6 +260,7 @@ export function Draw({ view, selection, caret, dims, buffer, colorize }: {
   // trigger draw
   $.fx(() => {
     const { c, pr, rect: { x, y, w, h }, showScrollbars } = $.of(info)
+    const { isHovering, isHoveringScrollbar, isDraggingScrollbar } = paneInfo
     const { code } = buffer.info
     const { caretWidth, charWidth, charHeight, lineHeight, scrollX, scrollY } = dims.info
     const { isVisible: isCaretVisible } = caret.info
@@ -311,26 +330,34 @@ export function Draw({ view, selection, caret, dims, buffer, colorize }: {
     if (!info.showScrollbars) return
 
     // outer rectangle
-    const { x, y, w, h } = info.rect
+    const { x, y, w: outerWidth, h: outerHeight } = info.rect
 
     // scroll amount
-    const { scrollX, scrollY } = dims.info
+    const { scrollX, scrollY, scrollbarViewSize, innerSize } = dims.info
 
     // inner size
-    const { x: bx, y: by } = innerSize
+    const { x: innerWidth, y: innerHeight } = innerSize
 
-    c.fillStyle = '#aaa5'
+    const { isDraggingScrollbar, isHoveringScrollbar } = paneInfo
+
+    c.fillStyle = '#aaa' + (
+      isDraggingScrollbar
+        ? 'f'
+        : isHoveringScrollbar
+          ? '7'
+          : '5'
+    )
 
     // draw vertical scrollbar
     {
-      const coeff = h / by
+      const coeff = outerHeight / innerHeight
       if (coeff < 1) {
-        const scrollbarWidth = scrollbarSize
-        const scrollbarHeight = h * (h / by)
-        const scrollbarY = (-scrollY / by) * h
+        const scrollbarWidth = scrollbarViewSize * ((isHoveringScrollbar || isDraggingScrollbar) ? 2 : 1)
+        const scrollbarHeight = outerHeight * coeff
+        const scrollbarY = (-scrollY / innerHeight) * outerHeight
 
         c.fillRect(
-          x + w - scrollbarWidth,
+          x + outerWidth - scrollbarWidth,
           y + scrollbarY,
           scrollbarWidth,
           scrollbarHeight
@@ -340,14 +367,14 @@ export function Draw({ view, selection, caret, dims, buffer, colorize }: {
 
     // draw horizontal scrollbar
     {
-      const coeff = w / bx
+      const coeff = outerWidth / innerWidth
       if (coeff < 1) {
-        const scrollbarWidth = w * coeff
-        const scrollbarHeight = scrollbarSize
-        const scrollbarX = (-scrollX / bx) * w
+        const scrollbarWidth = outerWidth * coeff
+        const scrollbarHeight = scrollbarViewSize * ((isHoveringScrollbar || isDraggingScrollbar) ? 2 : 1)
+        const scrollbarX = (-scrollX / innerWidth) * outerWidth
         c.fillRect(
           x + scrollbarX,
-          y + h - scrollbarHeight,
+          y + outerHeight - scrollbarHeight,
           scrollbarWidth,
           scrollbarHeight
         )
