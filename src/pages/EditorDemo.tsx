@@ -314,8 +314,8 @@ export function EditorDemo({ width, height }: {
     const paneSvg = <svg
       x={pane.dims.info.rect.x}
       y={pane.dims.info.rect.y}
-      width={pane.dims.info.rect.w}
-      height={pane.dims.info.rect.h}
+      width={() => pane.dims.info.rect.w}
+      height={() => pane.dims.info.rect.h}
       viewBox={() => `${-pane.dims.info.scrollX} ${-pane.dims.info.scrollY} ${pane.dims.info.rect.w} ${pane.dims.info.rect.h}`}
 
     /> as SVGSVGElement

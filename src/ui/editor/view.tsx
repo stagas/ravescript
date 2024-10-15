@@ -19,11 +19,11 @@ export function View({ width, height }: {
     svgs: new Set<SVGElement>(),
   })
 
-  const canvas = <Canvas width={width} height={height} class="absolute top-0 left-0" /> as HTMLCanvasElement
+  const canvas = <Canvas width={width} height={height} class="absolute top-0 left-0 border border-blue-500" /> as HTMLCanvasElement
 
   const glCanvas = <Canvas width={width} height={height} class="absolute top-0 left-0" /> as HTMLCanvasElement
 
-  const svg = <svg width={width} height={height} class="absolute top-0 left-0" >
+  const svg = <svg width={() => info.width} height={() => info.height} class="absolute top-0 left-0" >
     {() => [...info.svgs]}
   </svg> as SVGSVGElement
 

@@ -1,6 +1,6 @@
 import { getMemoryView, wasmSourceMap } from 'utils'
 import { BUFFER_SIZE } from '~/as/assembly/pkg/constants.ts'
-import type { __AdaptedExports as WasmExports } from '~/as/build/pkg-nort'
+import type { __AdaptedExports as WasmExports } from '~/as/build/pkg-nort.d.ts'
 import hex from '~/as/build/pkg-nort.wasm?raw-hex'
 import { Out, PlayerMode } from '~/src/as/pkg/shared.ts'
 

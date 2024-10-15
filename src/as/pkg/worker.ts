@@ -16,6 +16,7 @@ const worker = {
     }
   },
   async multiply(a: number, b: number) {
+    console.log('multiply', a, b)
     return pkg.multiply(a, b)
   }
 }

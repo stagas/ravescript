@@ -9,10 +9,16 @@ import { env } from '~/src/env.ts'
 import { screen } from '~/src/screen.ts'
 import { link } from '~/src/ui/Link.tsx'
 
+export const triggers = $({
+  resize: 0,
+})
+
 class State {
   // container
   container: HTMLElement | null = null
+
   get containerWidth(): number {
+    const { resize } = triggers
     const { width } = screen
     const { container } = this
     if (!container) return width
@@ -21,6 +27,20 @@ class State {
     return article.getBoundingClientRect().width
       - parseFloat(style.paddingLeft)
       - parseFloat(style.paddingRight)
+  }
+
+  get containerHeight(): number {
+    const { resize } = triggers
+    const { height } = screen
+    const { container } = this
+    if (!container) return height
+    let h = 0
+    const tagNames = ['header', 'article']
+    tagNames.forEach(tagName => {
+      const el = container.getElementsByTagName(tagName)[0] as HTMLElement
+      h += el.getBoundingClientRect().height
+    })
+    return height - h
   }
 
   // url

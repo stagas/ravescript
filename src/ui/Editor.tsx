@@ -1,6 +1,8 @@
-import { Input, Misc, Pane, Rect, View, type InputHandlers, type InputMouse, type Linecol, type WordWrapProcessor } from 'editor'
+import { Input, Misc, Pane, Rect, View, type InputHandlers, type WordWrapProcessor } from 'editor'
 import { Sigui, type $, type Signal } from 'sigui'
 import type { Source, Token } from '~/src/lang/tokenize.ts'
+import { screen } from '~/src/screen.ts'
+import { state } from '~/src/state.ts'
 
 export function Editor({ code, width, height, colorize, tokenize, wordWrapProcessor, inputHandlers }: {
   code: Signal<string>
@@ -18,7 +20,7 @@ export function Editor({ code, width, height, colorize, tokenize, wordWrapProces
 
   // initial pane
   const pane = createPane({
-    rect: $(Rect(), { x: 20, y: 20, w: 193, h: 200 }),
+    rect: $(Rect(), { x: 0, y: 0, w: width, h: height }),
     code,
   })
 

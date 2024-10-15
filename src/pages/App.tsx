@@ -18,7 +18,7 @@ import { UiShowcase } from '~/src/pages/UiShowcase.tsx'
 import { WebGLDemo } from '~/src/pages/WebGLDemo.tsx'
 import { WebSockets } from '~/src/pages/WebSockets.tsx'
 import { whoami } from '~/src/rpc/auth.ts'
-import { state } from '~/src/state.ts'
+import { state, triggers } from '~/src/state.ts'
 import { go, Link } from '~/src/ui/Link.tsx'
 
 export function App() {
@@ -29,7 +29,7 @@ export function App() {
   const info = $({
     bg: 'transparent',
     canvasWidth: state.$.containerWidth,
-    canvasHeight: 800,
+    canvasHeight: state.$.containerHeight,
   })
 
   const router = CachingRouter({
@@ -77,6 +77,14 @@ export function App() {
       state.toastMessages = [...state.toastMessages, (ev as unknown as PromiseRejectionEvent).reason]
     }),
   ])
+
+  $.fx(() => {
+    const { user } = state
+    $()
+    $.flush()
+    triggers.resize++
+    requestAnimationFrame(() => triggers.resize++)
+  })
 
   return <main
     class="flex flex-col relative"

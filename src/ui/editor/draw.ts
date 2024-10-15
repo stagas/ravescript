@@ -328,6 +328,7 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
 
   // trigger draw
   $.fx(() => {
+    const { width, height } = view.info
     const { c, pr, rect: { x, y, w, h }, showScrollbars } = $.of(info)
     const {
       isHovering,
