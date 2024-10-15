@@ -2,6 +2,8 @@ import { beginOfLine, Buffer, escapeRegExp, findMatchingBrackets, linecolToPoint
 import { Sigui } from 'sigui'
 import { assign } from 'utils'
 
+const IGNORED_KEYS = 'cvxjrtn=+-'
+
 export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }: {
   paneInfo: PaneInfo
   misc: Misc
@@ -13,9 +15,14 @@ export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }:
 }) {
   using $ = Sigui()
 
-  const ignoredKeys = 'cvxjrtn=+-'
-
   const { withHistory, withHistoryDebounced, undo, redo } = history
+
+  const info = $({
+    key: '',
+    ctrl: false,
+    alt: false,
+    shift: false,
+  })
 
   function tabIndent(shift: boolean) {
     let index: number = Infinity
@@ -268,20 +275,28 @@ export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }:
     assign(end, pointToLinecol(buffer.logicalPointToVisualPoint(p2)))
   }
 
-  const handleKey = $.fn((ev: KeyboardEvent): void => {
+  function updateInfoFromEvent(ev: KeyboardEvent) {
+    let key = ev.key
+    if (key === 'Enter') key = '\n'
+    info.key = key
+    info.ctrl = ev.ctrlKey || ev.metaKey
+    info.alt = ev.altKey
+    info.shift = ev.shiftKey
+  }
+
+  function handleKeyDown(ev: KeyboardEvent): void {
     if (!paneInfo.isFocus) return
-    if (ev.ctrlKey && ignoredKeys.includes(ev.key.toLowerCase())) return
+    if (ev.ctrlKey && IGNORED_KEYS.includes(ev.key.toLowerCase())) return
 
     ev.preventDefault()
+    updateInfoFromEvent(ev)
+
+    let { key } = info
+    const { ctrl, alt, shift } = info
 
     caret.info.blinkReset++
 
-    let { key } = ev
-    const ctrl = ev.ctrlKey || ev.metaKey
-    const alt = ev.altKey
-    let shift = ev.shiftKey
-
-    if (key === 'Enter') key = '\n'
+    if (kbd.onKeyDown()) return
 
     function withSelection(fn: () => void, force = false) {
       if (!shift && selection.isActive) selection.reset()
@@ -351,7 +366,7 @@ export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }:
       if (selection.isActive) {
         return withHistory(() => {
           selection.deleteText()
-          handleKey(ev)
+          handleKeyDown(ev)
         })
       }
 
@@ -386,6 +401,7 @@ export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }:
           withIntent(caret.doBackspace)
         })
       }
+
       // delete
       //   with selection: delete selection
       //   with no selection: delete character after caret
@@ -408,14 +424,17 @@ export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }:
           caret.doDelete()
         })
       }
+
       // home
       else if (key === 'Home') {
         withSelection(() => withIntent(caret.moveHome))
       }
+
       // end
       else if (key === 'End') {
         withSelection(() => withIntent(caret.moveEnd))
       }
+
       // arrow up/down
       else if (
         key === 'ArrowUp' ||
@@ -438,6 +457,7 @@ export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }:
           caret.moveUpDown(dy)
         )
       }
+
       // arrow left
       else if (key === 'ArrowLeft') {
         withSelection(() =>
@@ -447,6 +467,7 @@ export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }:
           })
         )
       }
+
       // arrow right
       else if (key === 'ArrowRight') {
         withSelection(() =>
@@ -457,7 +478,25 @@ export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }:
         )
       }
     }
-  })
+  }
 
-  return { handleKey }
+  function handleKeyUp(ev: KeyboardEvent): void {
+    ev.preventDefault()
+    updateInfoFromEvent(ev)
+
+    if (kbd.onKeyUp()) return
+  }
+
+  function onKeyDown(): boolean | void { }
+  function onKeyUp(): boolean | void { }
+
+  const kbd = {
+    info,
+    handleKeyDown,
+    handleKeyUp,
+    onKeyDown,
+    onKeyUp,
+  }
+
+  return kbd
 }

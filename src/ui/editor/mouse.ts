@@ -22,6 +22,8 @@ export function Mouse({ paneInfo, dims, selection, caret, draw }: {
     y: 0,
     actual: $(Point()),
     linecol: $(Linecol()),
+    wheel: $(Point()),
+    ctrl: false,
   })
 
   $.fx(() => {
@@ -57,22 +59,44 @@ export function Mouse({ paneInfo, dims, selection, caret, draw }: {
   let scrollbarScrollStart = 0
 
   $.fx(() => {
-    const { x, y } = info.actual
+    const { isDown, actual: { x, y } } = info
+    if (isDown) return
     $()
-    if (x >= dims.info.rect.w - dims.info.scrollbarHandleSize && !paneInfo.isDraggingScrollbarX) {
+    if (x >= dims.info.rect.w - dims.info.scrollbarHandleSize &&
+      !paneInfo.isDraggingScrollbarX &&
+      draw.info.scrollbarY.isVisible
+    ) {
       paneInfo.isHoveringScrollbarY = true
     }
     else if (!paneInfo.isDraggingScrollbarY) {
       paneInfo.isHoveringScrollbarY = false
     }
 
-    if (y >= dims.info.rect.h - dims.info.scrollbarHandleSize && !paneInfo.isDraggingScrollbarY) {
+    if (y >= dims.info.rect.h - dims.info.scrollbarHandleSize &&
+      !paneInfo.isDraggingScrollbarY &&
+      draw.info.scrollbarX.isVisible
+    ) {
       paneInfo.isHoveringScrollbarX = true
     }
     else if (!paneInfo.isDraggingScrollbarX) {
       paneInfo.isHoveringScrollbarX = false
     }
   })
+
+  function handleWheel() {
+    $.flush()
+
+    if (mouse.onWheel()) return
+
+    const { x, y } = info.wheel
+
+    if (Math.abs(y) > Math.abs(x)) {
+      dims.info.scrollY -= y * .35
+    }
+    else {
+      dims.info.scrollX -= x * .35
+    }
+  }
 
   function handleDown() {
     $.flush()
@@ -180,15 +204,18 @@ export function Mouse({ paneInfo, dims, selection, caret, draw }: {
   }
 
   // allow mouse down override by the consumer
+  function onWheel(): boolean | void { }
   function onDown(): boolean | void { }
   function onUp(): boolean | void { }
   function onMove(): boolean | void { }
 
   const mouse = {
     info,
+    handleWheel,
     handleDown,
     handleUp,
     handleMove,
+    onWheel,
     onDown,
     onUp,
     onMove,

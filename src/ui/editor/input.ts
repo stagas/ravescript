@@ -5,6 +5,16 @@ import { assign, dom, isMobile, MouseButtons } from 'utils'
 export interface InputMouse extends Point {
   isDown: boolean
   buttons: number
+  ctrl: boolean
+}
+
+export interface InputHandlers {
+  onKeyDown: (pane: Pane) => boolean | void
+  onKeyUp: (pane: Pane) => boolean | void
+  onMouseWheel: (pane: Pane) => boolean | void
+  onMouseDown: (pane: Pane) => boolean | void
+  onMouseUp: (pane: Pane) => boolean | void
+  onMouseMove: (pane: Pane) => boolean | void
 }
 
 export type Input = ReturnType<typeof Input>
@@ -26,7 +36,7 @@ export function Input({ view, pane, panes }: {
 
   // read keyboard input
   $.fx(() => [
-    // mobile
+    // mobile keyboard
     dom.on(textarea, 'input', $.fn((ev: Event) => {
       const inputEvent = ev as InputEvent
       if (inputEvent.data) {
@@ -35,8 +45,14 @@ export function Input({ view, pane, panes }: {
       }
     })),
 
-    // desktop
-    dom.on(textarea, 'keydown', ev => info.pane.kbd.handleKey(ev)),
+    // desktop keyboard
+    dom.on(textarea, 'keydown', $.fn((ev: KeyboardEvent) => {
+      info.pane.kbd.handleKeyDown(ev)
+    })),
+
+    dom.on(textarea, 'keyup', $.fn((ev: KeyboardEvent) => {
+      info.pane.kbd.handleKeyUp(ev)
+    })),
 
     // clipboard paste
     dom.on(textarea, 'paste', $.fn((ev: ClipboardEvent) => {
@@ -76,9 +92,10 @@ export function Input({ view, pane, panes }: {
   const inputMouse: InputMouse = $({
     isDown: false,
     buttons: 0,
+    ctrl: false,
     x: 0,
     y: 0,
-  })
+  } satisfies InputMouse)
 
   // update hovering info
   $.fx(() => {
@@ -99,8 +116,32 @@ export function Input({ view, pane, panes }: {
     })
   )
 
+  // update cursor
+  $.fx(() => {
+    const { hoveringPane: pane } = info
+    if (!pane) {
+      $()
+      view.info.cursor = 'default'
+      return
+    }
+    const {
+      isHovering,
+      isHoveringScrollbarX,
+      isHoveringScrollbarY,
+      isDraggingScrollbarX,
+      isDraggingScrollbarY,
+    } = pane.info
+    $()
+    view.info.cursor = (!isHovering && !info.hoveringPane) ||
+      (isHoveringScrollbarX || isDraggingScrollbarX) ||
+      (isHoveringScrollbarY || isDraggingScrollbarY)
+      ? 'default'
+      : 'text'
+  })
+
   function updatePaneMouse(pane: Pane) {
     pane.mouse.info.buttons = inputMouse.buttons
+    pane.mouse.info.ctrl = inputMouse.ctrl
     assign(pane.mouse.info.actual, {
       x: inputMouse.x - pane.dims.info.rect.x,
       y: inputMouse.y - pane.dims.info.rect.y,
@@ -111,7 +152,9 @@ export function Input({ view, pane, panes }: {
     })
   }
 
-  function updateInputMouseFromEvent(ev: PointerEvent | TouchEvent) {
+  function updateInputMouseFromEvent(ev: WheelEvent | PointerEvent | TouchEvent) {
+    inputMouse.ctrl = ev.ctrlKey
+
     if (ev instanceof TouchEvent) {
       const touch = ev.touches[0] ?? { pageX: 0, pageY: 0 }
       inputMouse.x = touch.pageX
@@ -155,16 +198,18 @@ export function Input({ view, pane, panes }: {
     dom.on(el, 'contextmenu', dom.prevent.stop),
 
     dom.on(el, 'wheel', $.fn((ev: WheelEvent) => {
-      ev.preventDefault()
-      const { deltaX, deltaY } = ev
+      updateInputMouseFromEvent(ev)
+      updatePaneMouse(info.pane)
+
       const { hoveringPane: pane } = info
-      if (!pane) return
-      if (Math.abs(deltaY) > Math.abs(deltaX)) {
-        pane.dims.info.scrollY -= deltaY * .35
+      if (!pane) {
+        return
       }
-      else {
-        pane.dims.info.scrollX -= deltaX * .35
-      }
+
+      ev.preventDefault()
+      pane.mouse.info.wheel.x = ev.deltaX
+      pane.mouse.info.wheel.y = ev.deltaY
+      pane.mouse.handleWheel()
     }), { passive: false }),
 
     dom.on(el, isMobile() ? 'touchstart' : 'pointerdown', $.fn((ev: PointerEvent | TouchEvent) => {
@@ -189,12 +234,14 @@ export function Input({ view, pane, panes }: {
       ev.preventDefault()
       updateInputMouseFromEvent(ev)
       inputMouse.isDown = false
+      info.pane.mouse.info.ctrl = inputMouse.ctrl
       info.pane.mouse.handleUp()
     })),
 
     dom.on(window, isMobile() ? 'touchmove' : 'pointermove', $.fn((ev: PointerEvent | TouchEvent) => {
       ev.preventDefault()
       updateInputMouseFromEvent(ev)
+      info.pane.mouse.info.ctrl = inputMouse.ctrl
       info.pane.mouse.handleMove()
     })),
   ])

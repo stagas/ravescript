@@ -1,5 +1,6 @@
 import { Point, type Rect } from 'editor'
 import { Sigui, type $ } from 'sigui'
+import { isMobile } from 'utils'
 
 export type Dims = ReturnType<typeof Dims>
 
@@ -25,10 +26,8 @@ export function Dims({ rect }: {
 
     scrollX: 0,
     scrollY: 0,
-
-    scrollbarHandleSize: 20,
+    scrollbarHandleSize: isMobile() ? 30 : 10,
     scrollbarViewSize: 5,
-
   })
 
   return { info }

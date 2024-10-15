@@ -1,4 +1,4 @@
-import { Buffer, Caret, Dims, Draw, History, Kbd, Misc, Mouse, Selection, type Rect, type WordWrapProcessor } from 'editor'
+import { Buffer, Caret, Dims, Draw, History, Kbd, Misc, Mouse, Selection, type InputHandlers, type Rect, type WordWrapProcessor } from 'editor'
 import { Sigui, type $, type Signal } from 'sigui'
 import type { Source, Token } from '~/src/lang/tokenize.ts'
 import type { View } from '~/src/ui/editor/view.tsx'
@@ -14,7 +14,7 @@ export interface PaneInfo {
 
 export type Pane = ReturnType<typeof Pane>
 
-export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProcessor, onMouseDown, onMouseUp, onMouseMove, }: {
+export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProcessor, inputHandlers }: {
   misc: Misc
   view: View
   code: Signal<string>
@@ -22,9 +22,7 @@ export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProce
   colorize: (token: Token) => { fill: string, stroke: string }
   tokenize: (source: Source) => Generator<Token, void, unknown>
   wordWrapProcessor: WordWrapProcessor
-  onMouseDown: (pane: Pane) => boolean | void
-  onMouseUp: (pane: Pane) => boolean | void
-  onMouseMove: (pane: Pane) => boolean | void
+  inputHandlers: InputHandlers
 }) {
   using $ = Sigui()
 
@@ -47,6 +45,7 @@ export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProce
   const mouse = Mouse({ paneInfo: info, dims, selection, caret, draw })
   const pane = {
     info,
+    view,
     dims,
     buffer,
     caret,
@@ -56,8 +55,11 @@ export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProce
     draw,
     mouse,
   }
-  mouse.onDown = () => onMouseDown(pane)
-  mouse.onUp = () => onMouseUp(pane)
-  mouse.onMove = () => onMouseMove(pane)
+  kbd.onKeyDown = () => inputHandlers.onKeyDown(pane)
+  kbd.onKeyUp = () => inputHandlers.onKeyUp(pane)
+  mouse.onWheel = () => inputHandlers.onMouseWheel(pane)
+  mouse.onDown = () => inputHandlers.onMouseDown(pane)
+  mouse.onUp = () => inputHandlers.onMouseUp(pane)
+  mouse.onMove = () => inputHandlers.onMouseMove(pane)
   return pane
 }

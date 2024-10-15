@@ -1,17 +1,15 @@
-import { Input, Misc, Pane, Rect, View, type InputMouse, type Linecol, type WordWrapProcessor } from 'editor'
+import { Input, Misc, Pane, Rect, View, type InputHandlers, type InputMouse, type Linecol, type WordWrapProcessor } from 'editor'
 import { Sigui, type $, type Signal } from 'sigui'
 import type { Source, Token } from '~/src/lang/tokenize.ts'
 
-export function Editor({ code, width, height, colorize, tokenize, wordWrapProcessor, onMouseDown, onMouseUp, onMouseMove, }: {
+export function Editor({ code, width, height, colorize, tokenize, wordWrapProcessor, inputHandlers }: {
   code: Signal<string>
   width: Signal<number>
   height: Signal<number>
   colorize: (token: Token) => { fill: string, stroke: string }
   tokenize: (source: Source) => Generator<Token, void, unknown>
   wordWrapProcessor: WordWrapProcessor
-  onMouseDown: (pane: Pane) => boolean | void
-  onMouseUp: (pane: Pane) => boolean | void
-  onMouseMove: (pane: Pane) => boolean | void
+  inputHandlers: InputHandlers
 }) {
   using $ = Sigui()
 
@@ -47,9 +45,7 @@ export function Editor({ code, width, height, colorize, tokenize, wordWrapProces
       colorize,
       tokenize,
       wordWrapProcessor,
-      onMouseDown,
-      onMouseUp,
-      onMouseMove,
+      inputHandlers,
     })
   }
 
