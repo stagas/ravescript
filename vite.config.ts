@@ -131,6 +131,7 @@ export default ({ mode }) => {
 
   return defineConfig({
     clearScreen: false,
+    publicDir: './public',
     server: {
       watch: {
         // KEEP: this option fixes hmr for an unknown reason
