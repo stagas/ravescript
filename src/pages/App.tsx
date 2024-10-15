@@ -8,12 +8,14 @@ import { Toast } from '~/src/comp/Toast.tsx'
 import { VerifyEmail } from '~/src/comp/VerifyEmail.tsx'
 import { About } from '~/src/pages/About.tsx'
 import { AssemblyScript } from '~/src/pages/AssemblyScript.tsx'
-import { Canvas } from '~/src/pages/Canvas'
+import { CanvasDemo } from '~/src/pages/CanvasDemo'
 import { Chat } from '~/src/pages/Chat/Chat.tsx'
+import { EditorDemo } from '~/src/pages/EditorDemo.tsx'
 import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
 import { QrCode } from '~/src/pages/QrCode.tsx'
 import { UiShowcase } from '~/src/pages/UiShowcase.tsx'
+import { WebGLDemo } from '~/src/pages/WebGLDemo.tsx'
 import { WebSockets } from '~/src/pages/WebSockets.tsx'
 import { whoami } from '~/src/rpc/auth.ts'
 import { state } from '~/src/state.ts'
@@ -26,8 +28,8 @@ export function App() {
 
   const info = $({
     bg: 'transparent',
-    canvasWidth: 500,
-    canvasHeight: 500,
+    canvasWidth: state.$.containerWidth,
+    canvasHeight: 800,
   })
 
   const router = CachingRouter({
@@ -35,7 +37,9 @@ export function App() {
     '/ui': () => <UiShowcase />,
     '/chat': () => <Chat />,
     '!/ws': () => <WebSockets />,
-    '!/canvas': () => <Canvas width={info.$.canvasWidth} height={info.$.canvasHeight} />,
+    '!/canvas': () => <CanvasDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
+    '/webgl': () => <WebGLDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
+    '/editor': () => <EditorDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/asc': () => <AssemblyScript />,
     '/qrcode': () => <QrCode />,
     '/about': () => <About />,
@@ -75,7 +79,7 @@ export function App() {
   ])
 
   return <main
-    class="flex flex-col h-[100vh]"
+    class="flex flex-col relative"
     onmouseenter={() => info.bg = '#433'}
     onmouseleave={() => info.bg = 'transparent'}
   >
@@ -93,7 +97,7 @@ export function App() {
       </div>
     </Header>
 
-    <div class="p-3.5">
+    <article class="p-3.5">
       {() => {
         if (state.user === undefined) return <div>Loading...</div>
 
@@ -102,6 +106,6 @@ export function App() {
 
         return <div>404 Not found</div>
       }}
-    </div>
+    </article>
   </main>
 }

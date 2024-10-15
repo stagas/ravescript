@@ -3,8 +3,8 @@ import { dom } from 'utils'
 
 export const screen = $({
   pr: window.devicePixelRatio,
-  width: window.innerWidth,
-  height: window.innerHeight,
+  width: window.visualViewport!.width,
+  height: window.visualViewport!.height,
   get sm() {
     return screen.width < 640
   },
@@ -16,8 +16,15 @@ export const screen = $({
   },
 })
 
-dom.on(window, 'resize', () => {
-  screen.pr = window.devicePixelRatio
-  screen.width = window.innerWidth
-  screen.height = window.innerHeight
-}, { unsafeInitial: true })
+$.fx(() => [
+  dom.on(window, 'resize', $.fn(() => {
+    const viewport = window.visualViewport!
+    screen.pr = window.devicePixelRatio
+    screen.width = viewport.width
+    screen.height = viewport.height
+  }), { unsafeInitial: true }),
+
+  dom.on(document, 'focus', () => {
+    console.log('trigger focus')
+  })
+])

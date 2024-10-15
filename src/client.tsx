@@ -3,7 +3,8 @@ import { App } from '~/src/pages/App.tsx'
 import { setState, state } from '~/src/state.ts'
 
 export const start = mount('#container', target => {
-  target.replaceChildren(<App />)
+  state.container = target
+  target.replaceChildren(<App /> as HTMLElement)
   return cleanup
 })
 

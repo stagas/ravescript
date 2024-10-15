@@ -38,8 +38,8 @@ export function VideoCall({ type, targetNick, remoteSdp }: {
     micOn: true,
   })
 
-  const el = <div class='top-0 left-0 absolute flex w-[100vw] h-[100vh]'>
-    <div class='w-[70vw] relative h-[calc(100%-10vh)] m-auto p-4 border-8 border-neutral-700 bg-black flex items-center justify-center'>
+  const el = <div class='top-0 left-0 absolute flex w-[100dvw] h-[100dvh]'>
+    <div class='w-[70dvw] relative h-[calc(100%-10dvh)] m-auto p-4 border-8 border-neutral-700 bg-black flex items-center justify-center'>
       <video
         ref='remoteVideo'
         class="h-full"
@@ -65,7 +65,7 @@ export function VideoCall({ type, targetNick, remoteSdp }: {
           autoplay
           muted
           style="image-rendering: pixelated"
-          class='w-[20vw] border-8 border-neutral-700 pointer-events-none'
+          class='w-[20dvw] border-8 border-neutral-700 pointer-events-none'
         />
       </div>
     </div>

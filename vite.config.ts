@@ -6,10 +6,11 @@ import externalize from "vite-plugin-externalize-dependencies"
 import { VitePWA } from 'vite-plugin-pwa'
 import TsConfigPaths from 'vite-tsconfig-paths'
 import { ViteAssemblyScript } from './vendor/vite-plugin-assemblyscript.ts'
-import { BundleUrl } from './vendor/vite-plugin-bundle-url.ts'
-import { ViteCoopCoep } from './vendor/vite-plugin-coop-coep.ts'
-import { HexLoader } from './vendor/vite-plugin-hex-loader.ts'
-import { OpenInEditor } from './vendor/vite-plugin-open-in-editor.ts'
+import { ViteBundleUrl } from './vendor/vite-plugin-bundle-url.ts'
+import { ViteCorsCoopCoep } from './vendor/vite-plugin-cors-coop-coep.ts'
+import { ViteHexLoader } from './vendor/vite-plugin-hex-loader.ts'
+import { ViteOpenInEditor } from './vendor/vite-plugin-open-in-editor.ts'
+import { VitePrintAddress } from './vendor/vite-plugin-print-address.ts'
 import { ViteUsing } from './vendor/vite-plugin-using.ts'
 
 const root = process.cwd()
@@ -28,13 +29,14 @@ export default ({ mode }) => {
 
   const buildPlugins: Plugins = [
     ViteUsing(),
-    HexLoader(),
+    ViteHexLoader(),
     TsConfigPaths(),
   ]
 
   const plugins: Plugins = [
     ...buildPlugins,
-    BundleUrl({
+    VitePrintAddress(),
+    ViteBundleUrl({
       plugins: buildPlugins
     }),
     VitePWA({
@@ -87,8 +89,8 @@ export default ({ mode }) => {
         type: 'module',
       },
     }),
-    OpenInEditor(),
-    ViteCoopCoep(),
+    ViteOpenInEditor(),
+    ViteCorsCoopCoep(),
     externalize({
       externals: [
         'node:fs/promises',
@@ -115,11 +117,25 @@ export default ({ mode }) => {
         '--transform', './vendor/as-transform-unroll.js',
       ]
     }),
+    ViteAssemblyScript({
+      configFile: 'asconfig-gfx.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/gfx',
+      srcEntryFile: 'as/assembly/gfx/index.ts',
+      mapFile: './as/build/gfx.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+      ]
+    }),
   ]
 
   return defineConfig({
     clearScreen: false,
     server: {
+      watch: {
+        // KEEP: this option fixes hmr for an unknown reason
+        usePolling: true
+      },
       host: 'devito.test',
       fs: {
         allow: [

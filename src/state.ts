@@ -1,56 +1,90 @@
-import { $ } from 'sigui'
+import { $, storage } from 'sigui'
 import type { z } from 'zod'
 import type { UserSession } from '~/api/auth/types.ts'
 import type { UiChannel } from '~/api/chat/types.ts'
 import type { Channels } from '~/api/models.ts'
+import { lorem, loremRandomWord } from '~/lib/lorem.ts'
+import { AnimMode } from '~/src/as/gfx/anim.ts'
 import { env } from '~/src/env.ts'
+import { screen } from '~/src/screen.ts'
 import { link } from '~/src/ui/Link.tsx'
 
-export let state = $({
-  user: undefined as undefined | null | UserSession,
+class State {
+  // container
+  container: HTMLElement | null = null
+  get containerWidth(): number {
+    const { width } = screen
+    const { container } = this
+    if (!container) return width
+    const article = container.getElementsByTagName('article')[0] as HTMLElement
+    const style = window.getComputedStyle(article)
+    return article.getBoundingClientRect().width
+      - parseFloat(style.paddingLeft)
+      - parseFloat(style.paddingRight)
+  }
 
-  url: link.$.url,
-  get pathname() {
+  // url
+  url: typeof link.$.url
+  get pathname(): string {
     return state.url.pathname
-  },
-  get search() {
+  }
+  get search(): string {
     return state.url.search
-  },
-  get searchParams() {
-    return new URLSearchParams(state.search)
-  },
-  get apiUrl() {
+  }
+  get searchParams(): URLSearchParams {
+    return new URLSearchParams(this.search)
+  }
+  get apiUrl(): string {
     const url = new URL(env.VITE_API_URL)
-    if (state.search.includes('api2')) {
+    if (this.search.includes('api2')) {
       url.port = '8001'
     }
     return url.href
-  },
+  }
 
-  channelsList: [] as Pick<z.infer<typeof Channels>, 'name'>[],
-  channels: [] as UiChannel[],
-  currentChannelName: null as null | string,
-  get currentChannel() {
-    return state.channels.find(c => c.name === state.currentChannelName)
-  },
+  // app
+  user?: UserSession | null
 
-  toastMessages: [] as { message?: string, stack?: string }[],
-})
+  channelsList: Pick<z.infer<typeof Channels>, 'name'>[] = []
+  channels: UiChannel[] = []
+  currentChannelName?: string | null
+
+  get currentChannel(): UiChannel | undefined {
+    return this.channels.find(c => c.name === this.currentChannelName)
+  }
+
+  toastMessages: { message?: string, stack?: string }[] = []
+
+  animMode = storage(AnimMode.Auto)
+  animCycle?: () => void
+
+  constructor() {
+    this.url = link.$.url
+  }
+}
+
+export let state = $(new State)
 
 export function setState(newState: any) {
   state = newState
 }
-// const channels = ['general', 'random', 'dev']
-// // const channels = Array.from({ length: 50 + (Math.random() * 50 | 0) }).map(() => loremRandomWord())
-// state.channels = channels.sort().map(name => $({
-//   name,
-//   users: Array.from({ length: 50 + (Math.random() * 50 | 0) }).map(() => ({
-//     nick: loremRandomWord(),
-//   })),
-//   messages: Array.from({ length: 100 }).map((_, i) => ({
-//     nick: loremRandomWord(),
-//     text: lorem((Math.random() ** 2.5) * 20 + 1),
-//   }))
-// }))
 
-// state.currentChannelName = state.channels[0].name
+function seedFakeChannels() {
+  const channels = ['general', 'random', 'dev']
+  // const channels = Array.from({ length: 50 + (Math.random() * 50 | 0) }).map(() => loremRandomWord())
+  state.channels = channels.sort().map(name => $({
+    name,
+    users: Array.from({ length: 50 + (Math.random() * 50 | 0) }).map(() => ({
+      nick: loremRandomWord(),
+    })),
+    messages: Array.from({ length: 100 }).map((_, i) => ({
+      type: 'message',
+      nick: loremRandomWord(),
+      text: lorem((Math.random() ** 2.5) * 20 + 1),
+    }))
+  }))
+
+  state.currentChannelName = state.channels[0].name
+}
+
+// seedFakeChannels()

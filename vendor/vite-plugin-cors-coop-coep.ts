@@ -1,10 +1,11 @@
 import type { Plugin } from 'vite'
 
-export function ViteCoopCoep(): Plugin {
+export function ViteCorsCoopCoep(): Plugin {
   return {
-    name: 'coop-coep',
+    name: 'cors-coop-coep',
     configureServer(server) {
-      server.middlewares.use((_req, res, next) => {
+      server.middlewares.use((req, res, next) => {
+        res.setHeader('access-control-allow-origin', req.headers.origin ?? '*')
         res.setHeader('cross-origin-opener-policy', 'same-origin')
         res.setHeader('cross-origin-embedder-policy', 'require-corp')
         next()

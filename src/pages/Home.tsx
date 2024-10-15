@@ -26,6 +26,8 @@ export function Home() {
           <Link href="/chat">Chat</Link>
           <Link href="/ws">WebSockets</Link>
           <Link href="/canvas">Canvas</Link>
+          <Link href="/webgl">WebGL</Link>
+          <Link href="/editor">Editor</Link>
           <Link href="/asc">AssemblyScript</Link>
           <Link href="/qrcode">QrCode</Link>
           <Link href="/about">About</Link>

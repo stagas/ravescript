@@ -1,0 +1,35 @@
+{
+  "targets": {
+    "debug": {
+      "outFile": "./as/build/gfx.wasm",
+      "textFile": "./as/build/gfx.wat",
+      "sourceMap": true,
+      "debug": true,
+      "noAssert": true
+    },
+    "release": {
+      "outFile": "./as/build/gfx.wasm",
+      "textFile": "./as/build/gfx.wat",
+      "sourceMap": true,
+      "debug": false,
+      "optimizeLevel": 0,
+      "shrinkLevel": 0,
+      "converge": false,
+      "noAssert": true
+    }
+  },
+  "options": {
+    "enable": [
+      "simd",
+      "relaxed-simd",
+      "threads"
+    ],
+    "sharedMemory": true,
+    "importMemory": false,
+    "initialMemory": 1000,
+    "maximumMemory": 1000,
+    "bindings": "raw",
+    "runtime": "incremental",
+    "exportRuntime": true
+  }
+}

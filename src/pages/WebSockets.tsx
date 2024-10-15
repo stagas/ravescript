@@ -1,5 +1,5 @@
 import { Sigui } from 'sigui'
-import { dom } from 'utils'
+import { dom, isMobile } from 'utils'
 import { createWebSocket } from '~/lib/ws.ts'
 import { env } from '~/src/env.ts'
 import { colorizeNick } from '~/src/pages/Chat/util.ts'
@@ -11,7 +11,7 @@ export function WebSockets() {
   const ws = createWebSocket('/ws', env.VITE_API_URL)
   $.fx(() => () => ws.close())
 
-  const el = <div />
+  const el = <div class="w-full h-[calc(100dvh-4.5rem)] touch-none" /> as HTMLDivElement
   const pointers = new Map<string, HTMLDivElement>()
 
   ws.onmessage = ({ data }) => {
@@ -26,11 +26,19 @@ export function WebSockets() {
     pointer.style.top = y + 'px'
   }
 
-  $.fx(() => dom.on(window, 'pointermove', ev => {
-    if (state.user && ws.state() == 'open') {
-      ws.send(`${state.user.nick},${ev.pageX.toFixed(1)},${ev.pageY.toFixed(1)}`)
-    }
-  }))
+  $.fx(() => [
+    dom.on(el, isMobile() ? 'touchmove' : 'pointermove', ev => {
+      ev.preventDefault()
+
+      const p: { pageX: number, pageY: number } = ev.type === 'touchmove'
+        ? (ev as TouchEvent).touches[0]!
+        : ev as PointerEvent
+
+      if (state.user && ws.state() == 'open') {
+        ws.send(`${state.user.nick},${p.pageX.toFixed(1)},${p.pageY.toFixed(1)}`)
+      }
+    }, { passive: false })
+  ].filter(Boolean))
 
   return el
 }

@@ -64,7 +64,7 @@
 - [x] AssemblyScript
 - [x] WebAudio
   - [x] Wasm AudioWorklet
-- [ ] WebGL
+- [x] WebGL
 - [x] WebRTC
 - [x] QRCode
 - [ ] Maps
@@ -92,7 +92,7 @@
   - [x] OAuthRegister
   - [x] QrCode
   - [x] WebSockets
-  - [ ] UI Showcase
+  - [x] UI Showcase
 - [x] Components
   - [x] Header
   - [x] Toast
@@ -104,6 +104,7 @@
   - [x] ResetPassword
   - [x] VerifyEmail
 - [x] UI
+  - [x] Button
   - [x] Fieldset
   - [x] Input
   - [x] Label

@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import type { Plugin } from 'vite'
 
-export function HexLoader(): Plugin {
+export function ViteHexLoader(): Plugin {
   return {
     name: 'hex-loader',
     transform(code, id) {

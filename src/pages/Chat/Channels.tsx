@@ -6,14 +6,14 @@ import { cn } from '~/lib/cn.ts'
 import { icon } from '~/lib/icon.ts'
 import * as actions from '~/src/rpc/chat.ts'
 import { state } from '~/src/state.ts'
-import { byName, hasChannel } from './util.ts'
 import { H3 } from '~/src/ui/Heading.tsx'
+import { byName, hasChannel } from './util.ts'
 
 export function Channels({ overlay = true }: { overlay?: boolean }) {
   using $ = Sigui()
   return <div class={cn(
-    "w-[30%] max-w-56 flex flex-col gap-2 pt-1.5 pb-2.5 pr-4 mr-4 flex-shrink-0 border-r border-r-neutral-700",
-    { 'absolute bg-neutral-900 h-[calc(100vh-4.5rem)]': overlay },
+    "w-[40%] max-w-56 flex flex-col gap-2 pt-1.5 pb-2.5 pr-4 mr-4 flex-shrink-0 border-r border-r-neutral-700",
+    { 'absolute bg-neutral-900 h-[calc(100dvh-4.5rem)]': overlay },
   )}>
     <H3>
       <span>Channels</span>
@@ -62,15 +62,14 @@ export function Channels({ overlay = true }: { overlay?: boolean }) {
           onpointerdown={() => state.currentChannelName = channel.name}
         >
           {channel.name}
-        </button>
+        </button> as HTMLButtonElement
         if (isCurrent) {
           requestAnimationFrame(() => {
             el.scrollIntoView({ block: 'center' })
           })
         }
         return el
-      }
-      )}
+      })}
     </div>
   </div>
 }

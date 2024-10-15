@@ -1,3 +1,5 @@
+import imageRendering from 'tailwindcss-image-rendering'
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -12,5 +14,7 @@ export default {
     },
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    imageRendering(),
+  ],
 }

@@ -1,14 +1,18 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="/favicon.ico" sizes="48x48">
-    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
     <link rel="stylesheet" href="/style.css" />
     <title>Vasi - Admin</title>
   </head>
   <body>
+    <script type="module">
+      // KEEP: required for AssemblyScript interop.
+      globalThis.unmanaged = () => {};
+    </script>
     <div id="container"></div>
     <script src="./client.tsx" type="module"></script>
     <script src="../lib/watcher.ts" type="module"></script>
