@@ -1,4 +1,3 @@
-import { randomHash } from 'utils'
 import { z } from 'zod'
 import { kv } from '~/api/core/app.ts'
 import { Router } from '~/api/core/router.ts'
@@ -30,7 +29,7 @@ export function mount(app: Router) {
       provider,
     })
 
-    const oauthStateId = randomHash()
+    const oauthStateId = crypto.randomUUID()
     await kv.set(['oauthState', oauthStateId], state, {
       expireIn: 30 * 60 * 1000
     })

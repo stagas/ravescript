@@ -1,6 +1,6 @@
 // deno-lint-ignore-file require-await
 import { hash } from 'jsr:@denorg/scrypt@4.4.4'
-import { createCookie, randomHash, timeout } from 'utils'
+import { createCookie, timeout } from 'utils'
 import { ADMINS } from '~/api/admin/actions.ts'
 import { UserLogin, UserRegister, UserSession } from "~/api/auth/types.ts"
 import { kv } from '~/api/core/app.ts'
@@ -60,7 +60,7 @@ export async function getUser(nickOrEmail: string) {
 export async function loginUser(ctx: Context, nick: string) {
   ctx.log('Login:', nick)
 
-  const sessionId = randomHash()
+  const sessionId = crypto.randomUUID()
   const sessionKey = ['session', sessionId]
 
   const now = new Date()
@@ -90,7 +90,7 @@ export async function loginUser(ctx: Context, nick: string) {
 }
 
 async function generateEmailVerificationToken(email: string) {
-  const token = randomHash()
+  const token = crypto.randomUUID()
   const now = new Date()
   const expires = new Date(now)
   const expireAfterHours = 3 * 24 // 3 days
@@ -264,7 +264,7 @@ export async function forgotPassword(ctx: Context, email: string) {
     return
   }
 
-  const token = randomHash()
+  const token = crypto.randomUUID()
   const now = new Date()
   const expires = new Date(now)
   const expireAfterMinutes = 15

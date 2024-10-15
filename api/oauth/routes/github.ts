@@ -1,4 +1,3 @@
-import { randomHash } from 'utils'
 import { z } from 'zod'
 import { getUserByEmail, loginUser } from '~/api/auth/actions.ts'
 import { kv } from '~/api/core/app.ts'
@@ -104,7 +103,7 @@ export function mount(app: Router) {
     }
 
     // create oauth session
-    const id = randomHash()
+    const id = crypto.randomUUID()
     const now = new Date()
     const expires = new Date(now)
     expires.setMinutes(expires.getMinutes() + 30)
