@@ -2,10 +2,13 @@ import { $ } from 'sigui'
 import { tokenize } from '~/src/lang/tokenize.ts'
 import { Buffer } from '~/src/ui/editor/buffer.ts'
 import { Dims } from '~/src/ui/editor/dims.ts'
+import { Rect } from '~/src/ui/editor/util/types.ts'
 
 function B(code: string, maxWidth: number) {
   const info = $({ code, width: maxWidth, height: 300 })
-  const dims = Dims({ width: info.$.width, height: info.$.height })
+  const rect = $(Rect(), { w: 100 })
+  const dims = Dims({ rect })
+  dims.info.charWidth = 100 / maxWidth
   const b = Buffer({ dims, code: info.$.code, tokenize })
   b.info.maxColumns = maxWidth
   return b

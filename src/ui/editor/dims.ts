@@ -1,4 +1,4 @@
-import { Point, type Rect } from 'editor'
+import { Point, type Rect } from '~/src/ui/editor/util/types.ts'
 import { Sigui, type $ } from 'sigui'
 import { isMobile } from 'utils'
 
