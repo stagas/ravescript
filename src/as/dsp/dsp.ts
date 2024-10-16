@@ -166,7 +166,7 @@ export function Dsp({ sampleRate, core$ }: {
       BinOp: DspBinaryOp,
       LiteralLiteral: (a: number, b: number) => number
     ): BinaryOp {
-      return function binaryOp(lhs: Value | number, rhs: Value | number): any {
+      return function binaryOp(lhs: Value | number, rhs: Value | number) {
         if (typeof lhs === 'number' && typeof rhs === 'number') {
           return LiteralLiteral(lhs, rhs)
         }
@@ -227,7 +227,7 @@ export function Dsp({ sampleRate, core$ }: {
         )
 
         return out
-      }
+      } as BinaryOp
     }
 
     const soundPartial = {
@@ -243,19 +243,19 @@ export function Dsp({ sampleRate, core$ }: {
       pow: binaryOp(DspBinaryOp.Pow, (a, b) => a ** b),
     }
 
-    function defineGen(name: keyof Gen, stereo: boolean): any {
+    function defineGen(name: keyof Gen, stereo: boolean) {
       const props = getAllProps(name)
       const Gen = dspGens[name]
       const kind_index = dspGensKeys.indexOf(name)
 
-      function handle(opt: any) {
+      function handle(opt: Record<string, unknown>) {
         const gen$ = context.gens++
         setup_vm.CreateGen(kind_index)
         DEBUG && console.log('CreateGen', name, gen$)
 
         for (let p in opt) {
           const prop = `${name}.${p}`
-          const prop$ = props.indexOf(p as any)
+          const prop$ = props.indexOf(p)
           DEBUG && console.log('Property', prop, opt[p])
 
           if (prop$ >= 0) {
@@ -334,7 +334,7 @@ export function Dsp({ sampleRate, core$ }: {
         return gen$
       }
 
-      function processMono(opt: any): Value | void {
+      function processMono(opt: Record<string, unknown>): Value | void {
         const gen$ = handle(opt)
 
         if ('hasAudioOut' in Gen && Gen.hasAudioOut) {
@@ -347,7 +347,7 @@ export function Dsp({ sampleRate, core$ }: {
         }
       }
 
-      function processStereo(opt: any): [Value, Value] | void {
+      function processStereo(opt: Record<string, unknown>): [Value, Value] | void {
         const gen$ = handle(opt)
 
         if ('hasStereoOut' in Gen && Gen.hasStereoOut) {
@@ -455,15 +455,15 @@ export function Dsp({ sampleRate, core$ }: {
         dspGensKeys.map(name =>
           [name, defineGen(name, false)]
         )
-      ) as Gen,
+      ),
       gen_st: fromEntries(
         dspGensKeys.map(name =>
           [name, defineGen(name, true)]
         )
-      ) as Gen
-    }
+      )
+    } as const
 
-    let prevHashId: any
+    let prevHashId: string
 
     function process(tokens: Token[], voicesCount: number, hasMidiIn: boolean, paramsCount: number) {
       const scope = {} as any
@@ -551,11 +551,11 @@ export function Dsp({ sampleRate, core$ }: {
 
       const slice = program.scope.stack.slice(-2)
       if (slice.length === 2) {
-        R ??= slice.pop()
-        L ??= slice.pop()
+        R ??= slice.pop()!
+        L ??= slice.pop()!
       }
       else if (slice.length === 1) {
-        LR ??= slice.pop()
+        LR ??= slice.pop()!
       }
 
       const out = {

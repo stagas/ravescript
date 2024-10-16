@@ -1,9 +1,28 @@
 import { getAllPropsReverse, Sound } from 'dsp'
 import { dspGens } from '~/generated/typescript/dsp-gens.ts'
+import type { Value } from '~/src/as/dsp/value.ts'
 import { Token } from '~/src/lang/tokenize.ts'
-import { parseNumber } from '~/src/lang/util.ts'
+import { parseNumber, type NumberFormat, type NumberInfo } from '~/src/lang/util.ts'
 
 const DEBUG = false
+
+export interface ProgramValue {
+  results: ProgramValueResult[]
+  tokensAstNode: Map<Token, AstNode>
+}
+
+export type ProgramValueResult = { result: AstNode } & ({
+  genId: string
+  genData: any
+} | {
+  op: Token
+  index: AstNode
+  list: AstNode & { type: AstNode.Type.List }
+} | {
+  op: Token
+  lhs: AstNode
+  rhs: AstNode
+})
 
 export class AstNode {
   constructor(
@@ -13,10 +32,21 @@ export class AstNode {
   ) {
     Object.assign(this, data)
   }
-  id: any
-  kind: any
+  id?: string
+  kind?: AstNode.ProcKind
   scope: Scope = new Scope(null)
-  value: any
+  value?:
+    | { tokens: Token[] }
+    | Value.Audio
+    | [Value.Audio, Value.Audio]
+    | NumberInfo
+    | string
+    | number
+    | ProgramValue
+
+  format?: NumberFormat
+  digits?: number
+
   get bounds() {
     return Token.bounds(this.captured)
   }
@@ -50,16 +80,16 @@ export namespace AstNode {
 class Scope {
   constructor(
     public parent: Scope | null,
-    public vars: Record<string, any> = {}
+    public vars: Record<string, AstNode> = {}
   ) { }
-  stack: any[] = []
+  stack: AstNode[] = []
   stackPop() {
     return this.stack.pop()
   }
-  stackPush(x: {}) {
+  stackPush(x: AstNode) {
     this.stack.push(x)
   }
-  stackUnshiftOfTypes(types: any[], climb?: boolean) {
+  stackUnshiftOfTypes(types: AstNode.Type[], climb?: boolean): AstNode | undefined {
     let s: Scope | null = this
     let res: any
     do {
@@ -68,7 +98,7 @@ class Scope {
       if (!climb) return
     } while (s = s.parent)
   }
-  stackPopOfTypes(types: any[], climb?: boolean) {
+  stackPopOfTypes(types: AstNode.Type[], climb?: boolean): AstNode | undefined {
     let s: Scope | null = this
     let res: any
     do {
@@ -131,7 +161,7 @@ const AssignOps = new Set('= += *= -= /= ^='.split(' '))
 export function interpret(sound: Sound, data: Record<string, any>, tokens: Token[]) {
   const g = sound.api
   const scope: Scope = new Scope(null, { ...ScopeNatives, ...ScopeSpecial, ...data })
-  const results: (Record<string, any> & { result: AstNode })[] = []
+  const results: ProgramValueResult[] = []
   const tokensAstNode: Map<Token, AstNode> = new Map()
   const capturing = new Set<Token[]>()
 
@@ -168,7 +198,7 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
         const res = process(c, scope, next())
         if (res) {
           if (Array.isArray(res)) {
-            res.reverse().forEach(x => scope.stackPush(x as any))
+            res.reverse().forEach(x => scope.stackPush(x))
           }
           else {
             scope.stackPush(res)
@@ -202,7 +232,7 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
       if (proc.kind === AstNode.ProcKind.Gen || proc.kind === AstNode.ProcKind.GenStereo) {
         const genId = proc.id as keyof typeof dspGens
         const genInfo = dspGens[genId]
-        const allProps = getAllPropsReverse(genId) as any
+        const allProps = getAllPropsReverse(genId) as string[]
 
         for (const p of allProps) {
           DEBUG && console.log(p)
@@ -219,7 +249,7 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
         }
 
         const genData = Object.fromEntries(
-          Object.entries(node.scope.vars).map(([key, { value }]: any) =>
+          Object.entries(node.scope.vars).map(([key, { value }]) =>
             [key, value]
           )
         )
@@ -241,8 +271,8 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
           }
         }
         else if (proc.kind === AstNode.ProcKind.GenStereo) {
-          const value: any = g.gen_st[genId](genData)
-          if (value) {
+          const value = g.gen_st[genId](genData)
+          if (value && Array.isArray(value)) {
             // console.log(genId, value)
             const result_left = new AstNode(AstNode.Type.Result, { value: value[0] }, node.captured)
             results.push({ result: result_left, genId, genData })
@@ -254,15 +284,16 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
           }
         }
       }
-      else if (proc.kind === AstNode.ProcKind.User) {
-        const c = createContext(proc.value.tokens)
+      else if (proc.kind === AstNode.ProcKind.User && typeof proc.value === 'object' && 'tokens' in proc.value) {
+        const c = createContext(proc.value?.tokens)
         const { scope } = c.until(node.scope)
         return scope.stack.at(-1)
       }
       else if (proc.kind === AstNode.ProcKind.Special) {
         if (proc.id === 'pan') {
           const value = node.scope.stackUnshiftOfTypes(ConsumeTypes)
-          g.pan(value.value)
+          if (value?.value == null) throw new TypeError('Value expected.')
+          g.pan(value.value as Value)
         }
       }
     }
@@ -305,11 +336,11 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
       case Token.Type.Keyword: {
         if (t.text === '@') {
           if (scope.stack.length === 1) return scope.stack.pop()
-          let l: any
-          let r = scope.stack.pop()?.value
+          let l: AstNode & { value: Value }
+          let r: Value = scope.stack.pop()?.value as Value
           if (r == null) return
           while (scope.stack.length) {
-            l = scope.stack.pop()
+            l = scope.stack.pop() as AstNode & { value: Value }
             r = g.math.add(l.value, r)
           }
           const node = new AstNode(AstNode.Type.Result, { value: r }, [t])
@@ -321,14 +352,14 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
       case Token.Type.Op:
         if (t.text === '?') {
           const index = scope.stackPopOfTypes(ConsumeTypes)
-          const list = scope.stackPopOfTypes([AstNode.Type.List], true)
+          const list = scope.stackPopOfTypes([AstNode.Type.List], true) as (AstNode & { type: AstNode.Type.List }) | undefined
           if (!index) {
             throw new Error('Missing index for pick (?).', { cause: { nodes: [t] } })
           }
           if (!list) {
             throw new Error('Missing list for pick (?).', { cause: { nodes: [t] } })
           }
-          const value = g.pick(list.scope.stack.map((x: any) => x.value), index.value)
+          const value = g.pick(list.scope.stack.map(x => x.value as Value), index.value as number | Value)
           const node = new AstNode(AstNode.Type.Result, { value }, [t])
           results.push({ result: node, op: t, index, list })
           return node
@@ -360,7 +391,7 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
           if (!l) {
             throw new Error('Missing left operand.', { cause: { nodes: [t] } })
           }
-          scope.vars[r.value] = l
+          scope.vars[r.value as string] = l
           return
         }
         switch (t.text) {
@@ -395,8 +426,8 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
       value: {
         results,
         tokensAstNode,
-      }
-    })
+      } as ProgramValue
+    }) as AstNode & { value: ProgramValue }
   }
 
   return program()

@@ -2,7 +2,9 @@ import { Dsp, wasm as wasmDsp } from 'dsp'
 import { Gfx, Matrix, Rect, wasm as wasmGfx } from 'gfx'
 import { Sigui } from 'sigui'
 import { assign, Lru } from 'utils'
+import type { Value } from '~/src/as/dsp/value.ts'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
+import type { AstNode, ProgramValueResult } from '~/src/lang/interpreter.ts'
 import { Token, tokenize } from '~/src/lang/tokenize.ts'
 import { Canvas } from '~/src/ui/Canvas.tsx'
 import type { Editor } from '~/src/ui/Editor.tsx'
@@ -86,33 +88,28 @@ export function DspDemo() {
         c.meshes.draw()
         let nodeCount = 0
 
-        program.value.results.sort((a: any, b: any) =>
-          a.result.captured[0].line ===
-            b.result.captured[0].line
-            ? a.result.captured[0].col -
-            b.result.captured[0].col
-            : a.result.captured[0].line -
-            b.result.captured[0].line
+        program.value.results.sort(({ result: { bounds: a } }, { result: { bounds: b } }) =>
+          a.line === b.line
+            ? a.col - b.col
+            : a.line - b.line
         )
 
-        let last
+        let last: AstNode | null = null
+        const waves = new Map<AstNode, WaveGlWidget>()
         for (const node of program.value.results) {
           if ('genId' in node) {
-            const bounds = Token.bounds(node.result.captured)
+            const bounds = node.result.bounds
             if (last && last.bounds.line === bounds.line && last.bounds.right > bounds.col) {
               last.bounds.right = bounds.col - 1
-              last.wave.widget.bounds.right = bounds.col - 1
-              // console.log('yes')
+              waves.get(last)!.widget.bounds.right = bounds.col - 1
             }
-            // console.log(nodeCount, bounds)
             const wave = (waveWidgets[nodeCount] ??= WaveGlWidget(pane.draw.shapes))
             wave.info.floats = wave.info.floats.length ? wave.info.floats : getFloatsGfx(`${nodeCount}`, 8192)
-            wave.info.floats.set(sound.getAudio(node.result.value.ptr))
+            wave.info.floats.set(sound.getAudio((node.result.value as Value.Audio).ptr))
             assign(wave.widget.bounds, bounds)
             pane.draw.widgets.deco.add(wave.widget)
-            node.bounds = bounds
-            node.wave = wave
-            last = node
+            waves.set(node.result, wave)
+            last = node.result
             nodeCount++
           }
         }

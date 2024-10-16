@@ -1,7 +1,7 @@
 'use strict'
 
-import { Transform } from 'assemblyscript/transform'
 import Binaryen from 'assemblyscript/binaryen'
+import { Transform } from 'assemblyscript/transform'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as util from 'util'
@@ -48,7 +48,9 @@ class UpdateDspGens extends Transform {
         }
       }
     }
+
     sortObjectInPlace(dspGens)
+
     const audioProps = ['in', 'sidechain']
     const textProps = ['text', 'id']
     const interfaces = Object.entries(dspGens).map(
@@ -56,6 +58,7 @@ class UpdateDspGens extends Transform {
 ${v.props.map((x, i) => `    ${x}?: ${audioProps.includes(x) ? 'Value.Audio' : textProps.includes(x) ? 'string' : 'Value | number'}`).join('\n')}
   }`
     ).join('\n')
+
     function hasAudioOut(k) {
       const gen = dspGens[k]
       let res
@@ -68,15 +71,32 @@ ${v.props.map((x, i) => `    ${x}?: ${audioProps.includes(x) ? 'Value.Audio' : t
       }
       return res
     }
+
+    function hasStereoOut(k) {
+      const gen = dspGens[k]
+      let res
+      if (gen.hasStereoOut)
+        res = true
+      else if (gen.inherits && gen.inherits !== 'gen' && hasStereoOut(gen.inherits))
+        res = true
+      if (res) {
+        gen.hasStereoOut = true
+      }
+      return res
+    }
+
     const types = Object.keys(dspGens).map(
-      (k) => `  ${k}: (p: Props.${capitalize(k)}) => ${hasAudioOut(k) ? 'Value.Audio' : 'void'}`
+      (k) => `  ${k}: (p: Props.${capitalize(k)}) => ${hasStereoOut(k)
+        ? '[Value.Audio, Value.Audio]'
+        : hasAudioOut(k) ? 'Value.Audio' : 'void'}`
     ).join('\n')
+
     const formatted = util.format('%O', dspGens)
     const date = new Date()
     const text = /*ts*/`//
 // auto-generated ${date.toDateString()} ${date.toTimeString()}
 
-import { Value } from '../../src/dsp/value.ts'
+import { Value } from '../../src/as/dsp/value.ts'
 
 export const dspGens = ${formatted} as const
 

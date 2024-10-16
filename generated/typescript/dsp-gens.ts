@@ -1,7 +1,7 @@
 //
-// auto-generated Wed Oct 16 2024 07:59:10 GMT+0300 (Eastern European Summer Time)
+// auto-generated Wed Oct 16 2024 08:42:09 GMT+0300 (Eastern European Summer Time)
 
-import { Value } from '../../src/dsp/value.ts'
+import { Value } from '../../src/as/dsp/value.ts'
 
 export const dspGens = {
   adsr: {
@@ -354,7 +354,7 @@ export interface Gen {
   clamp: (p: Props.Clamp) => Value.Audio
   clip: (p: Props.Clip) => Value.Audio
   comp: (p: Props.Comp) => Value.Audio
-  daverb: (p: Props.Daverb) => Value.Audio
+  daverb: (p: Props.Daverb) => [Value.Audio, Value.Audio]
   dcc: (p: Props.Dcc) => Value.Audio
   dclip: (p: Props.Dclip) => Value.Audio
   dclipexp: (p: Props.Dclipexp) => Value.Audio
@@ -363,7 +363,7 @@ export interface Gen {
   diode: (p: Props.Diode) => Value.Audio
   exp: (p: Props.Exp) => Value.Audio
   freesound: (p: Props.Freesound) => Value.Audio
-  gen: (p: Props.Gen) => Value.Audio
+  gen: (p: Props.Gen) => [Value.Audio, Value.Audio]
   gendy: (p: Props.Gendy) => Value.Audio
   grain: (p: Props.Grain) => Value.Audio
   inc: (p: Props.Inc) => Value.Audio
