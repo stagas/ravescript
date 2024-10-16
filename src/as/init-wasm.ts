@@ -102,7 +102,7 @@ export function initWasm(wasm: Wasm) {
     //  Might not be ideal in all situations.
     // We shouldn't refresh if the failure is right after a new refresh,
     // otherwise we enter into infinite refreshes loop.
-    if (+new Date() - +new Date(performance.timeOrigin) > 2_000) {
+    if (+new Date() - +new Date(performance.timeOrigin) > 5_000) {
       location.href = location.href
     }
 

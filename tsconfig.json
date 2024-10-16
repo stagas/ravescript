@@ -1,7 +1,9 @@
 {
   "include": [
     "admin",
+    "generated/typescript",
     "lib",
+    "scripts",
     "src",
     "vendor"
   ],
@@ -43,6 +45,9 @@
     "paths": {
       "editor": [
         "./src/ui/editor/index.ts"
+      ],
+      "dsp": [
+        "src/as/dsp/index.ts"
       ],
       "gfx": [
         "./src/as/gfx/index.ts"

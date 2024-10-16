@@ -12,6 +12,7 @@ import { ViteHexLoader } from './vendor/vite-plugin-hex-loader.ts'
 import { ViteOpenInEditor } from './vendor/vite-plugin-open-in-editor.ts'
 import { VitePrintAddress } from './vendor/vite-plugin-print-address.ts'
 import { ViteUsing } from './vendor/vite-plugin-using.ts'
+import { watchAndRun } from 'vite-plugin-watch-and-run'
 
 const root = process.cwd()
 const homedir = os.homedir()
@@ -98,6 +99,17 @@ export default ({ mode }) => {
       ],
     }),
     ViteAssemblyScript({
+      configFile: 'asconfig-dsp.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/dsp',
+      srcEntryFile: 'as/assembly/dsp/index.ts',
+      mapFile: './as/build/dsp.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+        '--transform', './vendor/as-transform-update-dsp-gens.js',
+      ]
+    }),
+    ViteAssemblyScript({
       configFile: 'asconfig-pkg.json',
       projectRoot: '.',
       srcMatch: 'as/assembly/pkg',
@@ -127,6 +139,15 @@ export default ({ mode }) => {
         '--transform', './vendor/as-transform-unroll.js',
       ]
     }),
+    watchAndRun([
+      {
+        name: 'scripts',
+        watchKind: ['add', 'change', 'unlink'],
+        watch: path.resolve('scripts/**.ts'),
+        run: 'pnpm scripts',
+        delay: 100
+      }
+    ]) as Plugin,
   ]
 
   return defineConfig({

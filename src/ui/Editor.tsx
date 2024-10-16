@@ -1,8 +1,8 @@
 import { Input, Misc, Pane, Rect, View, type InputHandlers, type WordWrapProcessor } from 'editor'
 import { Sigui, type $, type Signal } from 'sigui'
 import type { Source, Token } from '~/src/lang/tokenize.ts'
-import { screen } from '~/src/screen.ts'
-import { state } from '~/src/state.ts'
+
+export type Editor = ReturnType<typeof Editor>
 
 export function Editor({ code, width, height, colorize, tokenize, wordWrapProcessor, inputHandlers }: {
   code: Signal<string>

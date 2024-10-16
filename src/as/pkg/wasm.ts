@@ -16,7 +16,6 @@ else {
 
 const wasm = await instantiate(mod, {
   env: {
-    log: console.log,
   }
 })
 

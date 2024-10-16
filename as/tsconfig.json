@@ -4,6 +4,7 @@
     "./assembly/**/*.ts"
   ],
   "compilerOptions": {
+    "baseUrl": "..",
     "experimentalDecorators": true
   }
 }

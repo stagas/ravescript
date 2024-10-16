@@ -1,6 +1,5 @@
-import { logf, logf2, logf3, logf4, logf6, logi } from '../env'
 import { Sketch } from './sketch'
-import { Box, Line, Matrix, Notes, Shape, ShapeOpts, WAVE_MIPMAPS, Wave, Note, Params, ParamValue } from './sketch-shared'
+import { Box, Line, Matrix, Note, Notes, Params, ParamValue, Shape, ShapeOpts, Wave } from './sketch-shared'
 import { lineIntersectsRect } from './util'
 
 const MAX_ZOOM: f32 = 0.5

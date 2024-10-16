@@ -3,6 +3,8 @@ import { wasm, type Shapes } from 'gfx'
 import { Sigui } from 'sigui'
 import { hexToInt } from '~/src/ui/editor/util/rgb.ts'
 
+export type WaveGlWidget = ReturnType<typeof WaveGlWidget>
+
 export function WaveGlWidget(shapes: Shapes) {
   using $ = Sigui()
 
