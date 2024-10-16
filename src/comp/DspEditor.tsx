@@ -1,4 +1,4 @@
-import { pointToLinecol, type Pane, type WordWrapProcessor } from 'editor'
+import { CLICK_TIMEOUT, pointToLinecol, type Pane, type WordWrapProcessor } from 'editor'
 import { Sigui, type Signal } from 'sigui'
 import { assign, clamp } from 'utils'
 import { Token, tokenize } from '~/src/lang/tokenize.ts'
@@ -30,6 +30,8 @@ export function DspEditor({ code, width, height }: {
   const hoverMark = HoverMarkWidget()
 
   function getHoveringNumber(pane: Pane) {
+    if (!pane.mouse.info.linecol.hoverLine) return
+
     const word = pane.buffer.wordUnderLinecol(pane.mouse.info.linecol)
     if (word != null) {
       digits = word[0].split('.')[1]?.length ?? 0
@@ -44,6 +46,7 @@ export function DspEditor({ code, width, height }: {
   }
 
   function updateNumberMark(pane: Pane) {
+    if (pane.mouse.info.isDown) return
     const temp = getHoveringNumber(pane)
     if (temp && !pane.info.isHoveringScrollbarX && !pane.info.isHoveringScrollbarY) {
       const number = temp
@@ -161,9 +164,23 @@ export function DspEditor({ code, width, height }: {
     return ret
   }
 
+  let clickTimeout: any
+  let clickCount = 0
+
   function onMouseDown(pane: Pane) {
+    clickCount++
+
+    clearTimeout(clickTimeout)
+    clickTimeout = setTimeout(() => {
+      clickCount = 0
+    }, CLICK_TIMEOUT)
+
+    if (clickCount >= 2) return
+
     number = getHoveringNumber(pane)
+
     if (number?.index == null) return
+
     value = parseFloat(number[0])
     mouse.x = pane.mouse.info.x
     mouse.y = pane.mouse.info.y
@@ -185,7 +202,7 @@ export function DspEditor({ code, width, height }: {
   }
 
   function onMouseUp(pane: Pane) {
-    if (number) {
+    if (number && clickCount <= 1) {
       number = void 0
       return true
     }

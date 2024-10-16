@@ -54,8 +54,8 @@ export function Caret({ paneInfo, buffer }: {
         chars = (2 - (caret.x % 2))
       }
       buffer.code = code.slice(0, caret.index - chars) + code.slice(caret.index)
-      $.flush()
       moveByChars(-chars)
+      $.flush()
     }
   }
 

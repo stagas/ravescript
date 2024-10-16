@@ -1,4 +1,4 @@
-import { Point, Widgets, type Buffer, type Caret, type Dims, type Linecol, type PaneInfo, type Selection, type View } from 'editor'
+import { Point, pointToLinecol, Widgets, type Buffer, type Caret, type Dims, type Linecol, type PaneInfo, type Selection, type View } from 'editor'
 import { Matrix, Rect } from 'gfx'
 import { Sigui } from 'sigui'
 import { assign, clamp, drawText, randomHex } from 'utils'
@@ -135,7 +135,7 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     return p
   }
 
-  function linecolFromViewPoint({ x, y }: Point): Linecol {
+  function linecolFromViewPoint({ x, y }: Point): Linecol & { hoverLine: boolean } {
     const { charWidth, lineHeight } = dims.info
     const { linesVisual } = buffer.info
 
@@ -143,27 +143,29 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     x -= textPadding
 
     let top = 0
+    let ty = 0
+    let hoverLine = false
     out: {
       for (let i = 0; i <= linesVisual.length; i++) {
         if (y < top) {
-          y = i - 1
+          ty = i - 1
           break out
         }
 
         let l = widgets.lines.get(i)
-        if (l) {
-          top += l.deco
-          if (l.subs) top += l.subs + 2
-        }
+        if (l) top += l.deco
+        hoverLine = y > top
         top += lineHeight
+        if (l?.subs) top += l.subs + 2
       }
-      y = linesVisual.length - 1
+      ty = linesVisual.length - 1
+      hoverLine = false
     }
 
-    const line = clamp(0, linesVisual.length - 1, y)
-    const col = clamp(0, linesVisual[y]?.text.length ?? 0, Math.round((x - 3) / charWidth))
+    const line = clamp(0, linesVisual.length - 1, ty)
+    const col = clamp(0, linesVisual[ty]?.text.length ?? 0, Math.round((x - 3) / charWidth))
 
-    return { line, col }
+    return { line, col, hoverLine }
   }
 
   // update token draw info
@@ -227,15 +229,11 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
 
   // update caret view point
   $.fx(() => {
+    const { triggerUpdateTokenDrawInfo } = info
     const { tokens } = buffer.info
     const { x, y } = caret.visual
     $()
-    // NOTE: bugfix while toggling block comments caret wasn't updated.
-    //  there must be a real solution to this but for now this works.
-    assign(caretViewPoint, viewPointFromLinecol({ line: y, col: x }))
-    queueMicrotask(() => {
-      assign(caretViewPoint, viewPointFromLinecol({ line: y, col: x }))
-    })
+    assign(caretViewPoint, viewPointFromLinecol(pointToLinecol(caret.visual)))
   })
 
   // wait for fonts to load
@@ -250,6 +248,7 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
 
   // update inner size
   $.fx(() => {
+    const { triggerUpdateTokenDrawInfo } = info
     const { w, h } = info.rect
     const { linesVisual } = buffer.info
     const { charWidth, lineHeight, innerSize } = dims.info

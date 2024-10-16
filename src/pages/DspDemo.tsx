@@ -4,8 +4,8 @@ import { Sigui } from 'sigui'
 import { assign, Lru } from 'utils'
 import type { Value } from '~/src/as/dsp/value.ts'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
-import type { AstNode, ProgramValueResult } from '~/src/lang/interpreter.ts'
-import { Token, tokenize } from '~/src/lang/tokenize.ts'
+import type { AstNode } from '~/src/lang/interpreter.ts'
+import { tokenize } from '~/src/lang/tokenize.ts'
 import { Canvas } from '~/src/ui/Canvas.tsx'
 import type { Editor } from '~/src/ui/Editor.tsx'
 import { WaveGlWidget } from '~/src/ui/editor/widgets/wave-gl.ts'
@@ -22,7 +22,10 @@ export function DspDemo() {
   const info = $({
     width: 400,
     height: 300,
-    code: `[sin 40.10 303 [exp 2.01] 5.20^ * +] [exp 1.00] 9.99^ *`,
+    code: `[sin 42.11 303
+[exp 2.01] 6.66^ * +]
+[exp 1.00] 9.99^ *
+`,
     floats: new Float32Array(),
   })
 
@@ -80,11 +83,11 @@ export function DspDemo() {
         floats.ptr,
       )
 
-
       // pane.draw.widgets.update()
 
       plot.info.floats.set(floats)
-      requestAnimationFrame($.fn(() => {
+
+      queueMicrotask($.fn(() => {
         c.meshes.draw()
         let nodeCount = 0
 
@@ -96,6 +99,7 @@ export function DspDemo() {
 
         let last: AstNode | null = null
         const waves = new Map<AstNode, WaveGlWidget>()
+        pane.draw.widgets.deco.clear()
         for (const node of program.value.results) {
           if ('genId' in node) {
             const bounds = node.result.bounds
@@ -104,7 +108,9 @@ export function DspDemo() {
               waves.get(last)!.widget.bounds.right = bounds.col - 1
             }
             const wave = (waveWidgets[nodeCount] ??= WaveGlWidget(pane.draw.shapes))
-            wave.info.floats = wave.info.floats.length ? wave.info.floats : getFloatsGfx(`${nodeCount}`, 8192)
+            wave.info.floats = wave.info.floats.length
+              ? wave.info.floats
+              : getFloatsGfx(`${nodeCount}`, 8192)
             wave.info.floats.set(sound.getAudio((node.result.value as Value.Audio).ptr))
             assign(wave.widget.bounds, bounds)
             pane.draw.widgets.deco.add(wave.widget)
@@ -119,6 +125,7 @@ export function DspDemo() {
       }))
     })
   })
+
   const dspEditor = <DspEditor
     width={info.$.width}
     height={info.$.height}

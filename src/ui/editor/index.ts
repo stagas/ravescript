@@ -1,5 +1,6 @@
 export * from './buffer.ts'
 export * from './caret.ts'
+export * from './constants.ts'
 export * from './dims.ts'
 export * from './draw.ts'
 export * from './history.ts'

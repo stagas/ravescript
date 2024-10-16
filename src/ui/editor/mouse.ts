@@ -1,8 +1,7 @@
 import { Linecol, Point, type Caret, type Dims, type Draw, type PaneInfo, type Selection } from 'editor'
 import { Sigui } from 'sigui'
 import { assign, MouseButtons } from 'utils'
-
-const CLICK_TIMEOUT = 350
+import { CLICK_TIMEOUT } from '~/src/ui/editor/constants.ts'
 
 export function Mouse({ paneInfo, dims, selection, caret, draw }: {
   paneInfo: PaneInfo
@@ -21,7 +20,7 @@ export function Mouse({ paneInfo, dims, selection, caret, draw }: {
     x: 0,
     y: 0,
     actual: $(Point()),
-    linecol: $(Linecol()),
+    linecol: $({ ...Linecol(), hoverLine: false }),
     wheel: $(Point()),
     ctrl: false,
   })
@@ -29,7 +28,8 @@ export function Mouse({ paneInfo, dims, selection, caret, draw }: {
   $.fx(() => {
     const { x, y } = info
     $()
-    assign(info.linecol, draw.linecolFromViewPoint(info))
+    const res = draw.linecolFromViewPoint(info)
+    assign(info.linecol, res)
   })
 
   // blink caret
