@@ -4,8 +4,7 @@ import { assign, clamp } from 'utils'
 
 export type Caret = ReturnType<typeof Caret>
 
-export function Caret({ paneInfo, buffer }: {
-  paneInfo: PaneInfo,
+export function Caret({ buffer }: {
   buffer: Buffer,
 }) {
   using $ = Sigui()
@@ -84,7 +83,7 @@ export function Caret({ paneInfo, buffer }: {
     })
   }
 
-  function moveUpDown(dy: number) {
+  function moveByLines(dy: number) {
     const { linesVisual } = buffer.info
     let newX = caret.visualXIntent
     let newY = caret.visual.y + dy
@@ -146,7 +145,7 @@ export function Caret({ paneInfo, buffer }: {
     doDelete,
     moveHome,
     moveEnd,
-    moveUpDown,
+    moveByLines,
     moveByChars,
     moveByWord,
     insert,

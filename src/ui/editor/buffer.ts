@@ -129,9 +129,9 @@ export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identi
       x++
     }
 
-    if (line.length || word.length || word.length === code.length) {
-      push()
-    }
+    // if (line.length || word.length || word.length === code.length) {
+    push()
+    // }
 
     return wrapped.map(line => {
       line.text = wordWrapProcessor.post(line.text)

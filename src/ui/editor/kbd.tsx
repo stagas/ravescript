@@ -454,7 +454,7 @@ export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }:
           )
         }
         withSelection(() =>
-          caret.moveUpDown(dy)
+          caret.moveByLines(dy)
         )
       }
 

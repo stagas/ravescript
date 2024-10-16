@@ -217,16 +217,28 @@ export function DspEditor({ code, width, height }: {
     onMouseMove,
   }
 
+  const baseColors = {
+    [Token.Type.Native]: theme.colors.sky,
+    [Token.Type.String]: theme.colors.sky,
+    [Token.Type.Keyword]: theme.colors.sky,
+    [Token.Type.Op]: theme.colors.neutral,
+    [Token.Type.Id]: theme.colors.neutral,
+    [Token.Type.Number]: theme.colors.neutral,
+    [Token.Type.BlockComment]: theme.colors.sky,
+    [Token.Type.Comment]: theme.colors.sky,
+    [Token.Type.Any]: theme.colors.sky,
+  }
+
   const colors: Partial<Record<Token.Type, { fill: string, stroke: string }>> = {
-    [Token.Type.Native]: { fill: theme.colors.sky[500], stroke: theme.colors.sky[500] },
-    [Token.Type.String]: { fill: theme.colors.fuchsia[700], stroke: theme.colors.fuchsia[700] },
-    [Token.Type.Keyword]: { fill: theme.colors.orange[500], stroke: theme.colors.orange[500] },
-    [Token.Type.Op]: { fill: theme.colors.sky[500], stroke: theme.colors.sky[500] },
-    [Token.Type.Id]: { fill: theme.colors.yellow[500], stroke: theme.colors.yellow[500] },
-    [Token.Type.Number]: { fill: theme.colors.green[500], stroke: theme.colors.green[500] },
-    [Token.Type.BlockComment]: { fill: theme.colors.neutral[700], stroke: theme.colors.neutral[700] },
-    [Token.Type.Comment]: { fill: theme.colors.neutral[700], stroke: theme.colors.neutral[700] },
-    [Token.Type.Any]: { fill: theme.colors.neutral[500], stroke: theme.colors.neutral[500] },
+    [Token.Type.Native]: { fill: baseColors[Token.Type.Native][500], stroke: baseColors[Token.Type.Native][500] },
+    [Token.Type.String]: { fill: baseColors[Token.Type.String][700], stroke: baseColors[Token.Type.String][700] },
+    [Token.Type.Keyword]: { fill: baseColors[Token.Type.Keyword][500], stroke: baseColors[Token.Type.Keyword][500] },
+    [Token.Type.Op]: { fill: baseColors[Token.Type.Op][500], stroke: baseColors[Token.Type.Op][500] },
+    [Token.Type.Id]: { fill: baseColors[Token.Type.Id][400], stroke: baseColors[Token.Type.Id][400] },
+    [Token.Type.Number]: { fill: baseColors[Token.Type.Number][100], stroke: baseColors[Token.Type.Number][100] },
+    [Token.Type.BlockComment]: { fill: baseColors[Token.Type.BlockComment][700], stroke: baseColors[Token.Type.BlockComment][700] },
+    [Token.Type.Comment]: { fill: baseColors[Token.Type.Comment][700], stroke: baseColors[Token.Type.Comment][700] },
+    [Token.Type.Any]: { fill: baseColors[Token.Type.Any][500], stroke: baseColors[Token.Type.Any][500] },
   }
 
   function colorize(token: Token<Token.Type>) {

@@ -10,7 +10,7 @@ export function WaveGlWidget(shapes: Shapes) {
 
   const info = $({
     floats: wasm.alloc(Float32Array, 0),
-    color: '#f09',
+    color: '#fff',
   })
 
   const widget = Widget()

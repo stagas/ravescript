@@ -27,6 +27,7 @@ export function DspDemo() {
 [exp 1.00] 9.99^ *
 `,
     floats: new Float32Array(),
+    error: null as Error | null,
   })
 
   const ctx = new AudioContext({ sampleRate: 48000 })
@@ -52,44 +53,41 @@ export function DspDemo() {
 
   const waveWidgets: WaveGlWidget[] = []
 
-  requestAnimationFrame(() => {
+  queueMicrotask(() => {
     $.fx(() => {
       const { pane } = dspEditor.info
       const { codeVisual } = pane.buffer.info
       $()
+      pane.draw.widgets.deco.clear()
+      plot.info.floats.fill(0)
 
-      sound.reset()
-      const tokens = Array.from(tokenize({ code: codeVisual }))
-      const { program, out } = sound.process(tokens, 6, false, 0)
-      if (!out.LR) {
-        throw new Error('No audio in the stack.')
-      }
-      const floats = getFloats('floats', length)
-      info.floats = floats
-      const notes = []
-      const params = []
-      const notesData = getBuffer(notes.length * 4)
-      const paramsData = getPointers(params.length * 2)
-      wasmDsp.fillSound(
-        sound.sound$,
-        sound.ops.ptr,
-        notesData.ptr,
-        notes.length,
-        paramsData.ptr,
-        params.length,
-        out.LR.getAudio(),
-        0,
-        floats.length,
-        floats.ptr,
-      )
-
-      // pane.draw.widgets.update()
-
-      plot.info.floats.set(floats)
-
-      queueMicrotask($.fn(() => {
-        c.meshes.draw()
-        let nodeCount = 0
+      let nodeCount = 0
+      try {
+        const tokens = Array.from(tokenize({ code: codeVisual }))
+        sound.reset()
+        const { program, out } = sound.process(tokens, 6, false, 0)
+        if (!out.LR) {
+          throw new Error('No audio in the stack!')
+        }
+        const floats = getFloats('floats', length)
+        info.floats = floats
+        const notes = []
+        const params = []
+        const notesData = getBuffer(notes.length * 4)
+        const paramsData = getPointers(params.length * 2)
+        wasmDsp.fillSound(
+          sound.sound$,
+          sound.ops.ptr,
+          notesData.ptr,
+          notes.length,
+          paramsData.ptr,
+          params.length,
+          out.LR.getAudio(),
+          0,
+          floats.length,
+          floats.ptr,
+        )
+        plot.info.floats.set(floats)
 
         program.value.results.sort(({ result: { bounds: a } }, { result: { bounds: b } }) =>
           a.line === b.line
@@ -99,7 +97,7 @@ export function DspDemo() {
 
         let last: AstNode | null = null
         const waves = new Map<AstNode, WaveGlWidget>()
-        pane.draw.widgets.deco.clear()
+
         for (const node of program.value.results) {
           if ('genId' in node) {
             const bounds = node.result.bounds
@@ -119,10 +117,24 @@ export function DspDemo() {
             nodeCount++
           }
         }
+      }
+      catch (err) {
+        if (err instanceof Error) {
+          info.error = err
+        }
+        else {
+          throw err
+        }
+      }
 
-        pane.draw.info.triggerUpdateTokenDrawInfo++
-        pane.view.anim.info.epoch++
-      }))
+      let delta = waveWidgets.length - nodeCount
+      while (delta-- > 0) waveWidgets.pop()?.dispose()
+
+      pane.draw.info.triggerUpdateTokenDrawInfo++
+
+      c.meshes.draw()
+      pane.view.anim.info.epoch++
+      pane.draw.widgets.update()
     })
   })
 

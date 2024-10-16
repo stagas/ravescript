@@ -52,7 +52,8 @@ function copyToken(token: Token) {
   return newToken
 }
 
-let preludeTokens: Token[]
+let preTokens: Token[]
+let postTokens: Token[]
 
 export function Dsp({ sampleRate, core$ }: {
   sampleRate: number
@@ -68,7 +69,7 @@ export function Dsp({ sampleRate, core$ }: {
 
   const view = getMemoryView(wasm.memory)
 
-  preludeTokens ??= [...tokenize({
+  preTokens ??= [...tokenize({
     code:
       // we implicit call [nrate 1] before our code
       // so that the sample rate is reset.
@@ -78,6 +79,10 @@ export function Dsp({ sampleRate, core$ }: {
       + ` { at= p= sp= 1 [inc sp co* at] clip - p^ } dec= `
     // + `{ n= p= sp= 1 [inc sp co* t n*] clip - p^ } decay=`
     // + ` { t= p= sp= 1 [inc sp co* t] clip - p^ } down= `
+  })]
+
+  postTokens ??= [...tokenize({
+    code: `@`
   })]
 
   function Sound() {
@@ -470,8 +475,9 @@ export function Dsp({ sampleRate, core$ }: {
       const literals: AstNode[] = []
 
       let tokensCopy = [
-        ...preludeTokens,
+        ...preTokens,
         ...tokens,
+        ...postTokens,
       ]
         .filter(t => t.type !== Token.Type.Comment)
         .map(copyToken)

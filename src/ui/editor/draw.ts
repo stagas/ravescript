@@ -353,9 +353,9 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     c.clearRect(x, y, w + 1, h + 1)
 
     // TODO: temp remove this
-    c.translate(x, y)
-    c.fillStyle = '#' + color
-    c.fillRect(0, 0, w, h)
+    // c.translate(x, y)
+    // c.fillStyle = '#' + color
+    // c.fillRect(0, 0, w, h)
 
     c.translate(dims.info.scrollX, dims.info.scrollY)
   }
