@@ -3,18 +3,18 @@ import { Sigui } from 'sigui'
 import { assign, Lru, rpc } from 'utils'
 import { PreviewService } from '~/src/as/dsp/preview-service.ts'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
-import basicProcessorUrl from '~/src/pages/DspNodeDemo/basic-processor.ts?url'
-import { QUEUE_SIZE } from '~/src/pages/DspNodeDemo/constants.ts'
-import { DspWorker } from '~/src/pages/DspNodeDemo/dsp-worker.ts'
-import DspWorkerFactory from '~/src/pages/DspNodeDemo/dsp-worker.ts?worker'
-import { FreeQueue } from '~/src/pages/DspNodeDemo/free-queue.ts'
+import basicProcessorUrl from '~/src/pages/DspWorkerDemo/basic-processor.ts?url'
+import { QUEUE_SIZE } from '~/src/pages/DspWorkerDemo/constants'
+import { DspWorker } from '~/src/pages/DspWorkerDemo/dsp-worker'
+import DspWorkerFactory from '~/src/pages/DspWorkerDemo/dsp-worker.ts?worker'
+import { FreeQueue } from '~/src/pages/DspWorkerDemo/free-queue'
 import { Canvas } from '~/src/ui/Canvas.tsx'
 import { WaveGlWidget } from '~/src/ui/editor/widgets/wave-gl.ts'
 import { H3 } from '~/src/ui/Heading.tsx'
 
 const getFloatsGfx = Lru(20, (key: string, length: number) => wasmGfx.alloc(Float32Array, length), item => item.fill(0), item => item.free())
 
-export function DspNodeDemo() {
+export function DspWorkerDemo() {
   using $ = Sigui()
 
   const info = $({

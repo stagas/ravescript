@@ -201,10 +201,14 @@ export class FreeQueue {
   printAvailableReadAndWrite() {
     const currentRead = Atomics.load(this.states, this.States.READ)
     const currentWrite = Atomics.load(this.states, this.States.WRITE)
-    console.log(this, {
-      availableRead: this._getAvailableRead(currentRead, currentWrite),
-      availableWrite: this._getAvailableWrite(currentRead, currentWrite),
-    })
+    console.log(
+      this._getAvailableRead(currentRead, currentWrite),
+      this._getAvailableWrite(currentRead, currentWrite)
+    )
+    // console.log(this, {
+    //   availableRead: this._getAvailableRead(currentRead, currentWrite),
+    //   availableWrite: this._getAvailableWrite(currentRead, currentWrite),
+    // })
   }
 
   /**

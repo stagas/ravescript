@@ -79,6 +79,10 @@ export function Dsp({ sampleRate, core$ }: {
 
     const context = getContext()
 
+    // TODO: ops/setup_ops need to be created new
+    //  on every new code
+    // all of the context is prepared
+    // and then sent in one byte to the worklet
     const ops = wasm.alloc(Int32Array, MAX_OPS)
     const vm = createVm(ops)
     const setup_ops = wasm.alloc(Int32Array, MAX_OPS)

@@ -7,8 +7,8 @@ self.document = {
 import { Dsp, wasm } from 'dsp'
 import { Lru, rpc } from 'utils'
 import { tokenize } from '~/src/lang/tokenize.ts'
-import { FRAME_SIZE } from '~/src/pages/DspNodeDemo/constants.ts'
-import { FreeQueue } from '~/src/pages/DspNodeDemo/free-queue.ts'
+import { FRAME_SIZE } from '~/src/pages/DspWorkerDemo/constants'
+import { FreeQueue } from '~/src/pages/DspWorkerDemo/free-queue'
 
 export type DspWorker = typeof worker
 
@@ -46,11 +46,11 @@ const worker = {
     while (Atomics.wait(atomicState, 0, 0) === 'ok') {
 
       // pull data out from inputQueue.
-      const didPull = inputQueue.pull([input], FRAME_SIZE)
+      // const didPull = inputQueue.pull([input], FRAME_SIZE)
 
       // If pulling data out was successfull, process it and push it to
       // outputQueue
-      if (didPull) {
+      if (outputQueue.getAvailableSamples() < FRAME_SIZE) {
         if (LR >= 0) {
           wasm.fillSound(
             sound.sound$,
@@ -76,7 +76,11 @@ const worker = {
         cmd[0] = 0
       }
 
-      Atomics.store(atomicState, 0, 0)
+      if (outputQueue.getAvailableSamples() >= FRAME_SIZE) {
+        Atomics.store(atomicState, 0, 0)
+      }
+
+      // outputQueue.printAvailableReadAndWrite()
     }
   },
 }
