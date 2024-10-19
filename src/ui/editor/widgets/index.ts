@@ -1,3 +1,4 @@
+export * from './error-sub.ts'
 export * from './hover-mark.ts'
 export * from './wave-canvas.ts'
 export * from './wave-gl.ts'

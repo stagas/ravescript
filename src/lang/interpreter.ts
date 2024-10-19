@@ -182,11 +182,11 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
       return t
     }
     function peek() {
-      return tokens[i]
+      return tokens[i] ?? tokens[i - 1] ?? tokens.at(-1)
     }
     function expectText(text: string) {
       if (text && peek()?.text !== text) {
-        throw new SyntaxError('Expected text ' + text, { cause: { nodes: [peek()] } })
+        throw new SyntaxError('Expected text ' + text, { cause: { nodes: [peek()].filter(Boolean) } })
       }
       return next()
     }
@@ -385,8 +385,8 @@ export function interpret(sound: Sound, data: Record<string, any>, tokens: Token
             throw new Error('Missing right operand.', { cause: { nodes: [t] } })
           }
           if (r.type !== AstNode.Type.Id) {
-            console.error(r, l, scope)
-            throw new Error('Expected identifier for assignment operation.', { cause: { nodes: [r] } })
+            // console.error(r, l, scope)
+            throw new Error('Expected identifier for assignment operation.', { cause: { nodes: [t] } })
           }
           if (!l) {
             throw new Error('Missing left operand.', { cause: { nodes: [t] } })

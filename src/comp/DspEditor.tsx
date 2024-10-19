@@ -5,7 +5,9 @@ import { Token, tokenize } from '~/src/lang/tokenize.ts'
 import { screen } from '~/src/screen.ts'
 import { theme } from '~/src/theme.ts'
 import { Editor } from '~/src/ui/Editor.tsx'
-import { HoverMarkWidget } from '~/src/ui/editor/widgets/index.ts'
+import { ErrorSubWidget, HoverMarkWidget } from '~/src/ui/editor/widgets/index.ts'
+
+export type DspEditor = ReturnType<typeof DspEditor>
 
 export function DspEditor({ code, width, height }: {
   width: Signal<number>
@@ -20,6 +22,7 @@ export function DspEditor({ code, width, height }: {
     width,
     height,
     code,
+    error: null as Error | null,
   })
 
   const mouse = { x: 0, y: 0 }
@@ -27,6 +30,7 @@ export function DspEditor({ code, width, height }: {
   let value: number
   let digits: number
   let isDot = false
+
   const hoverMark = HoverMarkWidget()
 
   function getHoveringNumber(pane: Pane) {
@@ -204,6 +208,7 @@ export function DspEditor({ code, width, height }: {
   function onMouseUp(pane: Pane) {
     if (number && clickCount <= 1) {
       number = void 0
+      updateNumberMark(pane)
       return true
     }
   }
@@ -268,5 +273,22 @@ export function DspEditor({ code, width, height }: {
     inputHandlers,
   })
 
-  return editor
+  // const errorSub = ErrorSubWidget()
+  // $.fx(() => {
+  //   const { error } = $.of(info)
+  //   const { pane } = editor.info
+  //   $()
+  //   pane.draw.widgets.subs.add(errorSub.widget)
+  //   errorSub.info.error = error
+  //   errorSub.widget.bounds = Token.bounds((error as any).cause?.nodes ?? [] as Token[])
+  //   pane.draw.info.triggerUpdateTokenDrawInfo++
+  //   pane.view.anim.info.epoch++
+  //   return () => {
+  //     pane.draw.widgets.subs.delete(errorSub.widget)
+  //     pane.draw.info.triggerUpdateTokenDrawInfo++
+  //     pane.view.anim.info.epoch++
+  //   }
+  // })
+
+  return { info, el: editor.el, editor }
 }

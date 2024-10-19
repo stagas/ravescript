@@ -10,7 +10,9 @@ import { About } from '~/src/pages/About.tsx'
 import { AssemblyScript } from '~/src/pages/AssemblyScript.tsx'
 import { CanvasDemo } from '~/src/pages/CanvasDemo'
 import { Chat } from '~/src/pages/Chat/Chat.tsx'
-import { DspDemo } from '~/src/pages/DspDemo.tsx'
+import { DspAsyncDemo } from '~/src/pages/DspAsyncDemo.tsx'
+import { DspNodeDemo } from '~/src/pages/DspNodeDemo/DspNodeDemo.tsx'
+import { DspSyncDemo } from '~/src/pages/DspSyncDemo'
 import { EditorDemo } from '~/src/pages/EditorDemo.tsx'
 import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
@@ -18,6 +20,7 @@ import { QrCode } from '~/src/pages/QrCode.tsx'
 import { UiShowcase } from '~/src/pages/UiShowcase.tsx'
 import { WebGLDemo } from '~/src/pages/WebGLDemo.tsx'
 import { WebSockets } from '~/src/pages/WebSockets.tsx'
+import { WorkerWorkletDemo } from '~/src/pages/WorkerWorklet/WorkerWorkletDemo'
 import { whoami } from '~/src/rpc/auth.ts'
 import { state, triggers } from '~/src/state.ts'
 import { go, Link } from '~/src/ui/Link.tsx'
@@ -41,7 +44,10 @@ export function App() {
     '!/canvas': () => <CanvasDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/webgl': () => <WebGLDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/editor': () => <EditorDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
-    '/dsp': () => <DspDemo />,
+    '/dsp-sync': () => <DspSyncDemo />,
+    '/dsp-async': () => <DspAsyncDemo />,
+    '/dsp-node': () => <DspNodeDemo />,
+    '/worker-worklet': () => <WorkerWorkletDemo />,
     '/asc': () => <AssemblyScript />,
     '/qrcode': () => <QrCode />,
     '/about': () => <About />,

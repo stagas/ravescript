@@ -110,6 +110,16 @@ export default ({ mode }) => {
       ]
     }),
     ViteAssemblyScript({
+      configFile: 'asconfig-dsp-nort.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/dsp',
+      srcEntryFile: 'as/assembly/dsp/index.ts',
+      mapFile: './as/build/dsp.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+      ]
+    }),
+    ViteAssemblyScript({
       configFile: 'asconfig-pkg.json',
       projectRoot: '.',
       srcMatch: 'as/assembly/pkg',

@@ -6,7 +6,8 @@ import { Sound } from '../../as/assembly/dsp/vm/sound'
 
 const dsp = new Dsp()
 
-export function run(ctx: Sound, ops$: usize): void {
+export function run(sound$: usize, ops$: usize): void {
+  const snd = changetype<Sound>(sound$)
   const ops = changetype<StaticArray<i32>>(ops$)
 
   let i: i32 = 0
@@ -17,28 +18,28 @@ export function run(ctx: Sound, ops$: usize): void {
 
       case Op.CreateGen:
         dsp.CreateGen(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++]))
         )
       continue
       
       case Op.CreateAudios:
         dsp.CreateAudios(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++]))
         )
       continue
       
       case Op.CreateValues:
         dsp.CreateValues(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++]))
         )
       continue
       
       case Op.AudioToScalar:
         dsp.AudioToScalar(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++]))
         )
@@ -46,7 +47,7 @@ export function run(ctx: Sound, ops$: usize): void {
       
       case Op.LiteralToAudio:
         dsp.LiteralToAudio(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++]))
         )
@@ -54,7 +55,7 @@ export function run(ctx: Sound, ops$: usize): void {
       
       case Op.Pick:
         dsp.Pick(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++])),
@@ -64,14 +65,14 @@ export function run(ctx: Sound, ops$: usize): void {
       
       case Op.Pan:
         dsp.Pan(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++]))
         )
       continue
       
       case Op.SetValue:
         dsp.SetValue(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++]))
@@ -80,7 +81,7 @@ export function run(ctx: Sound, ops$: usize): void {
       
       case Op.SetValueDynamic:
         dsp.SetValueDynamic(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++]))
@@ -89,7 +90,7 @@ export function run(ctx: Sound, ops$: usize): void {
       
       case Op.SetProperty:
         dsp.SetProperty(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++])),
@@ -99,14 +100,14 @@ export function run(ctx: Sound, ops$: usize): void {
       
       case Op.UpdateGen:
         dsp.UpdateGen(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++]))
         )
       continue
       
       case Op.ProcessAudio:
         dsp.ProcessAudio(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++]))
         )
@@ -114,7 +115,7 @@ export function run(ctx: Sound, ops$: usize): void {
       
       case Op.ProcessAudioStereo:
         dsp.ProcessAudioStereo(
-          ctx,
+          snd,
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++]))
@@ -123,7 +124,7 @@ export function run(ctx: Sound, ops$: usize): void {
       
       case Op.BinaryOp:
         dsp.BinaryOp(
-          ctx,
+          snd,
           changetype<DspBinaryOp>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++])),
           changetype<i32>(unchecked(ops[i++])),

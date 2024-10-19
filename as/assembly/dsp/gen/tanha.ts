@@ -1,10 +1,9 @@
 import { Gen } from './gen'
 
 export class Tanha extends Gen {
-  gain: f32 = 1
-  _gainv: v128 = f32x4.splat(1.0);
-
   in: u32 = 0
+
+  _gainv: v128 = f32x4.splat(1.0)
 
   _update(): void {
     this._gainv = f32x4.splat(this.gain)

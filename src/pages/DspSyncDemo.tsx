@@ -7,7 +7,6 @@ import { DspEditor } from '~/src/comp/DspEditor.tsx'
 import type { AstNode } from '~/src/lang/interpreter.ts'
 import { tokenize } from '~/src/lang/tokenize.ts'
 import { Canvas } from '~/src/ui/Canvas.tsx'
-import type { Editor } from '~/src/ui/Editor.tsx'
 import { WaveGlWidget } from '~/src/ui/editor/widgets/wave-gl.ts'
 import { H2 } from '~/src/ui/Heading.tsx'
 
@@ -16,7 +15,7 @@ const getFloatsGfx = Lru(20, (key: string, length: number) => wasmGfx.alloc(Floa
 const getBuffer = Lru(20, (length: number) => wasmDsp.alloc(Float32Array, length), item => item.fill(0), item => item.free())
 const getPointers = Lru(20, (length: number) => wasmDsp.alloc(Uint32Array, length), item => item.fill(0), item => item.free())
 
-export function DspDemo() {
+export function DspSyncDemo() {
   using $ = Sigui()
 
   const info = $({
@@ -32,11 +31,9 @@ export function DspDemo() {
 
   const ctx = new AudioContext({ sampleRate: 48000 })
   const dsp = Dsp({ sampleRate: ctx.sampleRate })
-  const { clock } = dsp
   const sound = dsp.Sound()
 
-  const barsCount = .25
-  const length = 8192 //Math.floor(barsCount * clock.sampleRate / clock.coeff)
+  const length = 8192
 
   const canvas = <Canvas width={info.$.width} height={info.$.height} /> as HTMLCanvasElement
   const gfx = Gfx({ canvas })
@@ -55,38 +52,32 @@ export function DspDemo() {
 
   queueMicrotask(() => {
     $.fx(() => {
-      const { pane } = dspEditor.info
+      const { pane } = dspEditor.editor.info
       const { codeVisual } = pane.buffer.info
       $()
       pane.draw.widgets.deco.clear()
       plot.info.floats.fill(0)
-
       let nodeCount = 0
+
       try {
         const tokens = Array.from(tokenize({ code: codeVisual }))
+
         sound.reset()
-        const { program, out } = sound.process(tokens, 6, false, 0)
-        if (!out.LR) {
-          throw new Error('No audio in the stack!')
-        }
+        const { program, out } = sound.process(tokens)
+        if (!out.LR) throw new Error('No audio in the stack!')
+
         const floats = getFloats('floats', length)
         info.floats = floats
-        const notes = []
-        const params = []
-        const notesData = getBuffer(notes.length * 4)
-        const paramsData = getPointers(params.length * 2)
+
         wasmDsp.fillSound(
           sound.sound$,
           sound.ops.ptr,
-          notesData.ptr,
-          notes.length,
-          paramsData.ptr,
-          params.length,
           out.LR.getAudio(),
           0,
           floats.length,
           floats.ptr,
         )
+
         plot.info.floats.set(floats)
 
         program.value.results.sort(({ result: { bounds: a } }, { result: { bounds: b } }) =>
@@ -138,14 +129,14 @@ export function DspDemo() {
     })
   })
 
-  const dspEditor = <DspEditor
-    width={info.$.width}
-    height={info.$.height}
-    code={info.$.code}
-  /> as Editor
+  const dspEditor = DspEditor({
+    width: info.$.width,
+    height: info.$.height,
+    code: info.$.code,
+  })
 
   return <div>
-    <H2>Dsp demo</H2>
+    <H2>Dsp Sync demo</H2>
     {dspEditor}
     {canvas}
   </div>

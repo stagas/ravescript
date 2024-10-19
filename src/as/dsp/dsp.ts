@@ -1,27 +1,21 @@
-import { wasm } from './wasm.ts'
 import { Sigui } from 'sigui'
-import { Struct, fromEntries, getMemoryView, keys } from 'utils'
-import { BUFFER_SIZE, MAX_LISTS, MAX_LITERALS, MAX_SCALARS } from '../../../as/assembly/dsp/constants.ts'
-import { DspBinaryOp, SoundData as SoundDataShape } from '../../../as/assembly/dsp/vm/dsp-shared.ts'
-import { Op } from '../../../generated/assembly/dsp-op.ts'
-import { Gen, dspGens } from '../../../generated/typescript/dsp-gens.ts'
-import { createVm } from '../../../generated/typescript/dsp-vm.ts'
-import { AstNode, interpret } from '../../lang/interpreter.ts'
-import { Token, tokenize } from '../../lang/tokenize.ts'
-import { parseNumber } from '../../lang/util.ts'
-import { Clock } from './dsp-shared.ts'
+import { fromEntries, getMemoryView, keys } from 'utils'
+import { BUFFER_SIZE, MAX_LISTS, MAX_LITERALS } from '~/as/assembly/dsp/constants.ts'
+import { DspBinaryOp } from '~/as/assembly/dsp/vm/dsp-shared.ts'
+import { Op } from '~/generated/assembly/dsp-op.ts'
+import { Gen, dspGens } from '~/generated/typescript/dsp-gens.ts'
+import { createVm } from '~/generated/typescript/dsp-vm.ts'
+import { AstNode, interpret } from '~/src/lang/interpreter.ts'
+import { Token, tokenize } from '~/src/lang/tokenize.ts'
+import { parseNumber } from '~/src/lang/util.ts'
+import { Clock } from './shared.ts'
 import { getAllProps } from './util.ts'
 import { Value } from './value.ts'
+import { wasm } from './wasm.ts'
 
 const DEBUG = false
 
 const MAX_OPS = 4096
-
-const SoundData = Struct({
-  begin: 'u32',
-  end: 'u32',
-  pan: 'f32',
-})
 
 const dspGensKeys = keys(dspGens)
 
@@ -43,13 +37,8 @@ function getContext() {
   }
 }
 
-const tokensCopyMap = new Map<Token, Token>()
-const tokensCopyRevMap = new Map<Token, Token>()
-function copyToken(token: Token) {
-  const newToken = { ...token }
-  tokensCopyMap.set(token, newToken)
-  tokensCopyRevMap.set(newToken, token)
-  return newToken
+function copy<T extends Record<string, any>>(obj: T): T {
+  return { ...obj }
 }
 
 let preTokens: Token[]
@@ -86,10 +75,8 @@ export function Dsp({ sampleRate, core$ }: {
   })]
 
   function Sound() {
-    const sound$ = wasm.createSound(engine$)
+    const sound$ = pin(wasm.createSound(engine$))
 
-    const data$ = wasm.getSoundData(sound$)
-    const data = SoundData(wasm.memory.buffer, +data$) satisfies SoundDataShape
     const context = getContext()
 
     const ops = wasm.alloc(Int32Array, MAX_OPS)
@@ -100,9 +87,6 @@ export function Dsp({ sampleRate, core$ }: {
     const lists$ = wasm.getSoundLists(sound$)
     const lists = view.getI32(lists$, MAX_LISTS)
     context.listsi = lists
-
-    const scalars$ = wasm.getSoundScalars(sound$)
-    const scalars = view.getF32(scalars$, MAX_SCALARS)
 
     const literals$ = wasm.getSoundLiterals(sound$)
     const literals = view.getF32(literals$, MAX_LITERALS)
@@ -272,21 +256,21 @@ export function Dsp({ sampleRate, core$ }: {
                 // Audio
                 if (v.kind === Value.Kind.Audio) {
                   if (audioProps.has(p)) {
-                    vm.SetProperty(gen$, prop$, Value.Kind.Audio as number, v.value$)
+                    vm.SetProperty(gen$, prop$, Value.Kind.Audio, v.value$)
                   }
                   else {
                     const scalar = sound.Value.Scalar.create()
                     vm.AudioToScalar(v.ptr, scalar.ptr)
-                    vm.SetProperty(gen$, prop$, Value.Kind.Scalar as number, scalar.value$)
+                    vm.SetProperty(gen$, prop$, Value.Kind.Scalar, scalar.value$)
                   }
                   break outer
                 }
                 else {
                   if (audioProps.has(p)) {
-                    vm.SetProperty(gen$, prop$, Value.Kind.Audio as number, v.value$)
+                    vm.SetProperty(gen$, prop$, Value.Kind.Audio, v.value$)
                   }
                   else {
-                    vm.SetProperty(gen$, prop$, Value.Kind.Scalar as number, v.value$)
+                    vm.SetProperty(gen$, prop$, Value.Kind.Scalar, v.value$)
                   }
                   break outer
                 }
@@ -297,14 +281,14 @@ export function Dsp({ sampleRate, core$ }: {
                   const floats = sound.Value.Floats.create()
                   const text = opt[p]
                   // loadSayText(floats, text)
-                  vm.SetProperty(gen$, prop$, Value.Kind.Floats as number, floats.value$)
+                  vm.SetProperty(gen$, prop$, Value.Kind.Floats, floats.value$)
                   break outer
                 }
                 if (name === 'freesound' && p === 'id') {
                   const floats = sound.Value.Floats.create()
                   const text = opt[p]
                   // loadFreesound(floats, text)
-                  vm.SetProperty(gen$, prop$, Value.Kind.Floats as number, floats.value$)
+                  vm.SetProperty(gen$, prop$, Value.Kind.Floats, floats.value$)
                   break outer
                 }
                 value = 0
@@ -327,10 +311,10 @@ export function Dsp({ sampleRate, core$ }: {
               if (audioProps.has(p)) {
                 const audio = sound.Value.Audio.create()
                 vm.LiteralToAudio(literal.ptr, audio.ptr)
-                vm.SetProperty(gen$, prop$, Value.Kind.Audio as number, audio.value$)
+                vm.SetProperty(gen$, prop$, Value.Kind.Audio, audio.value$)
               }
               else {
-                vm.SetProperty(gen$, prop$, Value.Kind.Scalar as number, literal.value$)
+                vm.SetProperty(gen$, prop$, Value.Kind.Scalar, literal.value$)
               }
             }
           }
@@ -376,43 +360,6 @@ export function Dsp({ sampleRate, core$ }: {
       t: Value.Scalar
       rt: Value.Scalar
       co: Value.Scalar
-
-      n0n: Value.Scalar
-      n0f: Value.Scalar
-      n0t: Value.Scalar
-      n0v: Value.Scalar
-
-      n1n: Value.Scalar
-      n1f: Value.Scalar
-      n1t: Value.Scalar
-      n1v: Value.Scalar
-
-      n2n: Value.Scalar
-      n2f: Value.Scalar
-      n2t: Value.Scalar
-      n2v: Value.Scalar
-
-      n3n: Value.Scalar
-      n3f: Value.Scalar
-      n3t: Value.Scalar
-      n3v: Value.Scalar
-
-      n4n: Value.Scalar
-      n4f: Value.Scalar
-      n4t: Value.Scalar
-      n4v: Value.Scalar
-
-      n5n: Value.Scalar
-      n5f: Value.Scalar
-      n5t: Value.Scalar
-      n5v: Value.Scalar
-
-      p0: Value.Scalar
-      p1: Value.Scalar
-      p2: Value.Scalar
-      p3: Value.Scalar
-      p4: Value.Scalar
-      p5: Value.Scalar
     }
 
     const api = {
@@ -470,36 +417,35 @@ export function Dsp({ sampleRate, core$ }: {
 
     let prevHashId: string
 
-    function process(tokens: Token[], voicesCount: number, hasMidiIn: boolean, paramsCount: number) {
+    function process(tokens: Token[]) {
       const scope = {} as any
       const literals: AstNode[] = []
 
-      let tokensCopy = [
-        ...preTokens,
-        ...tokens,
-        ...postTokens,
-      ]
-        .filter(t => t.type !== Token.Type.Comment)
-        .map(copyToken)
-
-
-      if (voicesCount && hasMidiIn) {
-        const voices = tokenize({
-          code: Array.from({ length: voicesCount }, (_, i) =>
-            `[midi_in n${i}v n${i}t n${i}f n${i}n]`
-          ).join('\n') + ` @`
-        })
-        tokensCopy = [...tokensCopy, ...voices]
+      // fix invisible tokens bounds to the
+      // last visible token for errors
+      const last = tokens.at(-1)
+      function fixToken(x: Token) {
+        if (!last) return x
+        x.line = last.line
+        x.col = last.col
+        x.right = last.right
+        x.bottom = last.bottom
+        x.index = last.index
+        x.length = last.length
+        return x
       }
+
+      let tokensCopy = [
+        ...preTokens.map(fixToken),
+        ...tokens,
+        ...postTokens.map(fixToken),
+      ].filter(t => t.type !== Token.Type.Comment).map(copy)
 
       // create hash id from tokens. We compare this afterwards to determine
       // if we should make a new sound or update the old one.
       const hashId =
         [tokens.filter(t => t.type === Token.Type.Number).length].join('')
-        + tokens.filter(t =>
-          [Token.Type.Id, Token.Type.Op].includes(t.type)
-        ).map(t => t.text).join('')
-        + voicesCount
+        + tokens.filter(t => [Token.Type.Id, Token.Type.Op].includes(t.type)).map(t => t.text).join('')
 
       const isNew = hashId !== prevHashId
       prevHashId = hashId
@@ -577,31 +523,29 @@ export function Dsp({ sampleRate, core$ }: {
       }
 
       return {
-        program,
         isNew,
         out,
+        program,
       }
     }
 
     const sound = {
-      context,
-      sound$,
-      data$,
-      data,
-      vm,
-      ops,
-      setup_vm,
-      setup_ops,
-      preset,
-      run,
-      reset,
-      commit,
-      getAudio,
-      createLiteralsPreset,
-      values: [] as Value[],
-      Value: Value.Factory(soundPartial),
       api,
+      commit,
+      context,
+      createLiteralsPreset,
+      getAudio,
+      ops,
+      preset,
       process,
+      reset,
+      run,
+      setup_ops,
+      setup_vm,
+      sound$,
+      Value: Value.Factory(soundPartial),
+      values: [] as Value[],
+      vm,
     }
 
     return sound
@@ -619,5 +563,4 @@ export type BinaryOp = {
   (lhs: number, rhs: Value): Value
   (lhs: Value, rhs: number): Value
   (lhs: Value, rhs: Value): Value
-  // (lhs: Value | number, rhs: Value | number): Value | number
 }

@@ -1,11 +1,9 @@
 import { run as dspRun } from '../../../../generated/assembly/dsp-runner'
-import { Note, ParamValue } from '../../gfx/sketch-shared'
-import { clamp } from '../../util'
 import { BUFFER_SIZE, MAX_FLOATS, MAX_LISTS, MAX_LITERALS, MAX_SCALARS } from '../constants'
 import { Clock } from '../core/clock'
 import { Engine } from '../core/engine'
 import { Gen } from '../gen/gen'
-import { SoundData, SoundValueKind } from './dsp-shared'
+import { SoundValueKind } from './dsp-shared'
 
 export function ntof(n: f32): f32 {
   return 440 * 2 ** ((n - 69) / 12)
@@ -23,32 +21,18 @@ export class SoundValue {
 export class Sound {
   constructor(public engine: Engine) { }
 
-  data: SoundData = new SoundData()
-
-  get begin(): u32 {
-    return this.data.begin
-  }
-
-  get end(): u32 {
-    return this.data.end
-  }
-
-  set pan(v: f32) {
-    this.data.pan = v
-  }
-
-  get pan(): f32 {
-    return this.data.pan
-  }
+  begin: u32 = 0
+  end: u32 = 0
+  pan: f32 = 0
 
   gens: Gen[] = []
   offsets: usize[][] = []
 
+  audios: Array<StaticArray<f32> | null> = []
+  floats: StaticArray<i32> = new StaticArray<i32>(MAX_FLOATS)
+  lists: StaticArray<i32> = new StaticArray<i32>(MAX_LISTS)
   literals: StaticArray<f32> = new StaticArray<f32>(MAX_LITERALS)
   scalars: StaticArray<f32> = new StaticArray<f32>(MAX_SCALARS)
-  audios: Array<StaticArray<f32> | null> = []
-  lists: StaticArray<i32> = new StaticArray<i32>(MAX_LISTS)
-  floats: StaticArray<i32> = new StaticArray<i32>(MAX_FLOATS)
 
   values: SoundValue[] = []
 
@@ -73,87 +57,7 @@ export class Sound {
     this.scalars[Globals.rt] = f32(c.time)
   }
 
-  // TODO: this needs to be updated to handle
-  // sustained notes which have to keep track
-  // which nY scalar we're using, e.g
-  //  n0 n1 n2 are pressed together,
-  //  n0 n1 are released, n2 should be filled until it is released
-  // we need release/note off time.
-  @inline
-  updateVoices(notes$: usize, count: i32, start: f32, end: f32): void {
-    let y = 0
-    for (let i = 0; i < count; i++) {
-      const note = changetype<Note>(notes$ + ((i * 4) << 2))
-      if (note.time >= start && note.time < end) {
-        const voice = voices[y++]
-        this.scalars[voice[Voice.n]] = note.n
-        this.scalars[voice[Voice.f]] = ntof(note.n)
-        this.scalars[voice[Voice.t]] = note.time
-        this.scalars[voice[Voice.v]] = note.vel
-        if (y === 6) return
-      }
-    }
-  }
-
-  @inline
-  updateParams(params$: usize, count: i32, start: f32, end: f32): void {
-    const params = changetype<StaticArray<usize>>(params$)
-    let y = 0
-    for (let i = 0; i < count; i++) {
-      const ptr = unchecked(params[(i * 2)])
-      const len = i32(unchecked(params[(i * 2) + 1]))
-
-      let a: ParamValue | null = null
-      let b: ParamValue | null = null
-      for (let j = 0; j < len; j++) {
-        const v = changetype<ParamValue>(ptr + ((j * 4) << 2))
-        if (!a) a = v
-        else a = b
-        b = v
-        if (v.time >= end) break
-      }
-
-      if (a) {
-        const param = Params.p0 + y
-        y++
-        let amt = f32(1.0)
-        if (b) {
-          if (a.time === b.time) {
-            amt = b.amt
-          }
-          else {
-            const diff: f32 = Mathf.max(0, start - a.time)
-            const width: f32 = b.time - a.time
-            const alpha = Mathf.min(width, diff) / width
-            amt = clamp(-1.0, 1.0, 0.0, a.amt + (b.amt - a.amt) * alpha)
-            // logf2(start, amt)
-          }
-        }
-        this.scalars[param] = amt
-        // logf(6667)
-      }
-      // if (v.time >= start && v.time < end) {
-      //   const param = params[y++]
-      //   this.scalars[param[Param.t]] = v.time
-      //   this.scalars[param[Param.l]] = v.length
-      //   this.scalars[param[Param.s]] = v.slope
-      //   this.scalars[param[Param.a]] = v.amt
-      //   if (y === 6) return
-      // }
-    }
-  }
-
-  fill(
-    ops$: usize,
-    notes$: usize,
-    notesCount: u32,
-    params$: usize,
-    paramsCount: u32,
-    audio_LR$: i32,
-    begin: u32,
-    end: u32,
-    out$: usize
-  ): void {
+  fill(ops$: usize, audio_LR$: i32, begin: u32, end: u32, out$: usize): void {
     const CHUNK_SIZE = 64
     let chunkCount = 0
 
@@ -161,47 +65,39 @@ export class Sound {
     this.scalars[Globals.sr] = f32(c.sampleRate)
     this.scalars[Globals.co] = f32(c.coeff)
 
-    let timeStart: f32
-    let timeEnd: f32
-
-    this.updateScalars(c)
-    timeStart = f32(c.barTime / NOTE_SCALE_X)
-    timeEnd = f32(c.barTime + c.barTimeStep * f64(CHUNK_SIZE))
-    this.updateVoices(notes$, notesCount, timeStart, timeEnd)
-    this.updateParams(params$, paramsCount, timeStart, timeEnd)
-
     let i = begin
-    const data = this.data
-    data.begin = i
-    data.end = i
-    dspRun(this, ops$)
+    this.begin = i
+    this.end = i
+    dspRun(changetype<usize>(this), ops$)
 
+    let time = c.time
+    let barTime = c.barTime
     for (let x = i; x < end; x += BUFFER_SIZE) {
       const chunkEnd = x + BUFFER_SIZE > end ? end - x : BUFFER_SIZE
 
       for (let i: u32 = 0; i < chunkEnd; i += CHUNK_SIZE) {
         this.updateScalars(c)
-        timeStart = f32(c.barTime * NOTE_SCALE_X)
-        timeEnd = f32((c.barTime + c.barTimeStep * f64(CHUNK_SIZE)) * NOTE_SCALE_X)
-        this.updateVoices(notes$, notesCount, timeStart, timeEnd)
-        this.updateParams(params$, paramsCount, timeStart, timeEnd)
 
-        data.begin = i
-        data.end = i + CHUNK_SIZE > chunkEnd ? chunkEnd - i : i + CHUNK_SIZE
-        dspRun(this, ops$)
+        this.begin = i
+        this.end = i + CHUNK_SIZE > chunkEnd ? chunkEnd - i : i + CHUNK_SIZE
+        dspRun(changetype<usize>(this), ops$)
 
         chunkCount++
 
-        c.time = f64(chunkCount * CHUNK_SIZE) * c.timeStep
-        c.barTime = f64(chunkCount * CHUNK_SIZE) * c.barTimeStep
+        c.time = time + f64(chunkCount * CHUNK_SIZE) * c.timeStep
+        c.barTime = barTime + f64(chunkCount * CHUNK_SIZE) * c.barTimeStep
       }
+      time = c.time
+      barTime = c.barTime
 
-      const audio = this.audios[audio_LR$]
-      memory.copy(
-        out$ + (x << 2),
-        changetype<usize>(audio),
-        chunkEnd << 2
-      )
+      if (audio_LR$ < this.audios.length) {
+        const audio = this.audios[audio_LR$]
+        memory.copy(
+          out$ + (x << 2),
+          changetype<usize>(audio) + (x << 2),
+          chunkEnd << 2
+        )
+      }
     }
   }
 }

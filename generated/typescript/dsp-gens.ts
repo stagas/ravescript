@@ -1,5 +1,5 @@
 //
-// auto-generated Wed Oct 16 2024 08:42:09 GMT+0300 (Eastern European Summer Time)
+// auto-generated Fri Oct 18 2024 21:53:09 GMT+0300 (Eastern European Summer Time)
 
 import { Value } from '../../src/as/dsp/value.ts'
 
@@ -10,7 +10,7 @@ export const dspGens = {
     hasAudioOut: true
   },
   aosc: { inherits: 'osc', props: [], hasAudioOut: true },
-  atan: { inherits: 'gen', props: [ 'gain', 'in' ], hasAudioOut: true },
+  atan: { inherits: 'gen', props: [ 'in' ], hasAudioOut: true },
   bap: { inherits: 'biquad', props: [ 'cut', 'q' ], hasAudioOut: true },
   bbp: { inherits: 'biquad', props: [ 'cut', 'q' ], hasAudioOut: true },
   bhp: { inherits: 'biquad', props: [ 'cut', 'q' ], hasAudioOut: true },
@@ -103,8 +103,8 @@ export const dspGens = {
   spk: { inherits: 'svf', props: [ 'cut', 'q' ], hasAudioOut: true },
   sqr: { inherits: 'aosc', props: [], hasAudioOut: true },
   svf: { inherits: 'gen', props: [ 'in' ] },
-  tanh: { inherits: 'gen', props: [ 'gain', 'in' ], hasAudioOut: true },
-  tanha: { inherits: 'gen', props: [ 'gain', 'in' ], hasAudioOut: true },
+  tanh: { inherits: 'gen', props: [ 'in' ], hasAudioOut: true },
+  tanha: { inherits: 'gen', props: [ 'in' ], hasAudioOut: true },
   tap: { inherits: 'gen', props: [ 'ms', 'in' ], hasAudioOut: true },
   tri: { inherits: 'aosc', props: [], hasAudioOut: true },
   zero: { inherits: 'gen', props: [], hasAudioOut: true }
@@ -123,7 +123,6 @@ export namespace Props {
 
   }
   export interface Atan extends Gen {
-    gain?: Value | number
     in?: Value.Audio
   }
   export interface Bap extends Biquad {
@@ -319,11 +318,9 @@ export namespace Props {
     in?: Value.Audio
   }
   export interface Tanh extends Gen {
-    gain?: Value | number
     in?: Value.Audio
   }
   export interface Tanha extends Gen {
-    gain?: Value | number
     in?: Value.Audio
   }
   export interface Tap extends Gen {

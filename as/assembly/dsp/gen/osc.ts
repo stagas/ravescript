@@ -2,7 +2,7 @@ import { Gen } from './gen'
 
 export abstract class Osc extends Gen {
   /** Frequency. */
-  hz: f32 = 440
+  hz: f32 = 0
   /** Trigger phase sync when set to 0. */
   trig: f32 = -1.0
   /** Phase offset. */

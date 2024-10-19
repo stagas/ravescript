@@ -1,7 +1,6 @@
 import { Gen } from './gen'
 
 export class Tanh extends Gen {
-  gain: f32 = 1.0;
   in: u32 = 0
 
   _audio(begin: u32, end: u32, out: usize): void {

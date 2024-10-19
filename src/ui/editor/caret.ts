@@ -1,4 +1,4 @@
-import { beginOfLine, Point, type Buffer, type PaneInfo } from 'editor'
+import { beginOfLine, Close, Open, Point, type Buffer, type PaneInfo } from 'editor'
 import { Sigui } from 'sigui'
 import { assign, clamp } from 'utils'
 
@@ -16,8 +16,8 @@ export function Caret({ buffer }: {
     visual: $(Point()),
     visualXIntent: 0,
     blinkReset: 0,
-    isBlink: false,
-    isVisible: false,
+    isBlink: true,
+    isVisible: true,
   })
 
   const caret = info
@@ -52,7 +52,11 @@ export function Caret({ buffer }: {
       if (beginOfLine(lines[caret.y]) === caret.x && caret.x > 0) {
         chars = (2 - (caret.x % 2))
       }
-      buffer.code = code.slice(0, caret.index - chars) + code.slice(caret.index)
+      const before = code[caret.index - 1]
+      const after = code[caret.index]
+      let index = caret.index
+      if (Open[before] && Close[after]) index++
+      buffer.code = code.slice(0, caret.index - chars) + code.slice(index)
       moveByChars(-chars)
       $.flush()
     }

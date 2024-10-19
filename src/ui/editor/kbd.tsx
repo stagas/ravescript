@@ -1,4 +1,4 @@
-import { beginOfLine, Buffer, escapeRegExp, findMatchingBrackets, linecolToPoint, pointToLinecol, type Caret, type Dims, type History, type Misc, type PaneInfo, type Selection } from 'editor'
+import { beginOfLine, Buffer, Close, escapeRegExp, findMatchingBrackets, linecolToPoint, Open, pointToLinecol, type Caret, type Dims, type History, type Misc, type PaneInfo, type Selection } from 'editor'
 import { Sigui } from 'sigui'
 import { assign } from 'utils'
 
@@ -373,6 +373,12 @@ export function Kbd({ paneInfo, misc, dims, selection, buffer, caret, history }:
       // insert character
       withHistoryDebounced(() =>
         withIntent(() => {
+          // auto-close brackets
+          if (Open[key] && buffer.code.at(caret.index) !== Open[key]) key += Open[key]
+          else if (Close[key] && buffer.code.at(caret.index) === key) {
+            caret.moveByChars(+1)
+            return
+          }
           caret.insert(key)
           caret.moveByChars(+1)
         })

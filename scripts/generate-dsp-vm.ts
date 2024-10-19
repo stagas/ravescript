@@ -106,7 +106,8 @@ import { Sound } from '../../as/assembly/dsp/vm/sound'
 
 const dsp = new Dsp()
 
-export function run(ctx: Sound, ops$: usize): void {
+export function run(sound$: usize, ops$: usize): void {
+  const snd = changetype<Sound>(sound$)
   const ops = changetype<StaticArray<i32>>(ops$)
 
   let i: i32 = 0
@@ -118,7 +119,7 @@ export function run(ctx: Sound, ops$: usize): void {
 ${indent(6, fns.map(({ fn, args }) =>
     `case Op.${fn}:
   dsp.${fn}(
-    ctx,
+    snd,
 ${indent(4, args.map(([, type]) =>
       `changetype<${type}>(unchecked(ops[i++]))`
     ).join(',\n'))}

@@ -1,15 +1,15 @@
 {
   "targets": {
     "debug": {
-      "outFile": "./as/build/dsp.wasm",
-      "textFile": "./as/build/dsp.wat",
+      "outFile": "./as/build/dsp-nort.wasm",
+      "textFile": "./as/build/dsp-nort.wat",
       "sourceMap": true,
       "debug": true,
       "noAssert": true
     },
     "release": {
-      "outFile": "./as/build/dsp.wasm",
-      "textFile": "./as/build/dsp.wat",
+      "outFile": "./as/build/dsp-nort.wasm",
+      "textFile": "./as/build/dsp-nort.wat",
       "sourceMap": true,
       "debug": false,
       "optimizeLevel": 0,
@@ -25,11 +25,13 @@
       "threads"
     ],
     "sharedMemory": true,
-    "importMemory": false,
+    "importMemory": true,
     "initialMemory": 2000,
     "maximumMemory": 2000,
     "bindings": "raw",
-    "runtime": "incremental",
-    "exportRuntime": true
+    "runtime": false,
+    "exportRuntime": false,
+    "zeroFilledMemory": true,
+    "uncheckedBehavior": "always"
   }
 }

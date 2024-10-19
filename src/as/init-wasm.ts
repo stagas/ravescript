@@ -40,7 +40,7 @@ export function initWasm(wasm: Wasm) {
 
   let lru = new Set<number>()
   const TRIES = 16
-  const GC_EVERY = 1024000
+  const GC_EVERY = 81920
   let allocs = 0
 
   const funcs = new Map([
