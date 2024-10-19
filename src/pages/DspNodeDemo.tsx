@@ -1,9 +1,8 @@
 import { Gfx, Matrix, Rect, wasm as wasmGfx } from 'gfx'
 import { Sigui } from 'sigui'
 import { assign, Lru } from 'utils'
-import { DspNode } from '~/src/as/dsp/node.ts'
-import { DspService } from '~/src/as/dsp/service.ts'
-import { PlayerTrack } from '~/src/as/dsp/shared.ts'
+import { createDspNode } from '~/src/as/dsp/dsp-node.ts'
+import { PreviewService } from '~/src/as/dsp/preview-service.ts'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
 import { Button } from '~/src/ui/Button.tsx'
 import { Canvas } from '~/src/ui/Canvas.tsx'
@@ -18,25 +17,39 @@ export function DspNodeDemo() {
   const info = $({
     width: 400,
     height: 300,
-    code: `[sin 42.11 303
-[exp 2.00] 6.66^ * +]
-[exp 1.00] 9.99^ *
+    code: `t 4* x=
+[sin 67.51 413
+[exp 1.00 x trig=] 65.78^ * + x trig=]
+[exp 1.00 x trig=] 6.26^ * [sno 83 .9] [dclipexp 1.088] [clip .44]
+
+[saw 42 x trig=] [clip .4] .55* [slp 523 1000 [exp 15 x trig=] 5.5^ * +  .99] [exp 8 x trig=] .2^ * [lp 2293]
+[sno 8739]
+
+[noi 6.66] [exp 6 x trig=] 2
+[sin .2] 1.9 + .4^ * ^
+[sin 2 x trig=] * * [sbp 7542 .9]
 `,
-    validCode: '',
+    codeWorking: null as null | string,
     floats: new Float32Array(),
-    previewSound$: null as null | number,
-    track: null as null | PlayerTrack,
+    sound$: null as null | number,
     error: null as null | Error,
   })
 
   const ctx = new AudioContext({ sampleRate: 48000 })
   $.fx(() => () => ctx.close())
 
-  const dspService = DspService(ctx)
-  $.fx(() => dspService.dispose)
+  const preview = PreviewService(ctx)
+  $.fx(() => preview.dispose)
 
-  const dspNode = DspNode(ctx, dspService)
+  const dspNode = createDspNode(ctx)
   $.fx(() => dspNode.dispose)
+
+  $.fx(() => {
+    const { codeWorking } = info
+    $()
+    dspNode.info.code = codeWorking
+    dspNode.play()
+  })
 
   const length = 8192
 
@@ -56,27 +69,25 @@ export function DspNodeDemo() {
   const waveWidgets: WaveGlWidget[] = []
 
   $.fx(() => {
-    const { dsp } = $.of(dspService.info)
-    if (dsp instanceof Error) return
+    const { isReady } = $.of(preview.info)
     $().then(async () => {
-      info.sound$ = await dspService.service.createSound()
+      info.sound$ = await preview.service.createSound()
     })
   })
 
   queueMicrotask(() => {
     $.fx(() => {
-      const { previewSound$ } = $.of(info)
+      const { sound$ } = $.of(info)
       const { pane } = dspEditor.editor.info
       const { codeVisual } = pane.buffer.info
-      $().then(async () => {
-        let result: Awaited<ReturnType<DspService['service']['renderSource']>>
+      queueMicrotask(async () => {
+        const { codeVisual } = pane.buffer.info
+
+        let result: Awaited<ReturnType<PreviewService['service']['renderSource']>>
         let nodeCount = 0
 
         try {
-          result = await dspService.service.renderSource(
-            previewSound$,
-            codeVisual,
-          )
+          result = await preview.service.renderSource(sound$, codeVisual)
 
           pane.draw.widgets.deco.clear()
           plot.info.floats.fill(0)
@@ -89,7 +100,7 @@ export function DspNodeDemo() {
           }
 
           info.error = null
-          info.validCode = codeVisual
+          info.codeWorking = codeVisual
           plot.info.floats.set(result.floats)
 
           for (const waveData of result.waves) {
@@ -133,7 +144,7 @@ export function DspNodeDemo() {
   $.fx(() => {
     const { error } = $.of(info)
     if (!error) return
-    console.error(error)
+    console.warn(error)
     dspEditor.info.error = error
     return () => dspEditor.info.error = null
   })

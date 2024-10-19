@@ -14,13 +14,14 @@ export class Dsp {
 
   @inline
   CreateGen(snd: Sound, kind_index: i32): void {
-    const gen = Factory[kind_index](snd.engine)
+    const Gen = Factory[kind_index]
+    const gen = Gen(snd.engine)
     snd.gens.push(gen)
     snd.offsets.push(Offsets[kind_index])
   }
   @inline
   CreateAudios(snd: Sound, count: i32): void {
-    for (let x = 0; x < count; x++) {
+    for (let x = 0; x <= count; x++) {
       snd.audios.push(new StaticArray<f32>(BUFFER_SIZE))
     }
   }

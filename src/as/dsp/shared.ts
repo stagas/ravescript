@@ -28,17 +28,14 @@ export const Clock = Struct({
   nextRingPos: 'u32',
 })
 
-export type PlayerTrack = typeof PlayerTrack.type
+export type Track = typeof Track.type
 
-export const PlayerTrack = Struct({
-  sound$: 'usize',
-  ops$: 'usize',
-  notes$: 'usize',
-  notesCount: 'u32',
-  params$: 'usize',
-  paramsCount: 'u32',
+export const Track = Struct({
+  run_ops$: 'usize',
+  setup_ops$: 'usize',
+  literals$: 'usize',
+  lists$: 'usize',
   audio_LR$: 'i32',
-  out$: 'usize',
 })
 
 export const Out = Struct({

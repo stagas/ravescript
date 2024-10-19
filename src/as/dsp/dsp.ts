@@ -1,6 +1,6 @@
 import { Sigui } from 'sigui'
 import { fromEntries, getMemoryView, keys } from 'utils'
-import { BUFFER_SIZE, MAX_LISTS, MAX_LITERALS } from '~/as/assembly/dsp/constants.ts'
+import { BUFFER_SIZE, MAX_LISTS, MAX_LITERALS, MAX_OPS } from '~/as/assembly/dsp/constants.ts'
 import { DspBinaryOp } from '~/as/assembly/dsp/vm/dsp-shared.ts'
 import { Op } from '~/generated/assembly/dsp-op.ts'
 import { Gen, dspGens } from '~/generated/typescript/dsp-gens.ts'
@@ -12,10 +12,9 @@ import { Clock } from './shared.ts'
 import { getAllProps } from './util.ts'
 import { Value } from './value.ts'
 import { wasm } from './wasm.ts'
+import type { DspApi } from '~/src/as/dsp/dsp-node.ts'
 
 const DEBUG = false
-
-const MAX_OPS = 4096
 
 const dspGensKeys = keys(dspGens)
 
@@ -499,7 +498,7 @@ export function Dsp({ sampleRate, core$ }: {
         scope[name] = new AstNode(AstNode.Type.Result, { value })
       }
 
-      const program = interpret(sound, scope, tokensCopy)
+      const program = interpret(sound.api, scope, tokensCopy)
 
       let L = program.scope.vars['L']
       let R = program.scope.vars['R']

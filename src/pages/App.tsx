@@ -11,6 +11,7 @@ import { AssemblyScript } from '~/src/pages/AssemblyScript.tsx'
 import { CanvasDemo } from '~/src/pages/CanvasDemo'
 import { Chat } from '~/src/pages/Chat/Chat.tsx'
 import { DspAsyncDemo } from '~/src/pages/DspAsyncDemo.tsx'
+import { DspNodeDemo } from '~/src/pages/DspNodeDemo.tsx'
 import { DspSyncDemo } from '~/src/pages/DspSyncDemo'
 import { DspWorkerDemo } from '~/src/pages/DspWorkerDemo/DspWorkerDemo'
 import { EditorDemo } from '~/src/pages/EditorDemo.tsx'
@@ -47,6 +48,7 @@ export function App() {
     '/dsp-sync': () => <DspSyncDemo />,
     '/dsp-async': () => <DspAsyncDemo />,
     '/dsp-worker': () => <DspWorkerDemo />,
+    '/dsp-node': () => <DspNodeDemo />,
     '/worker-worklet': () => <WorkerWorkletDemo />,
     '/asc': () => <AssemblyScript />,
     '/qrcode': () => <QrCode />,

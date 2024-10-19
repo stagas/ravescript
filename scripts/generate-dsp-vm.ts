@@ -124,8 +124,7 @@ ${indent(4, args.map(([, type]) =>
       `changetype<${type}>(unchecked(ops[i++]))`
     ).join(',\n'))}
   )
-continue
-`).join('\n'))}
+  continue`).join('\n\n') + '\n')}
     } // end switch
   } // end while
 }

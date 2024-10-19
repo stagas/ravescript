@@ -1,5 +1,6 @@
-import { getAllPropsReverse, Sound } from 'dsp'
+import { getAllPropsReverse } from 'dsp'
 import { dspGens } from '~/generated/typescript/dsp-gens.ts'
+import type { DspApi } from '~/src/as/dsp/dsp-node.ts'
 import type { Value } from '~/src/as/dsp/value.ts'
 import { Token } from '~/src/lang/tokenize.ts'
 import { parseNumber, type NumberFormat, type NumberInfo } from '~/src/lang/util.ts'
@@ -158,8 +159,7 @@ const ScopeSpecial = {
 const BinOps = new Set('+ * - / ^'.split(' '))
 const AssignOps = new Set('= += *= -= /= ^='.split(' '))
 
-export function interpret(sound: Sound, data: Record<string, any>, tokens: Token[]) {
-  const g = sound.api
+export function interpret(g: DspApi, data: Record<string, any>, tokens: Token[]) {
   const scope: Scope = new Scope(null, { ...ScopeNatives, ...ScopeSpecial, ...data })
   const results: ProgramValueResult[] = []
   const tokensAstNode: Map<Token, AstNode> = new Map()

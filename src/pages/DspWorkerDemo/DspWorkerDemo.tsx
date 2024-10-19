@@ -113,7 +113,6 @@ export function DspWorkerDemo() {
     })
   })
 
-
   queueMicrotask(() => {
     $.fx(() => {
       const { sound$ } = $.of(info)

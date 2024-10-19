@@ -30,8 +30,6 @@
     "maximumMemory": 2000,
     "bindings": "raw",
     "runtime": false,
-    "exportRuntime": false,
-    "zeroFilledMemory": true,
-    "uncheckedBehavior": "always"
+    "exportRuntime": false
   }
 }

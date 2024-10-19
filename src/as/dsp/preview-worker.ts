@@ -103,7 +103,7 @@ const worker = {
       clock.barTime = 0
       clock.bpm ||= 144
 
-      wasm.updateClock(clock.ptr)
+      wasm.clockUpdate(clock.ptr)
 
       const { LR, floats, waves } = await this.build(sound$, code)
 

@@ -46,7 +46,7 @@ export class Value<T extends Value.Kind = Value.Kind> {
       sound.vm.SetValueDynamic(this.value$, this.scalar$, this.audio$)
     }
     else {
-      sound.vm.SetValue(this.value$, kind as number, this.ptr)
+      sound.vm.SetValue(this.value$, kind, this.ptr)
     }
   }
   getAudio() {

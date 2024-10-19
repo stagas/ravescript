@@ -55,7 +55,7 @@ import { Zero } from '../../as/assembly/dsp/gen/zero'
 export const Offsets: usize[][] = [
   [offsetof<Gen>('gain'),offsetof<Adsr>('attack'),offsetof<Adsr>('decay'),offsetof<Adsr>('sustain'),offsetof<Adsr>('release'),offsetof<Adsr>('on'),offsetof<Adsr>('off')],
   [offsetof<Gen>('gain'),offsetof<Osc>('hz'),offsetof<Osc>('trig'),offsetof<Osc>('offset')],
-  [offsetof<Gen>('gain'),offsetof<Atan>('gain'),offsetof<Atan>('in')],
+  [offsetof<Gen>('gain'),offsetof<Atan>('in')],
   [offsetof<Gen>('gain'),offsetof<Biquad>('in'),offsetof<Bap>('cut'),offsetof<Bap>('q')],
   [offsetof<Gen>('gain'),offsetof<Biquad>('in'),offsetof<Bbp>('cut'),offsetof<Bbp>('q')],
   [offsetof<Gen>('gain'),offsetof<Biquad>('in'),offsetof<Bhp>('cut'),offsetof<Bhp>('q')],
@@ -102,8 +102,8 @@ export const Offsets: usize[][] = [
   [offsetof<Gen>('gain'),offsetof<Svf>('in'),offsetof<Spk>('cut'),offsetof<Spk>('q')],
   [offsetof<Gen>('gain'),offsetof<Osc>('hz'),offsetof<Osc>('trig'),offsetof<Osc>('offset')],
   [offsetof<Gen>('gain'),offsetof<Svf>('in')],
-  [offsetof<Gen>('gain'),offsetof<Tanh>('gain'),offsetof<Tanh>('in')],
-  [offsetof<Gen>('gain'),offsetof<Tanha>('gain'),offsetof<Tanha>('in')],
+  [offsetof<Gen>('gain'),offsetof<Tanh>('in')],
+  [offsetof<Gen>('gain'),offsetof<Tanha>('in')],
   [offsetof<Gen>('gain'),offsetof<Tap>('ms'),offsetof<Tap>('in')],
   [offsetof<Gen>('gain'),offsetof<Osc>('hz'),offsetof<Osc>('trig'),offsetof<Osc>('offset')],
   [offsetof<Gen>('gain')]

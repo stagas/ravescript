@@ -1,7 +1,8 @@
-import { Player } from '../player/player'
+import { MAX_LISTS, MAX_LITERALS, MAX_OPS } from './constants'
 import { Clock } from './core/clock'
 import { Core, Engine } from './core/engine'
-import { Out, PlayerTrack } from './shared'
+import { Out, Track } from './shared'
+import { Player } from './vm/player'
 import { Sound } from './vm/sound'
 
 export * from '../../../generated/assembly/dsp-factory'
@@ -20,12 +21,12 @@ export function getEngineClock(engine$: usize): usize {
   return changetype<usize>(changetype<Engine>(engine$).clock)
 }
 
-export function resetClock(clock$: usize): void {
+export function clockReset(clock$: usize): void {
   const clock = changetype<Clock>(clock$)
   clock.reset()
 }
 
-export function updateClock(clock$: usize): void {
+export function clockUpdate(clock$: usize): void {
   const clock = changetype<Clock>(clock$)
   clock.update()
 }
@@ -80,27 +81,39 @@ export function getSoundLists(sound$: usize): usize {
   return changetype<usize>(changetype<Sound>(sound$).lists)
 }
 
-export function createOut(): usize {
-  return changetype<usize>(new Out())
+export function createPlayer(sound$: usize, out$: usize): usize {
+  return changetype<usize>(new Player(sound$, out$))
 }
 
-export function createPlayer(): usize {
-  return changetype<usize>(new Player())
+export function getPlayerTrackOffset(): usize {
+  return offsetof<Player>('track$')
 }
 
-export function getPlayerOut(player$: usize): usize {
-  return changetype<usize>(changetype<Player>(player$).out)
-}
-
-export function getPlayerTracks(player$: usize): usize {
-  return changetype<usize>(changetype<Player>(player$).tracks)
-}
-
-export function createPlayerTrack(): usize {
-  return changetype<usize>(new PlayerTrack())
+export function setPlayerTrack(player$: usize, track$: usize): void {
+  changetype<Player>(player$).track$ = track$
 }
 
 export function playerProcess(player$: usize, begin: u32, end: u32): void {
   const player = changetype<Player>(player$)
   player.process(begin, end)
+}
+
+export function createOut(): usize {
+  return changetype<usize>(new Out())
+}
+
+export function createTrack(): usize {
+  return changetype<usize>(new Track())
+}
+
+export function createOps(): usize {
+  return changetype<usize>(new StaticArray<i32>(MAX_OPS))
+}
+
+export function createLiterals(): usize {
+  return changetype<usize>(new StaticArray<f32>(MAX_LITERALS))
+}
+
+export function createLists(): usize {
+  return changetype<usize>(new StaticArray<i32>(MAX_LISTS))
 }

@@ -1,13 +1,10 @@
 @unmanaged
-export class PlayerTrack {
-  sound$: usize = 0
-  ops$: usize = 0
-  notes$: usize = 0
-  notesCount: u32 = 0
-  params$: usize = 0
-  paramsCount: u32 = 0
+export class Track {
+  run_ops$: usize = 0
+  setup_ops$: usize = 0
+  literals$: usize = 0
+  lists$: usize = 0
   audio_LR$: i32 = 0
-  out$: usize = 0
 }
 
 @unmanaged

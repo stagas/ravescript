@@ -1,5 +1,4 @@
 import { rateToPhaseStep } from '../../util'
-import { Engine } from '../core/engine'
 import { Gen } from './gen'
 
 export class Nrate extends Gen {
