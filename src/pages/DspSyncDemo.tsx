@@ -8,7 +8,7 @@ import { DspEditor } from '~/src/comp/DspEditor.tsx'
 import type { AstNode } from '~/src/lang/interpreter.ts'
 import { tokenize } from '~/src/lang/tokenize.ts'
 import { Canvas } from '~/src/ui/Canvas.tsx'
-import { WaveGlWidget } from '~/src/ui/editor/widgets/wave-gl.ts'
+import { WaveGlDecoWidget } from '~/src/ui/editor/widgets/wave-gl-deco'
 import { H2 } from '~/src/ui/Heading.tsx'
 
 const getFloats = Lru(20, (key: string, length: number) => wasmDsp.alloc(Float32Array, length), item => item.fill(0), item => item.free())
@@ -44,12 +44,12 @@ export function DspSyncDemo() {
   const shapes = c.createShapes()
   c.sketch.scene.add(shapes)
 
-  const plot = WaveGlWidget(shapes)
+  const plot = WaveGlDecoWidget(shapes)
   plot.widget.rect.w = 400
   plot.widget.rect.h = 300
   plot.info.floats = wasmGfx.alloc(Float32Array, length)
 
-  const waveWidgets: WaveGlWidget[] = []
+  const waveWidgets: WaveGlDecoWidget[] = []
 
   queueMicrotask(() => {
     $.fx(() => {
@@ -88,7 +88,7 @@ export function DspSyncDemo() {
         )
 
         let last: AstNode | null = null
-        const waves = new Map<AstNode, WaveGlWidget>()
+        const waves = new Map<AstNode, WaveGlDecoWidget>()
 
         for (const node of program.value.results) {
           if ('genId' in node) {
@@ -97,7 +97,7 @@ export function DspSyncDemo() {
               last.bounds.right = bounds.col - 1
               waves.get(last)!.widget.bounds.right = bounds.col - 1
             }
-            const wave = (waveWidgets[nodeCount] ??= WaveGlWidget(pane.draw.shapes))
+            const wave = (waveWidgets[nodeCount] ??= WaveGlDecoWidget(pane.draw.shapes))
             wave.info.floats = wave.info.floats.length
               ? wave.info.floats
               : getFloatsGfx(`${nodeCount}`, BUFFER_SIZE)

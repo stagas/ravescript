@@ -5,7 +5,7 @@ import { BUFFER_SIZE } from '~/as/assembly/dsp/constants.ts'
 import { PreviewService } from '~/src/as/dsp/preview-service'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
 import { Canvas } from '~/src/ui/Canvas.tsx'
-import { WaveGlWidget } from '~/src/ui/editor/widgets/wave-gl.ts'
+import { WaveGlDecoWidget } from '~/src/ui/editor/widgets/wave-gl-deco'
 import { H2 } from '~/src/ui/Heading.tsx'
 
 const getFloatsGfx = Lru(20, (key: string, length: number) => wasmGfx.alloc(Float32Array, length), item => item.fill(0), item => item.free())
@@ -40,12 +40,12 @@ export function DspAsyncDemo() {
   const shapes = c.createShapes()
   c.sketch.scene.add(shapes)
 
-  const plot = WaveGlWidget(shapes)
+  const plot = WaveGlDecoWidget(shapes)
   plot.widget.rect.w = 400
   plot.widget.rect.h = 300
   plot.info.floats = wasmGfx.alloc(Float32Array, length)
 
-  const waveWidgets: WaveGlWidget[] = []
+  const waveWidgets: WaveGlDecoWidget[] = []
 
   $.fx(() => {
     const { isReady } = $.of(preview.info)
@@ -80,7 +80,7 @@ export function DspAsyncDemo() {
           plot.info.floats.set(result.floats)
 
           for (const waveData of result.waves) {
-            const wave = (waveWidgets[nodeCount] ??= WaveGlWidget(pane.draw.shapes))
+            const wave = (waveWidgets[nodeCount] ??= WaveGlDecoWidget(pane.draw.shapes))
             wave.info.floats = wave.info.floats.length
               ? wave.info.floats
               : getFloatsGfx(`${nodeCount}`, BUFFER_SIZE)

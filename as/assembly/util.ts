@@ -6,6 +6,18 @@ export function clamp255(x: f32): i32 {
   return i32(x)
 }
 
+export function clamp01(x: f32): f32 {
+  if (x > 1) x = 1
+  else if (x < 0) x = 0
+  return x
+}
+
+export function clamp11(x: f32): f32 {
+  if (x > 1) x = 1
+  else if (x < -1) x = -1
+  return x
+}
+
 export function rgbToInt(r: f32, g: f32, b: f32): i32 {
   return (clamp255(r * 255) << 16) | (clamp255(g * 255) << 8) | clamp255(b * 255)
 }

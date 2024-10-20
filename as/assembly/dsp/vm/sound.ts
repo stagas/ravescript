@@ -75,7 +75,7 @@ export class Sound {
     const track = changetype<Track>(track$)
     const run_ops$ = track.run_ops$
     const audio_LR$ = track.audio_LR$
-    // console.log(`what? ${run_ops$} ${audio_LR$}`)
+
     const CHUNK_SIZE = 64
     let chunkCount = 0
 
@@ -115,6 +115,7 @@ export class Sound {
         changetype<usize>(audio) + p,
         chunkEnd << 2
       )
+      // TODO: stereo
       // copy left to right for now
       memory.copy(
         out.R$ + p,

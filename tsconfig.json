@@ -49,6 +49,9 @@
       "dsp": [
         "src/as/dsp/index.ts"
       ],
+      "rms": [
+        "src/as/dsp/rms.ts"
+      ],
       "gfx": [
         "./src/as/gfx/index.ts"
       ],

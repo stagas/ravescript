@@ -19,6 +19,17 @@ const getFloats = Lru(10, (_key: string, length: number) => wasm.alloc(Float32Ar
 
 let epoch = 0
 
+interface WidgetInfoPartial {
+  index: number
+  floats: Float32Array | null
+  bounds: Token.Bounds
+}
+
+type WidgetInfo = (WidgetInfoPartial & { floats: WidgetInfoPartial['floats'] & {} })
+
+const waveWidgets: WidgetInfoPartial[] = []
+const rmsWidgets: WidgetInfoPartial[] = []
+
 const worker = {
   dsp: null as null | Dsp,
   error: null as null | Error,
@@ -51,28 +62,49 @@ const worker = {
     )
 
     let last: AstNode | null = null
-    const waves = new Map<AstNode, { index: number, floats: Float32Array | null, bounds: Token.Bounds }>()
-    const waveWidgets = [] as { index: number, floats: Float32Array | null, bounds: Token.Bounds }[]
-    let nodeCount = 0
+    const nodes = new Map<AstNode, WidgetInfoPartial>()
+
+    let waveCount = 0
+    let rmsCount = 0
+
     for (const node of program.value.results) {
-      if ('genId' in node) {
+      if ('genId' in node || 'op' in node) {
         const bounds = node.result.bounds
+
         if (last && last.bounds.line === bounds.line && last.bounds.right > bounds.col) {
           last.bounds.right = bounds.col - 1
-          waves.get(last)!.bounds.right = bounds.col - 1
+          nodes.get(last)!.bounds.right = bounds.col - 1
         }
-        const wave = (waveWidgets[nodeCount] ??= { index: -1, floats: null, bounds })
-        wave.index = (node.result.value as Value.Audio).getAudio()
-        wave.floats = sound.getAudio(wave.index)
-        assign(wave.bounds, bounds)
-        waves.set(node.result, wave)
+
+        let info: WidgetInfoPartial
+
+        if ('genId' in node) {
+          info = (waveWidgets[waveCount] ??= { index: -1, floats: null, bounds })
+          waveCount++
+        }
+        else if ('op' in node) {
+          info = (rmsWidgets[rmsCount] ??= { index: -1, floats: null, bounds })
+          rmsCount++
+        }
+        else {
+          throw new Error('unreachable')
+        }
+
+        info.index = (node.result.value as Value.Audio).getAudio()
+        info.floats = sound.getAudio(info.index)
+        assign(info.bounds, bounds)
+
+        nodes.set(node.result, info)
+
         last = node.result
-        nodeCount++
       }
     }
 
-    let delta = waveWidgets.length - nodeCount
+    let delta = waveWidgets.length - waveCount
     while (delta-- > 0) waveWidgets.pop()
+
+    delta = rmsWidgets.length - rmsCount
+    while (delta-- > 0) rmsWidgets.pop()
 
     const LR = out.LR.getAudio()
 
@@ -84,7 +116,8 @@ const worker = {
       ops$: sound.ops.ptr,
       LR,
       floats,
-      waves: waveWidgets as { index: number, floats: Float32Array, bounds: Token.Bounds }[],
+      waves: waveWidgets as WidgetInfo[],
+      rmss: rmsWidgets as WidgetInfo[],
     }
   },
   async renderSource(sound$: number, code: string) {
@@ -106,7 +139,7 @@ const worker = {
 
       wasm.clockUpdate(clock.ptr)
 
-      const { LR, floats, waves } = await this.build(sound$, code)
+      const { LR, floats, waves, rmss } = await this.build(sound$, code)
 
       wasm.fillSound(
         sound.sound$,
@@ -117,7 +150,7 @@ const worker = {
         floats.ptr,
       )
 
-      return { LR, floats, waves }
+      return { LR, floats, waves, rmss }
     }
     catch (e) {
       if (e instanceof Error) {

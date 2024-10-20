@@ -4,9 +4,9 @@ import { Sigui } from 'sigui'
 import { hexToInt } from '~/src/ui/editor/util/rgb.ts'
 import { Stabilizer } from '~/src/util/stabilizer.ts'
 
-export type WaveGlWidget = ReturnType<typeof WaveGlWidget>
+export type WaveGlDecoWidget = ReturnType<typeof WaveGlDecoWidget>
 
-export function WaveGlWidget(shapes: Shapes) {
+export function WaveGlDecoWidget(shapes: Shapes) {
   using $ = Sigui()
 
   const info = $({

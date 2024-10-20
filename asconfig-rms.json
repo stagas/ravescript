@@ -1,0 +1,35 @@
+{
+  "targets": {
+    "debug": {
+      "outFile": "./as/build/rms.wasm",
+      "textFile": "./as/build/rms.wat",
+      "sourceMap": true,
+      "debug": true,
+      "noAssert": true
+    },
+    "release": {
+      "outFile": "./as/build/rms.wasm",
+      "textFile": "./as/build/rms.wat",
+      "sourceMap": true,
+      "debug": false,
+      "optimizeLevel": 0,
+      "shrinkLevel": 0,
+      "converge": false,
+      "noAssert": true
+    }
+  },
+  "options": {
+    "enable": [
+      "simd",
+      "relaxed-simd",
+      "threads"
+    ],
+    "sharedMemory": true,
+    "importMemory": false,
+    "initialMemory": 1,
+    "maximumMemory": 1,
+    "bindings": "raw",
+    "runtime": false,
+    "exportRuntime": false
+  }
+}

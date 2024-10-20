@@ -8,9 +8,22 @@ import { DspEditor } from '~/src/comp/DspEditor.tsx'
 import { state } from '~/src/state.ts'
 import { Button } from '~/src/ui/Button.tsx'
 import { Canvas } from '~/src/ui/Canvas.tsx'
-import { WaveGlWidget } from '~/src/ui/editor/widgets/wave-gl.ts'
+import { WaveGlDecoWidget, RmsDecoWidget } from '~/src/ui/editor/widgets/index.ts'
 import { copyRingInto } from '~/src/util/copy-ring-into.ts'
 
+/*
+
+t 4* x= [sin 100.00 409 [exp 1.00 x trig=] 31.88^ * + x trig=] [exp 1.00 x trig=] 6.26^ * [sno 83 .9] [dclipexp 1.088] [clip .40]
+[saw (92 353 50 218) t 12* ? [sin 1 x trig=] 9^ 61* + x trig=] [clip .4] .7* [slp 156 22k [exp 8 x [sin .24 x trig] .15* + trig=] 4.7^ * +  .86] [exp 8 x trig=] .5^ * [sno 516 2181 [sin .2 co * t .5 - trig=] * + ] [delay 15 .73] .59*
+[noi 4.23] [adsr .03 100 .3 48 x 3* on= x 3* .012 - off=] 2 [sin .3] 1.0 + .9^ * ^ [sin 2 x trig=] * * [shp 7090 .7] .21*
+[noi 14.23] [adsr .03 10 .3 248 x 4* on= x 4* .012 - off=] 2 [sin .3] 1.0 + .9^ * ^ [sin 8 x trig=] * * [sbp 3790 .17 .60 [sin .5 co* t 2 / trig=]*+ ] .16*
+
+t 4* x= [sin 100.00 409 [exp 1.00 x trig=] 31.88^ * + x trig=] [exp 1.00 x trig=] 6.26^ * [sno 83 .9] [dclipexp 1.088] [clip .40]
+[saw (92 202 50 300) t 2* ? [sin 1 x trig=] 9^ 61* + x trig=] [clip .4] .7* [slp 156 22k [exp 8 x [sin .24 x trig] .15* + trig=] 4.7^ * +  .86] [exp 8 x trig=] .5^ * [sno 516 14400 [sin .2 co * t .5 - trig=] * + ] [delay 14 .73] .59*
+[noi 4.23] [adsr .03 100 .3 48 x 3* on= x 3* .012 - off=] 2 [sin .3] 1.0 + .9^ * ^ [sin 2 x trig=] * * [shp 7090 .7] .21*
+[noi 14.23] [adsr .03 10 .3 248 x 4* on= x 4* .012 - off=] 2 [sin .3] 1.0 + .9^ * ^ [sin 8 x trig=] * * [sbp 3790 .17 .60 [sin .5 co* t 2 / trig=]*+ ] .16*
+
+*/
 const getFloatsGfx = Lru(1024, (key: string, length: number) => wasmGfx.alloc(Float32Array, length), item => item.fill(0), item => item.free())
 
 export function DspNodeDemo() {
@@ -19,14 +32,10 @@ export function DspNodeDemo() {
   const info = $({
     get width() { return state.containerWidth / 2 },
     height: state.$.containerHeight,
-    code: `t 4* x=
-[sin 100.00 409
-[exp 1.00 x trig=] 31.88^ * + x trig=]
-[exp 1.00 x trig=] 6.26^ * [sno 83 .9] [dclipexp 1.088] [clip .40]
-[saw 92 [sin 1] 9^ 61* + x trig=] [clip .4] .7* [slp 756 5000 [exp 8 x [sin .24 x trig] .15* + trig=] 4.7^ * +  .86] [exp 8 x trig=] .5^ * [lp 9999] [sno 1000] [delay 14 .65]
-[noi 4.23] [adsr .03 100 .3 48 x 3* on= x 3* .012 - off=] 2
-[sin .3] 1.0 + .9^ * ^
-[sin 2 x trig=] * * [shp 7090 .7] .21*
+    code: `t 4* x= [sin 100.00 409 [exp 1.00 x trig=] 31.88^ * + x trig=] [exp 1.00 x trig=] 6.26^ * [sno 83 .9] [dclipexp 1.088] [clip .40]
+[saw (92 353 50 218) t 12* ? [sin 1 x trig=] 9^ 61* + x trig=] [clip .4] .7* [slp 156 22k [exp 8 x [sin .24 x trig] .15* + trig=] 4.7^ * +  .86] [exp 8 x trig=] .5^ * [sno 516 2181 [sin .2 co * t .5 - trig=] * + ] [delay 15 .73] .59*
+[noi 4.23] [adsr .03 100 .3 48 x 3* on= x 3* .012 - off=] 2 [sin .3] 1.0 + .9^ * ^ [sin 2 x trig=] * * [shp 7090 .7] .21*
+[noi 14.23] [adsr .03 10 .3 248 x 4* on= x 4* .012 - off=] 2 [sin .3] 1.0 + .9^ * ^ [sin 8 x trig=] * * [sbp 3790 .17 .60 [sin .5 co* t 2 / trig=]*+ ] .16*
 `,
     codeWorking: null as null | string,
     audios: [] as Float32Array[],
@@ -76,6 +85,9 @@ export function DspNodeDemo() {
           wave.info.floats.set(wave.info.stabilizerTemp.subarray(startIndex))
           wave.info.floats.set(wave.info.stabilizerTemp.subarray(0, startIndex), startIndex)
         }
+        for (const rms of rmsWidgets) {
+          rms.update(audios[rms.info.index + 1])
+        }
         pane.view.anim.info.epoch++
         c.meshes.draw()
         animFrame = requestAnimationFrame(tick)
@@ -99,14 +111,15 @@ export function DspNodeDemo() {
   const shapes = c.createShapes()
   c.sketch.scene.add(shapes)
 
-  const plot = WaveGlWidget(shapes)
+  const plot = WaveGlDecoWidget(shapes)
   plot.widget.rect.w = view.width
   plot.widget.rect.h = view.height
   plot.info.stabilizerTemp = getFloatsGfx('s:LR', BUFFER_SIZE)
   plot.info.previewFloats = getFloatsGfx('p:LR', BUFFER_SIZE)
   plot.info.floats = getFloatsGfx(`LR`, BUFFER_SIZE)
 
-  const waveWidgets: WaveGlWidget[] = []
+  const waveWidgets: WaveGlDecoWidget[] = []
+  const rmsWidgets: RmsDecoWidget[] = []
 
   $.fx(() => {
     const { isReady } = $.of(preview.info)
@@ -123,10 +136,13 @@ export function DspNodeDemo() {
     const { codeVisual } = pane.buffer.info
 
     let result: Awaited<ReturnType<PreviewService['service']['renderSource']>>
-    let nodeCount = 0
+    let waveCount = 0
+    let rmsCount = 0
 
     try {
       result = await preview.service.renderSource(sound$, codeVisual)
+
+      const { isPlaying } = dspNode.info
 
       pane.draw.widgets.deco.clear()
       plot.info.floats.fill(0)
@@ -138,36 +154,54 @@ export function DspNodeDemo() {
         throw new Error('Could not render.')
       }
 
-      info.error = null
-      info.codeWorking = codeVisual
+      $.batch(() => {
+        info.error = null
+        info.codeWorking = codeVisual
+      })
+
+      const end = $.batch()
+
       plot.info.index = result.LR
       plot.info.previewFloats.set(result.floats)
-      if (!dspNode.info.isPlaying) plot.info.floats.set(result.floats)
+      if (!isPlaying) plot.info.floats.set(result.floats)
 
-      for (const waveData of result.waves) {
-        const wave = (waveWidgets[nodeCount] ??= WaveGlWidget(pane.draw.shapes))
+      for (const waveInfo of result.waves) {
+        const wave = (waveWidgets[waveCount] ??= WaveGlDecoWidget(pane.draw.shapes))
 
         wave.info.floats = wave.info.floats.length
           ? wave.info.floats
-          : getFloatsGfx(`${nodeCount}`, BUFFER_SIZE)
+          : getFloatsGfx(`${waveCount}`, BUFFER_SIZE)
 
         wave.info.previewFloats = wave.info.previewFloats.length
           ? wave.info.previewFloats
-          : getFloatsGfx(`p:${nodeCount}`, BUFFER_SIZE)
+          : getFloatsGfx(`p:${waveCount}`, BUFFER_SIZE)
 
         wave.info.stabilizerTemp = wave.info.stabilizerTemp.length
           ? wave.info.stabilizerTemp
-          : getFloatsGfx(`s:${nodeCount}`, BUFFER_SIZE)
+          : getFloatsGfx(`s:${waveCount}`, BUFFER_SIZE)
 
-        wave.info.index = waveData.index
-        wave.info.previewFloats.set(waveData.floats)
+        wave.info.index = waveInfo.index
+        wave.info.previewFloats.set(waveInfo.floats)
+        if (!isPlaying) wave.info.floats.set(waveInfo.floats)
 
-        if (!dspNode.info.isPlaying) wave.info.floats.set(waveData.floats)
-
-        assign(wave.widget.bounds, waveData.bounds)
+        assign(wave.widget.bounds, waveInfo.bounds)
         pane.draw.widgets.deco.add(wave.widget)
-        nodeCount++
+        waveCount++
       }
+
+      for (const rmsInfo of result.rmss) {
+        const rms = (rmsWidgets[rmsCount] ??= RmsDecoWidget(pane.draw.shapes))
+
+        rms.info.index = rmsInfo.index
+
+        if (!isPlaying) rms.update(rmsInfo.floats)
+
+        assign(rms.widget.bounds, rmsInfo.bounds)
+        pane.draw.widgets.deco.add(rms.widget)
+        rmsCount++
+      }
+
+      end()
     }
     catch (err) {
       if (err instanceof Error) {
@@ -178,8 +212,11 @@ export function DspNodeDemo() {
       }
     }
 
-    let delta = waveWidgets.length - nodeCount
+    let delta = waveWidgets.length - waveCount
     while (delta-- > 0) waveWidgets.pop()?.dispose()
+
+    delta = rmsWidgets.length - rmsCount
+    while (delta-- > 0) rmsWidgets.pop()?.dispose()
 
     pane.draw.info.triggerUpdateTokenDrawInfo++
 
