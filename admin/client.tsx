@@ -1,9 +1,11 @@
+import '~/lib/watcher.ts'
+
 import { cleanup, hmr, mount } from 'sigui'
 import { Admin } from '~/admin/Admin.tsx'
 import { setState, state } from '~/src/state.ts'
 
 export const start = mount('#container', target => {
-  target.replaceChildren(<Admin />)
+  target.replaceChildren(<Admin /> as HTMLElement)
   return cleanup
 })
 
