@@ -23,6 +23,7 @@ function setFlushSketchFn(fn: (count: number) => void) {
 
 const wasmInstance = await instantiate(mod, {
   env: {
+    log: console.log,
     flushSketch(count: number) {
       DEBUG && console.debug('[flush]', count)
       flushSketchFn(count)

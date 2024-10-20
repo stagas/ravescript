@@ -23,7 +23,9 @@ type Plugins = (Plugin | Plugin[])[]
 export default ({ mode }) => {
   loadEnv(mode, root)
 
-  const https = mode === 'development' ? {
+  const IS_DEV = mode === 'development'
+
+  const https = IS_DEV ? {
     key: fs.readFileSync(path.join(homedir, '.ssl-certs', 'devito.test-key.pem')),
     cert: fs.readFileSync(path.join(homedir, '.ssl-certs', 'devito.test.pem')),
   } : undefined
@@ -142,7 +144,7 @@ export default ({ mode }) => {
     ViteAssemblyScript({
       configFile: 'asconfig-rms.json',
       projectRoot: '.',
-      srcMatch: 'as/assembly',
+      srcMatch: 'as/assembly/dsp',
       srcEntryFile: 'as/assembly/rms.ts',
       mapFile: './as/build/rms.wasm.map',
       extra: [
@@ -159,7 +161,7 @@ export default ({ mode }) => {
         '--transform', './vendor/as-transform-unroll.js',
       ]
     }),
-    watchAndRun([
+    IS_DEV && watchAndRun([
       {
         name: 'scripts',
         watchKind: ['add', 'change', 'unlink'],
@@ -168,7 +170,7 @@ export default ({ mode }) => {
         delay: 100
       }
     ]) as Plugin,
-  ]
+  ].filter(Boolean) as Plugins
 
   return defineConfig({
     clearScreen: false,
@@ -208,7 +210,7 @@ export default ({ mode }) => {
           admin: path.join(root, 'admin/index.html'),
         },
         treeshake: { propertyReadSideEffects: 'always' },
-        plugins: buildPlugins
+        plugins //: buildPlugins
       },
     },
   })

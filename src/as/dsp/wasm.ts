@@ -16,6 +16,7 @@ else {
 
 const wasmInstance = await instantiate(mod, {
   env: {
+    log: console.warn,
   }
 })
 

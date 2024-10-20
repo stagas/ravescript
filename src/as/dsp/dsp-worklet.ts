@@ -42,6 +42,7 @@ async function setup({ sourcemapUrl }: SetupOptions) {
         const columnNumber = columnNumber$ >>> 0
         throw new Error(`${message} in ${fileName}:${lineNumber}:${columnNumber}`)
       },
+      log: console.log,
       'console.log': (textPtr: number) => {
         console.log(__liftString(textPtr))
       }
