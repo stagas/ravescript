@@ -1,6 +1,7 @@
 import { Gfx, Matrix, Rect, wasm as wasmGfx } from 'gfx'
 import { Sigui } from 'sigui'
 import { assign, Lru } from 'utils'
+import { BUFFER_SIZE } from '~/as/assembly/dsp/constants.ts'
 import { PreviewService } from '~/src/as/dsp/preview-service'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
 import { Canvas } from '~/src/ui/Canvas.tsx'
@@ -29,7 +30,7 @@ export function DspAsyncDemo() {
   const preview = PreviewService(ctx)
   $.fx(() => preview.dispose)
 
-  const length = 8192
+  const length = BUFFER_SIZE
 
   const canvas = <Canvas width={info.$.width} height={info.$.height} /> as HTMLCanvasElement
   const gfx = Gfx({ canvas })
@@ -82,7 +83,7 @@ export function DspAsyncDemo() {
             const wave = (waveWidgets[nodeCount] ??= WaveGlWidget(pane.draw.shapes))
             wave.info.floats = wave.info.floats.length
               ? wave.info.floats
-              : getFloatsGfx(`${nodeCount}`, 8192)
+              : getFloatsGfx(`${nodeCount}`, BUFFER_SIZE)
             wave.info.floats.set(waveData.floats)
             assign(wave.widget.bounds, waveData.bounds)
             pane.draw.widgets.deco.add(wave.widget)

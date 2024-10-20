@@ -2,6 +2,7 @@ import { Dsp, wasm as wasmDsp } from 'dsp'
 import { Gfx, Matrix, Rect, wasm as wasmGfx } from 'gfx'
 import { Sigui } from 'sigui'
 import { assign, Lru } from 'utils'
+import { BUFFER_SIZE } from '~/as/assembly/dsp/constants.ts'
 import type { Value } from '~/src/as/dsp/value.ts'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
 import type { AstNode } from '~/src/lang/interpreter.ts'
@@ -33,7 +34,7 @@ export function DspSyncDemo() {
   const dsp = Dsp({ sampleRate: ctx.sampleRate })
   const sound = dsp.Sound()
 
-  const length = 8192
+  const length = BUFFER_SIZE
 
   const canvas = <Canvas width={info.$.width} height={info.$.height} /> as HTMLCanvasElement
   const gfx = Gfx({ canvas })
@@ -99,7 +100,7 @@ export function DspSyncDemo() {
             const wave = (waveWidgets[nodeCount] ??= WaveGlWidget(pane.draw.shapes))
             wave.info.floats = wave.info.floats.length
               ? wave.info.floats
-              : getFloatsGfx(`${nodeCount}`, 8192)
+              : getFloatsGfx(`${nodeCount}`, BUFFER_SIZE)
             wave.info.floats.set(sound.getAudio((node.result.value as Value.Audio).ptr))
             assign(wave.widget.bounds, bounds)
             pane.draw.widgets.deco.add(wave.widget)

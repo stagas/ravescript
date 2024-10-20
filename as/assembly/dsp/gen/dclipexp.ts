@@ -1,6 +1,7 @@
 import { Gen } from './gen'
 
 export class Dclipexp extends Gen {
+  _name: string = 'Dclipexp'
   factor: f32 = 1.0;
 
   in: u32 = 0

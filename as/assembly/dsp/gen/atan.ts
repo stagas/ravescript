@@ -1,6 +1,8 @@
 import { Gen } from './gen'
 
 export class Atan extends Gen {
+  _name: string = 'Atan';
+
   in: u32 = 0
 
   _audio(begin: u32, end: u32, out: usize): void {

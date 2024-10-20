@@ -1,6 +1,7 @@
 import { Engine } from '../core/engine'
 
 export abstract class Gen {
+  _name: string = 'Gen'
   gain: f32 = 1
   constructor(public _engine: Engine) { }
   _update(): void { }

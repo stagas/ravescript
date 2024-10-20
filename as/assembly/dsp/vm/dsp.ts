@@ -1,3 +1,4 @@
+import { Gen } from '../gen/gen'
 import { Factory } from '../../../../generated/assembly/dsp-factory'
 import { Offsets } from '../../../../generated/assembly/dsp-offsets'
 import { modWrap } from '../../util'
@@ -15,15 +16,24 @@ export class Dsp {
   @inline
   CreateGen(snd: Sound, kind_index: i32): void {
     const Gen = Factory[kind_index]
-    const gen = Gen(snd.engine)
+    let gen = Gen(snd.engine)
+    for (let i = 0; i < snd.prevGens.length; i++) {
+      const prevGen: Gen = snd.prevGens[i]
+      const isSameClass: boolean = prevGen._name === gen._name
+      if (isSameClass) {
+        gen = prevGen
+        snd.prevGens.splice(i, 1)
+        break
+      }
+    }
     snd.gens.push(gen)
     snd.offsets.push(Offsets[kind_index])
   }
   @inline
   CreateAudios(snd: Sound, count: i32): void {
-    for (let x = 0; x <= count; x++) {
-      snd.audios.push(new StaticArray<f32>(BUFFER_SIZE))
-    }
+    // for (let x = 0; x <= count; x++) {
+    //   snd.audios.push(new StaticArray<f32>(BUFFER_SIZE))
+    // }
   }
   @inline
   CreateValues(snd: Sound, count: i32): void {

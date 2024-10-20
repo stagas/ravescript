@@ -34,12 +34,12 @@ class State {
     const { height } = screen
     const { container } = this
     if (!container) return height
-    let h = 0
-    const tagNames = ['header', 'article']
-    tagNames.forEach(tagName => {
-      const el = container.getElementsByTagName(tagName)[0] as HTMLElement
-      h += el.getBoundingClientRect().height
-    })
+    const header = container.getElementsByTagName('header')[0] as HTMLElement
+    const article = container.getElementsByTagName('article')[0] as HTMLElement
+    const articleStyle = window.getComputedStyle(article)
+    const h = header.getBoundingClientRect().height
+      + parseFloat(articleStyle.paddingTop)
+      + parseFloat(articleStyle.paddingBottom)
     return height - h
   }
 

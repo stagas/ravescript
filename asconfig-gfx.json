@@ -26,8 +26,8 @@
     ],
     "sharedMemory": true,
     "importMemory": false,
-    "initialMemory": 1000,
-    "maximumMemory": 1000,
+    "initialMemory": 2000,
+    "maximumMemory": 2000,
     "bindings": "raw",
     "runtime": "incremental",
     "exportRuntime": true

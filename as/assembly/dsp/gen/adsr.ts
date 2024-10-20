@@ -8,6 +8,7 @@ enum AdsrState {
 }
 
 export class Adsr extends Gen {
+  _name: string = 'Adsr'
   attack: f32 = 1 // ms
   decay: f32 = 200
   sustain: f32 = 0.1

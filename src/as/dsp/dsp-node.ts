@@ -7,7 +7,7 @@ import { dspGens, type Gen } from '~/generated/typescript/dsp-gens.ts'
 import { createVm, type DspVm } from '~/generated/typescript/dsp-vm.ts'
 import { DspWorklet, type DspProcessorOptions } from '~/src/as/dsp/dsp-worklet.ts'
 import dspWorkletUrl from '~/src/as/dsp/dsp-worklet.ts?url'
-import { DspWorkletMode, Track } from '~/src/as/dsp/shared.ts'
+import { Clock, DspWorkletMode, Track } from '~/src/as/dsp/shared.ts'
 import { AstNode, interpret } from '~/src/lang/interpreter.ts'
 import { Token, tokenize } from '~/src/lang/tokenize.ts'
 import { parseNumber } from '~/src/lang/util.ts'
@@ -85,6 +85,7 @@ export function createDspNode(ctx: AudioContext) {
     node: null as null | DspNode,
     dsp: null as null | Awaited<ReturnType<DspWorklet['setup']>>,
     view: null as null | MemoryView,
+    clock: null as null | Clock,
     tracks: null as null | Track[],
     code: null as null | string,
     currTrack: 0,
@@ -101,6 +102,7 @@ export function createDspNode(ctx: AudioContext) {
     $.batch(() => {
       info.node = node
       info.dsp = dsp
+      info.clock = Clock(dsp.memory.buffer, dsp.clock$)
     })
     node.connect(ctx.destination)
   }
@@ -507,7 +509,6 @@ export function createDspNode(ctx: AudioContext) {
     const isNew = hashId !== prevHashId
 
     if (isNew) {
-      console.log('is new')
       track = tracks[info.currTrack = nextTrack]
       info.nextTrack = (nextTrack + 1) % tracks.length
       hashes.set(track, hashId)

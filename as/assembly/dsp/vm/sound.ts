@@ -1,5 +1,5 @@
 import { run as dspRun } from '../../../../generated/assembly/dsp-runner'
-import { BUFFER_SIZE, MAX_FLOATS, MAX_LISTS, MAX_LITERALS, MAX_SCALARS } from '../constants'
+import { BUFFER_SIZE, MAX_FLOATS, MAX_LISTS, MAX_LITERALS, MAX_RMSS, MAX_SCALARS } from '../constants'
 import { Clock } from '../core/clock'
 import { Engine } from '../core/engine'
 import { Gen } from '../gen/gen'
@@ -37,7 +37,7 @@ export class Sound {
   prevGens: Gen[] = []
   offsets: usize[][] = []
 
-  audios: Array<StaticArray<f32> | null> = []
+  audios: Array<StaticArray<f32>> = new Array<StaticArray<f32>>(MAX_RMSS).map(() => new StaticArray<f32>(BUFFER_SIZE))
   floats: StaticArray<i32> = new StaticArray<i32>(MAX_FLOATS)
   lists: StaticArray<i32> = new StaticArray<i32>(MAX_LISTS)
   literals: StaticArray<f32> = new StaticArray<f32>(MAX_LITERALS)
@@ -60,7 +60,7 @@ export class Sound {
     this.gens = []
     this.offsets = []
     this.values = []
-    this.audios = []
+    // this.audios = []
   }
 
   @inline
@@ -96,8 +96,8 @@ export class Sound {
       for (let i: u32 = 0; i < chunkEnd; i += CHUNK_SIZE) {
         this.updateScalars(c)
 
-        this.begin = i
-        this.end = i + CHUNK_SIZE > chunkEnd ? chunkEnd - i : i + CHUNK_SIZE
+        this.begin = x + i
+        this.end = x + (i + CHUNK_SIZE > chunkEnd ? chunkEnd - i : i + CHUNK_SIZE)
         dspRun(changetype<usize>(this), run_ops$)
 
         chunkCount++
@@ -112,7 +112,7 @@ export class Sound {
       const p = x << 2
       memory.copy(
         out.L$ + p,
-        changetype<usize>(audio),
+        changetype<usize>(audio) + p,
         chunkEnd << 2
       )
       // copy left to right for now
@@ -146,8 +146,8 @@ export class Sound {
       for (let i: u32 = 0; i < chunkEnd; i += CHUNK_SIZE) {
         this.updateScalars(c)
 
-        this.begin = i
-        this.end = i + CHUNK_SIZE > chunkEnd ? chunkEnd - i : i + CHUNK_SIZE
+        this.begin = x + i
+        this.end = x + (i + CHUNK_SIZE > chunkEnd ? chunkEnd - i : i + CHUNK_SIZE)
         dspRun(changetype<usize>(this), ops$)
 
         chunkCount++
@@ -160,9 +160,10 @@ export class Sound {
 
       if (audio_LR$ < this.audios.length) {
         const audio = this.audios[audio_LR$]
+        const p = (x << 2)
         memory.copy(
-          out$ + (x << 2),
-          changetype<usize>(audio),
+          out$ + p,
+          changetype<usize>(audio) + p,
           chunkEnd << 2
         )
       }

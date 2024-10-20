@@ -2,6 +2,7 @@ import { rateToPhaseStep } from '../../util'
 import { Gen } from './gen'
 
 export class Nrate extends Gen {
+  _name: string = 'Nrate'
   normal: f32 = 1.0
   _reset(): void {
     this.normal = 1.0

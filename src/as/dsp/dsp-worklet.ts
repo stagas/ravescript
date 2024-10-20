@@ -1,5 +1,5 @@
 import { getMemoryView, omit, rpc, toRing, wasmSourceMap } from 'utils'
-import { BUFFER_SIZE, MAX_TRACKS } from '~/as/assembly/dsp/constants.ts'
+import { BUFFER_SIZE, MAX_RMSS, MAX_TRACKS } from '~/as/assembly/dsp/constants.ts'
 import type { __AdaptedExports as WasmExports } from '~/as/build/dsp-nort.d.ts'
 import hex from '~/as/build/dsp-nort.wasm?raw-hex'
 import dspConfig from '~/asconfig-dsp-nort.json'
@@ -80,7 +80,7 @@ async function setup({ sourcemapUrl }: SetupOptions) {
 
   const player$ = wasm.createPlayer(sound$, out$)
   const player_track$ = player$ + wasm.getPlayerTrackOffset()
-
+  const player_audios$$ = Array.from({ length: MAX_RMSS }, (_, index) => wasm.getSoundAudio(sound$, index))
   const tracks$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createTrack())
   const run_ops$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createOps())
   const setup_ops$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createOps())
@@ -88,7 +88,21 @@ async function setup({ sourcemapUrl }: SetupOptions) {
   const lists$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createLists())
 
   // TODO: preallocate audios and return here their pointers
-  return { wasm, memory, clock$, L, R, player$, player_track$, tracks$$, run_ops$$, setup_ops$$, literals$$, lists$$ }
+  return {
+    wasm,
+    memory,
+    clock$,
+    L,
+    R,
+    player$,
+    player_track$,
+    player_audios$$,
+    tracks$$,
+    run_ops$$,
+    setup_ops$$,
+    literals$$,
+    lists$$,
+  }
 }
 
 async function createDspKernel(processor: DspProcessor, setup: Setup) {

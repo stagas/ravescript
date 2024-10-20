@@ -1,4 +1,4 @@
-export const BUFFER_SIZE = 8192
+export const BUFFER_SIZE = 2048
 export const MAX_FLOATS = 4096
 export const MAX_LISTS = 4096
 export const MAX_LITERALS = 4096

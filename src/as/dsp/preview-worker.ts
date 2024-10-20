@@ -51,8 +51,8 @@ const worker = {
     )
 
     let last: AstNode | null = null
-    const waves = new Map<AstNode, { floats: Float32Array | null, bounds: Token.Bounds }>()
-    const waveWidgets = [] as { floats: Float32Array | null, bounds: Token.Bounds }[]
+    const waves = new Map<AstNode, { index: number, floats: Float32Array | null, bounds: Token.Bounds }>()
+    const waveWidgets = [] as { index: number, floats: Float32Array | null, bounds: Token.Bounds }[]
     let nodeCount = 0
     for (const node of program.value.results) {
       if ('genId' in node) {
@@ -61,8 +61,9 @@ const worker = {
           last.bounds.right = bounds.col - 1
           waves.get(last)!.bounds.right = bounds.col - 1
         }
-        const wave = (waveWidgets[nodeCount] ??= { floats: null, bounds })
-        wave.floats = sound.getAudio((node.result.value as Value.Audio).ptr)
+        const wave = (waveWidgets[nodeCount] ??= { index: -1, floats: null, bounds })
+        wave.index = (node.result.value as Value.Audio).getAudio()
+        wave.floats = sound.getAudio(wave.index)
         assign(wave.bounds, bounds)
         waves.set(node.result, wave)
         last = node.result
@@ -83,7 +84,7 @@ const worker = {
       ops$: sound.ops.ptr,
       LR,
       floats,
-      waves: waveWidgets as { floats: Float32Array, bounds: Token.Bounds }[],
+      waves: waveWidgets as { index: number, floats: Float32Array, bounds: Token.Bounds }[],
     }
   },
   async renderSource(sound$: number, code: string) {
@@ -116,7 +117,7 @@ const worker = {
         floats.ptr,
       )
 
-      return { floats, waves }
+      return { LR, floats, waves }
     }
     catch (e) {
       if (e instanceof Error) {

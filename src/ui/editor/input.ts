@@ -62,7 +62,9 @@ export function Input({ view, pane, panes }: {
       const { withHistory } = history
       if (text) {
         withHistory(() => {
-          selection.reset()
+          if (selection.isActive) {
+            selection.deleteText()
+          }
           caret.insert(text)
           caret.index += text.length
           $.flush()

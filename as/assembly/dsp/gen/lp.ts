@@ -1,6 +1,7 @@
 import { Gen } from './gen'
 
 export class Lp extends Gen {
+  _name: string = 'Lp'
   cut: f32 = 500;
   in: u32 = 0
 

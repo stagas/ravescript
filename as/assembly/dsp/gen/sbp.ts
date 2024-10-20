@@ -1,6 +1,7 @@
 import { Svf } from './svf'
 
 export class Sbp extends Svf {
+  _name: string = 'Sbp'
   cut: f32 = 500
   q: f32 = 0.5
 

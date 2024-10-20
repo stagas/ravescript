@@ -33,6 +33,8 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     pr: screen.$.pr,
     rect,
 
+    shouldRedraw: false,
+
     triggerUpdateTokenDrawInfo: 0,
 
     // scrollbars
@@ -340,6 +342,7 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     const { x: cx, y: cy } = caret.visual
     const { start: { line: sl, col: sc }, end: { line: el, col: ec } } = selection.info
     $()
+    info.shouldRedraw = true
     view.anim.info.epoch++
   })
 
@@ -417,14 +420,20 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
 
   function draw() {
     c.save()
-    drawClear()
-    drawActiveLine()
-    drawSelection()
-    widgets.draw()
-    drawCode()
-    drawCaret()
-    c.restore()
-    drawScrollbars()
+    if (info.shouldRedraw) {
+      drawClear()
+      drawActiveLine()
+      drawSelection()
+      widgets.draw()
+      drawCode()
+      drawCaret()
+      c.restore()
+      drawScrollbars()
+      info.shouldRedraw = false
+    }
+    else {
+      widgets.draw()
+    }
   }
 
   return {

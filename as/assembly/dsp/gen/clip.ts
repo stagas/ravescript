@@ -1,6 +1,7 @@
 import { Gen } from './gen'
 
 export class Clip extends Gen {
+  _name: string = 'Clip'
   threshold: f32 = 1.0;
   in: u32 = 0
 

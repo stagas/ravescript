@@ -47,9 +47,9 @@ export function View({ width, height }: {
     width: `${info.width}px`,
     height: `${info.height}px`,
   })}>
-    {canvas}
     {glCanvas}
     {svg}
+    {canvas}
     {textarea}
   </div> as HTMLDivElement
 

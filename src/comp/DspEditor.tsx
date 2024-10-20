@@ -31,8 +31,6 @@ export function DspEditor({ code, width, height }: {
   let digits: number
   let isDot = false
 
-  const hoverMark = HoverMarkWidget()
-
   function getHoveringNumber(pane: Pane) {
     if (!pane.mouse.info.linecol.hoverLine) return
 
@@ -65,11 +63,13 @@ export function DspEditor({ code, width, height }: {
           bottom: linecol.line,
         }
       )
+      hoverMark.box.visible = true
       pane.draw.widgets.mark.add(hoverMark.widget)
       pane.draw.info.triggerUpdateTokenDrawInfo++
       pane.view.anim.info.epoch++
     }
     else {
+      hoverMark.box.visible = false
       pane.draw.widgets.mark.delete(hoverMark.widget)
       pane.view.anim.info.epoch++
       pane.view.el.style.cursor = pane.view.info.cursor
@@ -273,22 +273,24 @@ export function DspEditor({ code, width, height }: {
     inputHandlers,
   })
 
-  // const errorSub = ErrorSubWidget()
-  // $.fx(() => {
-  //   const { error } = $.of(info)
-  //   const { pane } = editor.info
-  //   $()
-  //   pane.draw.widgets.subs.add(errorSub.widget)
-  //   errorSub.info.error = error
-  //   errorSub.widget.bounds = Token.bounds((error as any).cause?.nodes ?? [] as Token[])
-  //   pane.draw.info.triggerUpdateTokenDrawInfo++
-  //   pane.view.anim.info.epoch++
-  //   return () => {
-  //     pane.draw.widgets.subs.delete(errorSub.widget)
-  //     pane.draw.info.triggerUpdateTokenDrawInfo++
-  //     pane.view.anim.info.epoch++
-  //   }
-  // })
+  const hoverMark = HoverMarkWidget(editor.info.pane.draw.shapes)
+
+  const errorSub = ErrorSubWidget()
+  $.fx(() => {
+    const { error } = $.of(info)
+    const { pane } = editor.info
+    $()
+    pane.draw.widgets.subs.add(errorSub.widget)
+    errorSub.info.error = error
+    errorSub.widget.bounds = Token.bounds((error as any).cause?.nodes ?? [] as Token[])
+    pane.draw.info.triggerUpdateTokenDrawInfo++
+    pane.view.anim.info.epoch++
+    return () => {
+      pane.draw.widgets.subs.delete(errorSub.widget)
+      pane.draw.info.triggerUpdateTokenDrawInfo++
+      pane.view.anim.info.epoch++
+    }
+  })
 
   return { info, el: editor.el, editor }
 }
