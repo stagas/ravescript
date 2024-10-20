@@ -34,6 +34,7 @@ export class Sound {
   pan: f32 = 0
 
   gens: Gen[] = []
+  prevGens: Gen[] = []
   offsets: usize[][] = []
 
   audios: Array<StaticArray<f32> | null> = []
@@ -55,6 +56,7 @@ export class Sound {
 
   @inline
   clear(): void {
+    this.prevGens = this.gens
     this.gens = []
     this.offsets = []
     this.values = []

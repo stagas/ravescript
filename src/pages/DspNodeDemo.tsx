@@ -27,7 +27,7 @@ export function DspNodeDemo() {
 
 [noi 6.66] [exp 6 x trig=] 2
 [sin .2] 1.9 + .4^ * ^
-[sin 2 x trig=] * * [sbp 7542 .9]
+[sin 2 x trig=] * * [sbp 7542 .9] @ [slp 5420]
 `,
     codeWorking: null as null | string,
     floats: new Float32Array(),

@@ -35,8 +35,13 @@ async function setup({ sourcemapUrl }: SetupOptions) {
   const instance = await WebAssembly.instantiate(mod, {
     env: {
       memory,
-      abort: console.warn,
-      log: console.log,
+      abort(message$: number, fileName$: number, lineNumber$: number, columnNumber$: number) {
+        const message = __liftString(message$ >>> 0)
+        const fileName = __liftString(fileName$ >>> 0)
+        const lineNumber = lineNumber$ >>> 0
+        const columnNumber = columnNumber$ >>> 0
+        throw new Error(`${message} in ${fileName}:${lineNumber}:${columnNumber}`)
+      },
       'console.log': (textPtr: number) => {
         console.log(__liftString(textPtr))
       }
@@ -153,7 +158,7 @@ async function createDspKernel(processor: DspProcessor, setup: Setup) {
     },
   }
 
-  const controller: { player$: number, process: AudioProcess } = {
+  const kernel: { player$: number, process: AudioProcess } = {
     player$,
     process: (_inputs, _outputs) => {
       inputs = _inputs
@@ -162,7 +167,7 @@ async function createDspKernel(processor: DspProcessor, setup: Setup) {
     }
   }
 
-  return controller
+  return kernel
 }
 
 export class DspWorklet {

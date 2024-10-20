@@ -10,12 +10,14 @@ const extendsRegExp = /extends\s([^\s]+)/
 let out: string[] = []
 out.push(`import { Engine } from '../../as/assembly/dsp/core/engine'`)
 const factories: string[] = []
+const ctors: string[] = []
 for (const file of files) {
   const base = basename(file, '.ts')
   const filename = join(gensRoot, file)
   const text = fs.readFileSync(filename, 'utf-8')
   const parentCtor = text.match(extendsRegExp)?.[1]
   const ctor = capitalize(base)
+  ctors.push(`'${ctor}'`)
   const factory = `create${ctor}`
   out.push(`import { ${ctor} } from '../.${gensRoot}/${base}'`)
   if (['osc', 'gen'].includes(base)) {
@@ -27,6 +29,7 @@ for (const file of files) {
 }
 
 out.push(`export const Factory: ((engine: Engine) => Gen)[] = [${factories}]`)
+out.push(`export const Ctors: string[] = [${ctors}]`)
 
 const targetPath = './generated/assembly/dsp-factory.ts'
 const text = out.join('\n')

@@ -499,15 +499,17 @@ export function createDspNode(ctx: AudioContext) {
 
     // create hash id from tokens. We compare this afterwards to determine
     // if we should make a new sound or update the old one.
-    const hashId =
-      [tokens.filter(t => t.type === Token.Type.Number).length].join('')
+    const hashId = ''
+      + [tokens.filter(t => t.type === Token.Type.Number).length].join('')
       + tokens.filter(t => [Token.Type.Id, Token.Type.Op].includes(t.type)).map(t => t.text).join('')
 
     const prevHashId = hashes.get(track)
     const isNew = hashId !== prevHashId
 
     if (isNew) {
-      track = tracks[nextTrack]
+      console.log('is new')
+      track = tracks[info.currTrack = nextTrack]
+      info.nextTrack = (nextTrack + 1) % tracks.length
       hashes.set(track, hashId)
     }
 
@@ -534,13 +536,12 @@ export function createDspNode(ctx: AudioContext) {
       LR: LR?.value as Value.Audio | undefined,
     }
 
-    track.audio_LR$ = out.LR?.audio$ ?? out.LR?.ptr ?? 0
-
-    info.nextTrack = (nextTrack + 1) % tracks.length
+    track.audio_LR$ = out.LR?.audio$ || out.LR?.ptr || 0
 
     return { track$: track.ptr }
   }
 
+  // setup tracks
   $.fx(() => {
     const { dsp } = $.of(info)
     $()
@@ -569,6 +570,7 @@ export function createDspNode(ctx: AudioContext) {
     }
   })
 
+  // update player track
   $.fx(() => {
     const { dsp, view, code } = $.of(info)
     $()
