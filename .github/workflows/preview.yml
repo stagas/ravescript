@@ -52,7 +52,7 @@ jobs:
           node-version: 22.x
 
       - name: Install dependencies
-        run: npx pnpm i --enable-pre-post-scripts=false
+        run: npx pnpm i --ignore-scripts=true
 
       - name: Build
         run: bun run build
