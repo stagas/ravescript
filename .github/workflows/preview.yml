@@ -55,7 +55,7 @@ jobs:
         run: npx pnpm i --ignore-scripts=true
 
       - name: Install dev deps with scripts
-        run: npx pnpm add @vite-pwa/assets-generator -D
+        run: npx pnpm rm @vite-pwa/assets-generator -D && npx pnpm add @vite-pwa/assets-generator -D
 
       - name: Build
         run: bun run build
