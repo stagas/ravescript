@@ -29,7 +29,7 @@
     "models": "kysely-zod-codegen --env-file=.env.development --camel-case --out-file=api/models.ts",
     "scripts": "bun run scripts/generate-dsp-vm.ts && bun run scripts/update-dsp-factory.ts && bun run scripts/update-gens-offsets.ts",
     "pwa": "pwa-assets-generator --preset minimal-2023 public/favicon.svg",
-    "postinstall": "link-local || exit 0"
+    "link": "link-local || exit 0"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^15.7.4",

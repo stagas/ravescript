@@ -52,13 +52,13 @@ jobs:
           node-version: 22.x
 
       - name: Uninstall dev deps with scripts
-        run: npx pnpm rm @vite-pwa/assets-generator --ignore-scripts=true
+        run: npm remove @vite-pwa/assets-generator --ignore-scripts=true
 
       - name: Install dependencies
-        run: npx pnpm i --ignore-scripts=true
+        run: npm i --ignore-scripts=true
 
       - name: Install dev deps with scripts
-        run: npx pnpm add @vite-pwa/assets-generator
+        run: npm i @vite-pwa/assets-generator -D
 
       - name: Build
         run: bun run build
