@@ -121,26 +121,26 @@ export default ({ mode }) => {
         '--transform', './vendor/as-transform-unroll.js',
       ]
     }),
-    // ViteAssemblyScript({
-    //   configFile: 'asconfig-pkg.json',
-    //   projectRoot: '.',
-    //   srcMatch: 'as/assembly/pkg',
-    //   srcEntryFile: 'as/assembly/pkg/index.ts',
-    //   mapFile: './as/build/pkg.wasm.map',
-    //   extra: [
-    //     '--transform', './vendor/as-transform-unroll.js',
-    //   ]
-    // }),
-    // ViteAssemblyScript({
-    //   configFile: 'asconfig-pkg-nort.json',
-    //   projectRoot: '.',
-    //   srcMatch: 'as/assembly/pkg',
-    //   srcEntryFile: 'as/assembly/pkg/index.ts',
-    //   mapFile: './as/build/pkg-nort.wasm.map',
-    //   extra: [
-    //     '--transform', './vendor/as-transform-unroll.js',
-    //   ]
-    // }),
+    ViteAssemblyScript({
+      configFile: 'asconfig-pkg.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/pkg',
+      srcEntryFile: 'as/assembly/pkg/index.ts',
+      mapFile: './as/build/pkg.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+      ]
+    }),
+    ViteAssemblyScript({
+      configFile: 'asconfig-pkg-nort.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/pkg',
+      srcEntryFile: 'as/assembly/pkg/index.ts',
+      mapFile: './as/build/pkg-nort.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+      ]
+    }),
     ViteAssemblyScript({
       configFile: 'asconfig-rms.json',
       projectRoot: '.',
