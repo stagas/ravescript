@@ -187,7 +187,7 @@ const worker = {
         return {
           error: {
             message: e.message,
-            cause: /* (e as any).cause ??  */{ nodes: [] }
+            cause: (e as any).cause ?? { nodes: [] }
           }
         }
       }

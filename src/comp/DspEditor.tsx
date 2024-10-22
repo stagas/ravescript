@@ -283,6 +283,16 @@ export function DspEditor({ code, width, height }: {
     pane.draw.widgets.subs.add(errorSub.widget)
     errorSub.info.error = error
     errorSub.widget.bounds = Token.bounds((error as any).cause?.nodes ?? [] as Token[])
+    {
+      const { x, y } = pane.buffer.logicalPointToVisualPoint({ x: errorSub.widget.bounds.col, y: errorSub.widget.bounds.line })
+      errorSub.widget.bounds.line = y
+      errorSub.widget.bounds.col = x
+    }
+    {
+      const { x, y } = pane.buffer.logicalPointToVisualPoint({ x: errorSub.widget.bounds.right, y: errorSub.widget.bounds.bottom })
+      errorSub.widget.bounds.bottom = y
+      errorSub.widget.bounds.right = x
+    }
     pane.draw.info.triggerUpdateTokenDrawInfo++
     pane.view.anim.info.epoch++
     return () => {
