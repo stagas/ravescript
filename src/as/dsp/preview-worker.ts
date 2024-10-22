@@ -9,7 +9,7 @@ import { assign, getMemoryView, Lru, rpc, type MemoryView } from 'utils'
 import { BUFFER_SIZE } from '~/as/assembly/dsp/constants.ts'
 import type { __AdaptedExports as WasmExports } from '~/as/build/dsp-nort.d.ts'
 import { builds, getTokens, setupTracks } from '~/src/as/dsp/dsp-build.ts'
-import { createDspWasm } from '~/src/as/dsp/dsp-wasm.ts'
+import { createDsp } from '~/src/as/dsp/dsp-wasm.ts'
 import { Clock, Out, type Track } from '~/src/as/dsp/shared.ts'
 import { AstNode } from '~/src/lang/interpreter.ts'
 import { Token } from '~/src/lang/tokenize.ts'
@@ -36,7 +36,7 @@ const rmsWidgets: WidgetInfo[] = []
 const listWidgets: ListInfo[] = []
 
 const worker = {
-  dsp: null as null | ReturnType<typeof createDspWasm>,
+  dsp: null as null | ReturnType<typeof createDsp>,
   view: null as null | MemoryView,
   out$: null as null | number,
   clock: null as null | Clock,
@@ -44,7 +44,7 @@ const worker = {
   track: null as null | Track,
   error: null as null | Error,
   async createDsp(sampleRate: number) {
-    const dsp = this.dsp = createDspWasm(sampleRate, wasm as unknown as typeof WasmExports, wasm.memory)
+    const dsp = this.dsp = createDsp(sampleRate, wasm as unknown as typeof WasmExports, wasm.memory)
     const view = this.view = getMemoryView(wasm.memory)
     this.clock = Clock(wasm.memory.buffer, dsp.clock$)
     this.tracks = setupTracks(
@@ -88,7 +88,6 @@ const worker = {
     const buildTrack = builds.get(track)!
 
     const { program, out } = buildTrack(tokens)
-
     if (!out.LR) throw new Error('No audio in the stack.', { cause: { nodes: [] } })
 
     program.value.results.sort(({ result: { bounds: a } }, { result: { bounds: b } }) =>
@@ -169,9 +168,6 @@ const worker = {
     const { dsp, view, clock, track } = this
     if (!dsp || !view || !clock || !track) throw new Error('Dsp not ready.')
 
-    // const sound = sounds.get(sound$)
-    // if (!sound) throw new Error('Sound not found, id: ' + sound$)
-
     const info = this
 
     try {
@@ -185,7 +181,9 @@ const worker = {
       wasm.clockUpdate(clock.ptr)
 
       const { LR, waves, rmss, lists } = await this.build(code)
-      console.log(dsp.sound$, track.ptr, dsp.out$)
+
+      wasm.soundSetupTrack(dsp.sound$, track.ptr)
+
       wasm.fillTrack(
         dsp.sound$,
         track.ptr,

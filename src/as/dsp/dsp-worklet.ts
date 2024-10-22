@@ -2,7 +2,7 @@ import { omit, rpc, toRing, wasmSourceMap } from 'utils'
 import type { __AdaptedExports as WasmExports } from '~/as/build/dsp-nort.d.ts'
 import hex from '~/as/build/dsp-nort.wasm?raw-hex'
 import dspConfig from '~/asconfig-dsp-nort.json'
-import { createDspWasm } from '~/src/as/dsp/dsp-wasm.ts'
+import { createDsp } from '~/src/as/dsp/dsp-wasm.ts'
 import { Clock, DspWorkletMode } from '~/src/as/dsp/shared.ts'
 
 type AudioProcess = (inputs: Float32Array[], outputs: Float32Array[]) => void
@@ -62,7 +62,7 @@ async function setup({ sourcemapUrl }: SetupOptions) {
 
   const wasm: typeof WasmExports = instance.exports as any
 
-  const dsp = createDspWasm(sampleRate, wasm, memory)
+  const dsp = createDsp(sampleRate, wasm, memory)
 
   return {
     wasm,

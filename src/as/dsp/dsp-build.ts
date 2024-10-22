@@ -1,12 +1,11 @@
 import { DEBUG, getAllProps, Value as ValueBase, type Value } from 'dsp'
-import { Sigui } from 'sigui'
 import { fromEntries, keys, shallowCopy, type MemoryView } from 'utils'
 import { MAX_LISTS, MAX_LITERALS, MAX_OPS } from '~/as/assembly/dsp/constants.ts'
 import { DspBinaryOp } from '~/as/assembly/dsp/vm/dsp-shared.ts'
 import { dspGens, type Gen } from '~/generated/typescript/dsp-gens.ts'
 import { createVm, type DspVm } from '~/generated/typescript/dsp-vm.ts'
 import { postTokens, preTokens } from '~/src/as/dsp/pre-post.ts'
-import { Track, type Clock } from '~/src/as/dsp/shared.ts'
+import { Track } from '~/src/as/dsp/shared.ts'
 import { AstNode, interpret } from '~/src/lang/interpreter.ts'
 import { Token, tokenize } from '~/src/lang/tokenize.ts'
 import { parseNumber } from '~/src/lang/util.ts'
@@ -37,8 +36,9 @@ const commutative = new Set([DspBinaryOp.Add, DspBinaryOp.Mul])
 const audioProps = new Set(['in', 'sidechain'])
 const textProps = new Set(['text', 'id'])
 
+export type TrackContext = ReturnType<typeof getTrackContext>
+
 export function getTrackContext(view: MemoryView, track: Track) {
-  // const { view } = $.of(info)
   const literalsf = view.getF32(track.literals$, MAX_LITERALS)
   const listsi = view.getI32(track.lists$, MAX_LISTS)
   return {

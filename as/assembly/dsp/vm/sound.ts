@@ -69,6 +69,14 @@ export class Sound {
   }
 
   @inline
+  setupTrack(track$: usize): void {
+    const track = changetype<Track>(track$)
+    this.literals = changetype<StaticArray<f32>>(track.literals$)
+    this.lists = changetype<StaticArray<i32>>(track.lists$)
+    dspRun(changetype<usize>(this), track.setup_ops$)
+  }
+
+  @inline
   updateScalars(c: Clock): void {
     this.scalars[Globals.t] = f32(c.barTime)
     this.scalars[Globals.rt] = f32(c.time)

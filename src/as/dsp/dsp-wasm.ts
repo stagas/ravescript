@@ -3,7 +3,7 @@ import { BUFFER_SIZE, MAX_AUDIOS, MAX_SCALARS, MAX_TRACKS, MAX_VALUES } from '~/
 import type { __AdaptedExports as WasmExports } from '~/as/build/dsp-nort.d.ts'
 import { Out } from '~/src/as/dsp/shared.ts'
 
-export function createDspWasm(sampleRate: number, wasm: typeof WasmExports, memory: WebAssembly.Memory) {
+export function createDsp(sampleRate: number, wasm: typeof WasmExports, memory: WebAssembly.Memory) {
   const view = getMemoryView(memory)
 
   const core$ = wasm.createCore(sampleRate)
@@ -23,9 +23,11 @@ export function createDspWasm(sampleRate: number, wasm: typeof WasmExports, memo
 
   const player$ = wasm.createPlayer(sound$, out$)
   const player_track$ = player$ + wasm.getPlayerTrackOffset()
+
   const player_audios$$ = Array.from({ length: MAX_AUDIOS }, (_, index) => wasm.getSoundAudio(sound$, index))
   const player_values$$ = Array.from({ length: MAX_VALUES }, (_, index) => wasm.getSoundValue(sound$, index))
   const player_scalars = view.getF32(wasm.getSoundScalars(sound$), MAX_SCALARS)
+
   const tracks$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createTrack())
   const run_ops$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createOps())
   const setup_ops$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createOps())

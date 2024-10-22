@@ -43,6 +43,10 @@ export function clearSound(sound$: usize): void {
   changetype<Sound>(sound$).clear()
 }
 
+export function soundSetupTrack(sound$: usize, track$: usize): void {
+  changetype<Sound>(sound$).setupTrack(track$)
+}
+
 export function fillSound(
   sound$: usize,
   ops$: usize,

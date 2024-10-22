@@ -1,15 +1,15 @@
-import { Sound, SoundContext } from 'dsp'
 import { SoundValueKind } from '~/as/assembly/dsp/vm/dsp-shared.ts'
 import { DspVm } from '~/generated/typescript/dsp-vm.ts'
+import type { TrackContext } from '~/src/as/dsp/dsp-build.ts'
 
-type SoundPartial = { context: SoundContext, vm: DspVm }
+type SoundPartial = { context: TrackContext, vm: DspVm }
 
 export class Value<T extends Value.Kind = Value.Kind> {
   value$: number
   ptr: number = 0
   scalar$: number = 0
   audio$: number = 0
-  context: Sound['context']
+  context: TrackContext
   constructor(sound: SoundPartial, kind: T extends Value.Kind.I32 | Value.Kind.Literal ? T : never, value: number)
   constructor(sound: SoundPartial, kind: T extends Value.Kind.Null | Value.Kind.Floats | Value.Kind.Scalar | Value.Kind.Audio | Value.Kind.Dynamic ? T : never)
   constructor(public sound: SoundPartial, public kind: Value.Kind, value?: number) {

@@ -45,7 +45,6 @@ export class DspNode extends AudioWorkletNode {
 
 const registeredContexts = new Set<BaseAudioContext>()
 
-
 export function createDspNode(ctx: AudioContext) {
   using $ = Sigui()
 

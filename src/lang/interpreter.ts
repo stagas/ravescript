@@ -1,5 +1,5 @@
 import { dspGens } from '~/generated/typescript/dsp-gens.ts'
-import type { DspApi } from '~/src/as/dsp/dsp-node.ts'
+import type { DspApi } from '~/src/as/dsp/dsp-build.ts'
 import { getAllPropsReverse } from '~/src/as/dsp/util.ts'
 import type { Value } from '~/src/as/dsp/value.ts'
 import { Token } from '~/src/lang/tokenize.ts'

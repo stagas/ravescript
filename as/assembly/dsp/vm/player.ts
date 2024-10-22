@@ -22,11 +22,7 @@ export class Player {
       // ideally we should compare gens and move
       // the reused gens to the new context
       sound.clear()
-
-      const track = changetype<Track>(track$)
-      sound.literals = changetype<StaticArray<f32>>(track.literals$)
-      sound.lists = changetype<StaticArray<i32>>(track.lists$)
-      dspRun(this.sound$, track.setup_ops$)
+      sound.setupTrack(track$)
     }
     // console.log(`${track$}`)
     sound.fillTrack(track$, begin, end, this.out$)

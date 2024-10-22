@@ -28,9 +28,6 @@ export function Home() {
           <Link href="/canvas">Canvas</Link>
           <Link href="/webgl">WebGL</Link>
           <Link href="/editor">Editor</Link>
-          <Link href="/dsp-sync">Dsp Sync</Link>
-          <Link href="/dsp-async">Dsp Async</Link>
-          <Link href="/dsp-worker">Dsp Worker</Link>
           <Link href="/dsp-node">Dsp Node</Link>
           <Link href="/worker-worklet">Worker-Worklet</Link>
           <Link href="/asc">AssemblyScript</Link>
