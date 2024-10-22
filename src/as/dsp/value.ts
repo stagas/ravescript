@@ -57,6 +57,14 @@ export class Value<T extends Value.Kind = Value.Kind> {
       return this.ptr
     }
   }
+  getScalar() {
+    if (this.kind === Value.Kind.Dynamic) {
+      return this.scalar$
+    }
+    else {
+      return this.ptr
+    }
+  }
 }
 
 export namespace Value {

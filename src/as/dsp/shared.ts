@@ -42,3 +42,12 @@ export const Out = Struct({
   L$: 'usize',
   R$: 'usize',
 })
+
+export type SoundValue = typeof SoundValue.type
+
+export const SoundValue = Struct({
+  kind: 'i32',
+  ptr: 'i32',
+  scalar$: 'i32',
+  audio$: 'i32',
+})

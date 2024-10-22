@@ -1,6 +1,6 @@
-import { getAllPropsReverse } from 'dsp'
 import { dspGens } from '~/generated/typescript/dsp-gens.ts'
 import type { DspApi } from '~/src/as/dsp/dsp-node.ts'
+import { getAllPropsReverse } from '~/src/as/dsp/util.ts'
 import type { Value } from '~/src/as/dsp/value.ts'
 import { Token } from '~/src/lang/tokenize.ts'
 import { parseNumber, type NumberFormat, type NumberInfo } from '~/src/lang/util.ts'
@@ -172,13 +172,15 @@ export function interpret(g: DspApi, data: Record<string, any>, tokens: Token[])
 
   type Context = ReturnType<typeof createContext>
 
+  const uncaptured = new Set<Token>()
+
   function createContext(tokens: Token[]) {
     let i = 0
     let t: Token
 
     function next() {
       t = tokens[i++]
-      capturing.forEach(c => c.push(t))
+      if (!uncaptured.has(t)) capturing.forEach(c => c.push(t))
       return t
     }
     function peek() {
@@ -398,7 +400,11 @@ export function interpret(g: DspApi, data: Record<string, any>, tokens: Token[])
           case '{': {
             const op = t.text
             const close = Token.Close[op]
-            const node = new AstNode(AstNode.Type.Procedure, { value: c.tokensUntil(close) })
+            const value = c.tokensUntil(close)
+            // we prevent proc tokens from being captured
+            // when the procedure is invoked at a different location
+            value.tokens.forEach(t => uncaptured.add(t))
+            const node = new AstNode(AstNode.Type.Procedure, { value })
             node.kind = AstNode.ProcKind.User
             return node
           }

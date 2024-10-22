@@ -65,6 +65,10 @@ export function getSoundAudio(sound$: usize, index: i32): usize {
   return changetype<usize>(changetype<Sound>(sound$).audios[index])
 }
 
+export function getSoundValue(sound$: usize, index: i32): usize {
+  return changetype<usize>(changetype<Sound>(sound$).values[index])
+}
+
 export function getSoundLiterals(sound$: usize): usize {
   return changetype<usize>(changetype<Sound>(sound$).literals)
 }

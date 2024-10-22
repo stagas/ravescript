@@ -62,9 +62,9 @@ export function Widgets({ c }: {
 
 export type Widget = ReturnType<typeof Widget>
 
-export function Widget() {
-  const rect = Rect(0, 0, 1, 1)
+export function Widget(rect = Rect(0, 0, 1, 1)) {
+  using $ = Sigui()
   const bounds = Bounds()
   function draw(c: CanvasRenderingContext2D) { }
-  return { rect, bounds, draw }
+  return $({ rect, bounds, draw })
 }

@@ -1,5 +1,5 @@
 import { getMemoryView, omit, rpc, toRing, wasmSourceMap } from 'utils'
-import { BUFFER_SIZE, MAX_RMSS, MAX_TRACKS } from '~/as/assembly/dsp/constants.ts'
+import { BUFFER_SIZE, MAX_AUDIOS, MAX_SCALARS, MAX_TRACKS, MAX_VALUES } from '~/as/assembly/dsp/constants.ts'
 import type { __AdaptedExports as WasmExports } from '~/as/build/dsp-nort.d.ts'
 import hex from '~/as/build/dsp-nort.wasm?raw-hex'
 import dspConfig from '~/asconfig-dsp-nort.json'
@@ -81,7 +81,9 @@ async function setup({ sourcemapUrl }: SetupOptions) {
 
   const player$ = wasm.createPlayer(sound$, out$)
   const player_track$ = player$ + wasm.getPlayerTrackOffset()
-  const player_audios$$ = Array.from({ length: MAX_RMSS }, (_, index) => wasm.getSoundAudio(sound$, index))
+  const player_audios$$ = Array.from({ length: MAX_AUDIOS }, (_, index) => wasm.getSoundAudio(sound$, index))
+  const player_values$$ = Array.from({ length: MAX_VALUES }, (_, index) => wasm.getSoundValue(sound$, index))
+  const player_scalars = view.getF32(wasm.getSoundScalars(sound$), MAX_SCALARS)
   const tracks$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createTrack())
   const run_ops$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createOps())
   const setup_ops$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createOps())
@@ -98,6 +100,8 @@ async function setup({ sourcemapUrl }: SetupOptions) {
     player$,
     player_track$,
     player_audios$$,
+    player_values$$,
+    player_scalars,
     tracks$$,
     run_ops$$,
     setup_ops$$,

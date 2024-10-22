@@ -1,5 +1,6 @@
 export * from './error-sub.ts'
 export * from './hover-mark.ts'
+export * from './list-mark.ts'
 export * from './rms-deco.ts'
 export * from './wave-canvas-deco.ts'
 export * from './wave-gl-deco.ts'

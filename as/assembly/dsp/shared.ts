@@ -12,3 +12,11 @@ export class Out {
   L$: usize = 0
   R$: usize = 0
 }
+
+@unmanaged
+export class SoundValue {
+  kind: i32 = 0
+  ptr: i32 = 0
+  scalar$: i32 = 0
+  audio$: i32 = 0
+}

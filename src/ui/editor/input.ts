@@ -1,9 +1,10 @@
-import { isPointInRect, type Pane, type Point, type View } from 'editor'
+import { CLICK_TIMEOUT, isPointInRect, type Pane, type Point, type View } from 'editor'
 import { Sigui, type Signal } from 'sigui'
 import { assign, dom, isMobile, MouseButtons } from 'utils'
 
 export interface InputMouse extends Point {
   isDown: boolean
+  downTime: number
   buttons: number
   ctrl: boolean
 }
@@ -93,6 +94,7 @@ export function Input({ view, pane, panes }: {
   // input mouse
   const inputMouse: InputMouse = $({
     isDown: false,
+    downTime: 0,
     buttons: 0,
     ctrl: false,
     x: 0,
@@ -218,6 +220,7 @@ export function Input({ view, pane, panes }: {
       if (!isMobile()) ev.preventDefault()
       updateInputMouseFromEvent(ev)
       inputMouse.isDown = true
+      inputMouse.downTime = performance.now()
 
       const { pane, hoveringPane } = info
 
@@ -255,7 +258,9 @@ export function Input({ view, pane, panes }: {
 
   function preventAndFocus(ev: Event) {
     ev.preventDefault()
-    focus()
+    if (performance.now() - inputMouse.downTime < CLICK_TIMEOUT) {
+      focus()
+    }
   }
 
   function onFocus() {

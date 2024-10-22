@@ -1,5 +1,5 @@
 import { Sigui } from 'sigui'
-import { fromEntries, getMemoryView, keys } from 'utils'
+import { fromEntries, getMemoryView, keys, shallowCopy } from 'utils'
 import { BUFFER_SIZE, MAX_LISTS, MAX_LITERALS, MAX_OPS } from '~/as/assembly/dsp/constants.ts'
 import { DspBinaryOp } from '~/as/assembly/dsp/vm/dsp-shared.ts'
 import { Op } from '~/generated/assembly/dsp-op.ts'
@@ -13,6 +13,7 @@ import { getAllProps } from './util.ts'
 import { Value } from './value.ts'
 import { wasm } from './wasm.ts'
 import type { DspApi } from '~/src/as/dsp/dsp-node.ts'
+import { postTokens, preTokens } from '~/src/as/dsp/pre-post.ts'
 
 const DEBUG = false
 
@@ -36,13 +37,6 @@ function getContext() {
   }
 }
 
-function copy<T extends Record<string, any>>(obj: T): T {
-  return { ...obj }
-}
-
-let preTokens: Token[]
-let postTokens: Token[]
-
 export function Dsp({ sampleRate, core$ }: {
   sampleRate: number
   core$?: ReturnType<typeof wasm.createCore>
@@ -56,22 +50,6 @@ export function Dsp({ sampleRate, core$ }: {
   const clock = Clock(wasm.memory.buffer, clock$)
 
   const view = getMemoryView(wasm.memory)
-
-  preTokens ??= [...tokenize({
-    code:
-      // we implicit call [nrate 1] before our code
-      // so that the sample rate is reset.
-      `[nrate 1]`
-      // some builtin procedures
-      + ` { .5* .5+ } norm= `
-      + ` { at= p= sp= 1 [inc sp co* at] clip - p^ } dec= `
-    // + `{ n= p= sp= 1 [inc sp co* t n*] clip - p^ } decay=`
-    // + ` { t= p= sp= 1 [inc sp co* t] clip - p^ } down= `
-  })]
-
-  postTokens ??= [...tokenize({
-    code: `@`
-  })]
 
   function Sound() {
     const sound$ = pin(wasm.createSound(engine$))
@@ -434,7 +412,7 @@ export function Dsp({ sampleRate, core$ }: {
         x.right = last.right
         x.bottom = last.bottom
         x.index = last.index
-        x.length = last.length
+        x.length = -1
         return x
       }
 
@@ -442,12 +420,12 @@ export function Dsp({ sampleRate, core$ }: {
         ...preTokens.map(fixToken),
         ...tokens,
         ...postTokens.map(fixToken),
-      ].filter(t => t.type !== Token.Type.Comment).map(copy)
+      ].filter(t => t.type !== Token.Type.Comment).map(shallowCopy)
 
       // create hash id from tokens. We compare this afterwards to determine
       // if we should make a new sound or update the old one.
-      const hashId =
-        [tokens.filter(t => t.type === Token.Type.Number).length].join('')
+      const hashId = ''
+        + [tokens.filter(t => t.type === Token.Type.Number).length].join('')
         + tokens.filter(t => [Token.Type.Id, Token.Type.Op].includes(t.type)).map(t => t.text).join('')
 
       const isNew = hashId !== prevHashId
@@ -484,19 +462,19 @@ export function Dsp({ sampleRate, core$ }: {
       scope.rt = new AstNode(AstNode.Type.Result, { value: rt })
       scope.co = new AstNode(AstNode.Type.Result, { value: co })
 
-      for (let i = 0; i < 6; i++) {
-        for (const p of 'nftv') {
-          const name = `n${i}${p}`
-          const value = (globals as any)[name] = sound.Value.Scalar.create()
-          scope[name] = new AstNode(AstNode.Type.Result, { value })
-        }
-      }
+      // for (let i = 0; i < 6; i++) {
+      //   for (const p of 'nftv') {
+      //     const name = `n${i}${p}`
+      //     const value = (globals as any)[name] = sound.Value.Scalar.create()
+      //     scope[name] = new AstNode(AstNode.Type.Result, { value })
+      //   }
+      // }
 
-      for (let i = 0; i < 6; i++) {
-        const name = `p${i}`
-        const value = (globals as any)[name] = sound.Value.Scalar.create()
-        scope[name] = new AstNode(AstNode.Type.Result, { value })
-      }
+      // for (let i = 0; i < 6; i++) {
+      //   const name = `p${i}`
+      //   const value = (globals as any)[name] = sound.Value.Scalar.create()
+      //   scope[name] = new AstNode(AstNode.Type.Result, { value })
+      // }
 
       const program = interpret(sound.api, scope, tokensCopy)
 

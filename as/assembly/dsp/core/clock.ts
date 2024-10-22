@@ -4,7 +4,7 @@ export class Clock {
   timeStep: f64 = 0
   prevTime: f64 = -1
   startTime: f64 = 0
-  endTime: f64 = 16
+  endTime: f64 = Infinity
   bpm: f64 = 60
   coeff: f64 = 0
   barTime: f64 = 0

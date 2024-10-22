@@ -4,10 +4,9 @@ self.document = {
   baseURI: location.origin
 }
 
-import type { Value } from 'dsp'
-import { Dsp, Sound, wasm } from 'dsp'
-import { assign, Lru, rpc } from 'utils'
-import { BUFFER_SIZE } from '~/as/assembly/dsp/constants.ts'
+import { Dsp, Sound, Value, wasm } from 'dsp'
+import { assign, getMemoryView, Lru, rpc } from 'utils'
+import { BUFFER_SIZE, MAX_AUDIOS, MAX_SCALARS, MAX_VALUES } from '~/as/assembly/dsp/constants.ts'
 import { AstNode } from '~/src/lang/interpreter.ts'
 import { Token, tokenize } from '~/src/lang/tokenize.ts'
 
@@ -19,22 +18,29 @@ const getFloats = Lru(10, (_key: string, length: number) => wasm.alloc(Float32Ar
 
 let epoch = 0
 
-interface WidgetInfoPartial {
-  index: number
-  floats: Float32Array | null
+interface WidgetInfo {
+  value$: number
   bounds: Token.Bounds
 }
 
-type WidgetInfo = (WidgetInfoPartial & { floats: WidgetInfoPartial['floats'] & {} })
+interface ListInfo {
+  list: Token.Bounds[]
+  value$: number
+  bounds: Token.Bounds
+}
 
-const waveWidgets: WidgetInfoPartial[] = []
-const rmsWidgets: WidgetInfoPartial[] = []
+const waveWidgets: WidgetInfo[] = []
+const rmsWidgets: WidgetInfo[] = []
+const listWidgets: ListInfo[] = []
 
 const worker = {
   dsp: null as null | Dsp,
   error: null as null | Error,
   async createDsp(sampleRate: number) {
     this.dsp = Dsp({ sampleRate })
+    return {
+      memory: wasm.memory,
+    }
   },
   async createSound() {
     const dsp = this.dsp
@@ -42,7 +48,12 @@ const worker = {
 
     const sound = dsp.Sound()
     sounds.set(sound.sound$, sound)
-    return sound.sound$
+
+    const audios$$ = Array.from({ length: MAX_AUDIOS }, (_, index) => wasm.getSoundAudio(sound.sound$, index))
+    const values$$ = Array.from({ length: MAX_VALUES }, (_, index) => wasm.getSoundValue(sound.sound$, index))
+    const scalars = getMemoryView(wasm.memory).getF32(wasm.getSoundScalars(sound.sound$), MAX_SCALARS)
+
+    return { sound$: sound.sound$, audios$$, values$$, scalars }
   },
   async build(sound$: number, code: string) {
     const dsp = this.dsp
@@ -51,7 +62,8 @@ const worker = {
     const sound = sounds.get(sound$)
     if (!sound) throw new Error('Sound not found, id: ' + sound$)
 
-    const tokens = [...tokenize({ code })]
+    const tokens = Array.from(tokenize({ code: code.replaceAll('\n', '\r\n') }))
+
     const { program, out } = sound.process(tokens)
     if (!out.LR) throw new Error('No audio in the stack.', { cause: { nodes: [] } })
 
@@ -62,36 +74,47 @@ const worker = {
     )
 
     let last: AstNode | null = null
-    const nodes = new Map<AstNode, WidgetInfoPartial>()
+    const nodes = new Map<AstNode, WidgetInfo>()
 
     let waveCount = 0
     let rmsCount = 0
+    let listCount = 0
 
     for (const node of program.value.results) {
-      if ('genId' in node || 'op' in node) {
+      if (node.result.value instanceof Value && ('genId' in node || 'op' in node)) {
         const bounds = node.result.bounds
+
+        // pre-post tokens are set to length -1 to be ignored
+        if (bounds.length === -1) continue
 
         if (last && last.bounds.line === bounds.line && last.bounds.right > bounds.col) {
           last.bounds.right = bounds.col - 1
           nodes.get(last)!.bounds.right = bounds.col - 1
         }
 
-        let info: WidgetInfoPartial
+        let info: WidgetInfo
 
         if ('genId' in node) {
-          info = (waveWidgets[waveCount] ??= { index: -1, floats: null, bounds })
+          info = (waveWidgets[waveCount] ??= { value$: -1, bounds })
           waveCount++
         }
         else if ('op' in node) {
-          info = (rmsWidgets[rmsCount] ??= { index: -1, floats: null, bounds })
+          if ('list' in node) {
+            const info = (listWidgets[listCount] ??= { list: [], value$: -1, bounds })
+            info.list = node.list.scope.stack.map(n => n.bounds)
+            info.value$ = (node.index.value as Value.Dynamic).value$
+            assign(info.bounds, bounds)
+            listCount++
+            continue
+          }
+          info = (rmsWidgets[rmsCount] ??= { value$: -1, bounds })
           rmsCount++
         }
         else {
           throw new Error('unreachable')
         }
 
-        info.index = (node.result.value as Value.Audio).getAudio()
-        info.floats = sound.getAudio(info.index)
+        info.value$ = (node.result.value as Value.Dynamic).value$
         assign(info.bounds, bounds)
 
         nodes.set(node.result, info)
@@ -106,6 +129,9 @@ const worker = {
     delta = rmsWidgets.length - rmsCount
     while (delta-- > 0) rmsWidgets.pop()
 
+    delta = listWidgets.length - listCount
+    while (delta-- > 0) listWidgets.pop()
+
     const LR = out.LR.getAudio()
 
     const length = BUFFER_SIZE
@@ -118,6 +144,7 @@ const worker = {
       floats,
       waves: waveWidgets as WidgetInfo[],
       rmss: rmsWidgets as WidgetInfo[],
+      lists: listWidgets as ListInfo[],
     }
   },
   async renderSource(sound$: number, code: string) {
@@ -139,7 +166,7 @@ const worker = {
 
       wasm.clockUpdate(clock.ptr)
 
-      const { LR, floats, waves, rmss } = await this.build(sound$, code)
+      const { LR, floats, waves, rmss, lists } = await this.build(sound$, code)
 
       wasm.fillSound(
         sound.sound$,
@@ -150,7 +177,7 @@ const worker = {
         floats.ptr,
       )
 
-      return { LR, floats, waves, rmss }
+      return { LR, floats, waves, rmss, lists }
     }
     catch (e) {
       if (e instanceof Error) {

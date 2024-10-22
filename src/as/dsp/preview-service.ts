@@ -1,5 +1,5 @@
 import { Sigui } from 'sigui'
-import { Deferred, rpc } from 'utils'
+import { Deferred, getMemoryView, rpc, type MemoryView } from 'utils'
 import type { PreviewWorker } from './preview-worker.ts'
 import PreviewWorkerFactory from './preview-worker.ts?worker'
 
@@ -20,6 +20,7 @@ export function PreviewService(ctx: AudioContext) {
   const info = $({
     isReady: null as null | true,
     dsp: null as null | Awaited<ReturnType<typeof service.createDsp>>,
+    view: null as null | MemoryView
   })
 
   isReady.then(() => {
@@ -29,7 +30,12 @@ export function PreviewService(ctx: AudioContext) {
   $.fx(() => {
     const { isReady } = $.of(info)
     $().then(async () => {
-      await service.createDsp(ctx.sampleRate)
+      const dsp = await service.createDsp(ctx.sampleRate)
+      const view = getMemoryView(dsp.memory)
+      $.batch(() => {
+        info.dsp = dsp
+        info.view = view
+      })
     })
   })
 

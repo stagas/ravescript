@@ -1,9 +1,9 @@
 import { run as dspRun } from '../../../../generated/assembly/dsp-runner'
-import { BUFFER_SIZE, MAX_FLOATS, MAX_LISTS, MAX_LITERALS, MAX_RMSS, MAX_SCALARS } from '../constants'
+import { BUFFER_SIZE, MAX_AUDIOS, MAX_FLOATS, MAX_LISTS, MAX_LITERALS, MAX_SCALARS, MAX_VALUES } from '../constants'
 import { Clock } from '../core/clock'
 import { Engine } from '../core/engine'
 import { Gen } from '../gen/gen'
-import { Out, Track } from '../shared'
+import { Out, SoundValue, Track } from '../shared'
 import { SoundValueKind } from './dsp-shared'
 
 const enum Globals {
@@ -17,14 +17,15 @@ export function ntof(n: f32): f32 {
   return 440 * 2 ** ((n - 69) / 12)
 }
 
-export class SoundValue {
-  constructor(
-    public kind: SoundValueKind,
-    public ptr: i32,
-  ) { }
-  scalar$: i32 = 0
-  audio$: i32 = 0
-}
+// { n= 2 n 69 - 12 / ^ 440 * } ntof=
+// export class SoundValue {
+//   constructor(
+//     public kind: SoundValueKind,
+//     public ptr: i32,
+//   ) { }
+//   scalar$: i32 = 0
+//   audio$: i32 = 0
+// }
 
 export class Sound {
   constructor(public engine: Engine) { }
@@ -37,13 +38,17 @@ export class Sound {
   prevGens: Gen[] = []
   offsets: usize[][] = []
 
-  audios: Array<StaticArray<f32>> = new Array<StaticArray<f32>>(MAX_RMSS).map(() => new StaticArray<f32>(BUFFER_SIZE))
+  audios: StaticArray<f32>[] = new Array<StaticArray<f32>>(MAX_AUDIOS).map(() => new StaticArray<f32>(BUFFER_SIZE))
+  values: SoundValue[] = new Array<SoundValue>(MAX_VALUES).map((): SoundValue => {
+    const value: SoundValue = new SoundValue()
+    value.kind = SoundValueKind.Null
+    return value
+  })
+
   floats: StaticArray<i32> = new StaticArray<i32>(MAX_FLOATS)
   lists: StaticArray<i32> = new StaticArray<i32>(MAX_LISTS)
   literals: StaticArray<f32> = new StaticArray<f32>(MAX_LITERALS)
   scalars: StaticArray<f32> = new StaticArray<f32>(MAX_SCALARS)
-
-  values: SoundValue[] = []
 
   @inline
   reset(): void {
@@ -59,7 +64,7 @@ export class Sound {
     this.prevGens = this.gens
     this.gens = []
     this.offsets = []
-    this.values = []
+    // this.values = []
     // this.audios = []
   }
 

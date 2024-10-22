@@ -4,7 +4,9 @@ import { wasm } from 'rms'
 import { Sigui } from 'sigui'
 import { getMemoryView } from 'utils'
 import { BUFFER_SIZE } from '~/as/assembly/dsp/constants.ts'
+import { SoundValueKind } from '~/as/assembly/dsp/vm/dsp-shared.ts'
 import { ShapeOpts } from '~/as/assembly/gfx/sketch-shared.ts'
+import type { SoundValue } from '~/src/as/dsp/shared.ts'
 
 export type RmsDecoWidget = ReturnType<typeof RmsDecoWidget>
 
@@ -14,6 +16,7 @@ export function RmsDecoWidget(shapes: Shapes) {
   const info = $({
     rect: Rect(),
     index: -1,
+    value$: -1,
     color: '#fff',
     peak: 0,
     value: 0,
@@ -43,8 +46,14 @@ export function RmsDecoWidget(shapes: Shapes) {
     rect.y = y + h - rect.h
   })
 
-  function update(floats: Float32Array) {
-    rmsFloats.set(floats)
+  function update(audios: Float32Array[], values: SoundValue[], scalars: Float32Array) {
+    const value = values[info.value$]
+    if (value.kind === SoundValueKind.Scalar) {
+      rmsFloats.fill(scalars[value.ptr])
+    }
+    else if (value.kind === SoundValueKind.Audio) {
+      rmsFloats.set(audios[value.ptr])
+    }
     info.value = wasm.run()
   }
 

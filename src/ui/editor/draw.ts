@@ -1,4 +1,4 @@
-import { Point, pointToLinecol, Widgets, type Buffer, type Caret, type Dims, type Linecol, type PaneInfo, type Selection, type View } from 'editor'
+import { Point, pointToLinecol, Widgets, type Buffer, type Caret, type Dims, type Linecol, type PaneInfo, type Selection, type View, type Widget } from 'editor'
 import { Matrix, Rect } from 'gfx'
 import { Sigui } from 'sigui'
 import { assign, clamp, drawText, randomHex } from 'utils'
@@ -170,6 +170,16 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     return { line, col, hoverLine }
   }
 
+  function updateMarkRect(w: Widget) {
+    const { charWidth, lineHeight } = dims.info
+    const b = w.bounds
+    const p = viewPointFromLinecol(b)
+    w.rect.x = p.x - 1
+    w.rect.y = p.y - 1
+    w.rect.w = (((b.right - b.col) * charWidth) | 0) + 2.75
+    w.rect.h = (lineHeight) - .5
+  }
+
   // update token draw info
   $.fx(() => {
     const { triggerUpdateTokenDrawInfo } = info
@@ -208,14 +218,7 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
       w.rect.h = widgets.heights.subs
     })
 
-    widgets.mark.forEach(w => {
-      const b = w.bounds
-      const p = viewPointFromLinecol(b)
-      w.rect.x = p.x - 1
-      w.rect.y = p.y - 1
-      w.rect.w = (((b.right - b.col) * charWidth) | 0) + 2.75
-      w.rect.h = (lineHeight) - .5
-    })
+    widgets.mark.forEach(updateMarkRect)
 
     tokens.forEach(token => {
       const point = viewPointFromLinecol(token)
@@ -227,6 +230,8 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
         stroke,
       })
     })
+
+    info.shouldRedraw = true
   })
 
   // update caret view point
@@ -442,6 +447,8 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     webgl,
     shapes: webglShapes,
     widgets,
-    linecolFromViewPoint
+    linecolFromViewPoint,
+    viewPointFromLinecol,
+    updateMarkRect,
   }
 }

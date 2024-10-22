@@ -1,5 +1,5 @@
 //
-// auto-generated Sun Oct 20 2024 23:15:37 GMT+0300 (Eastern European Summer Time)
+// auto-generated Tue Oct 22 2024 15:32:02 GMT+0300 (Eastern European Summer Time)
 
 import { Value } from '../../src/as/dsp/value.ts'
 

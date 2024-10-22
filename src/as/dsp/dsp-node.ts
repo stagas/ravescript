@@ -7,6 +7,7 @@ import { dspGens, type Gen } from '~/generated/typescript/dsp-gens.ts'
 import { createVm, type DspVm } from '~/generated/typescript/dsp-vm.ts'
 import { DspWorklet, type DspProcessorOptions } from '~/src/as/dsp/dsp-worklet.ts'
 import dspWorkletUrl from '~/src/as/dsp/dsp-worklet.ts?url'
+import { postTokens, preTokens } from '~/src/as/dsp/pre-post.ts'
 import { Clock, DspWorkletMode, Track } from '~/src/as/dsp/shared.ts'
 import { AstNode, interpret } from '~/src/lang/interpreter.ts'
 import { Token, tokenize } from '~/src/lang/tokenize.ts'
@@ -116,20 +117,6 @@ export function createDspNode(ctx: AudioContext) {
   else {
     createNode()
   }
-
-  const preTokens = Array.from(tokenize({
-    // we implicit call [nrate 1] before our code
-    // so that the sample rate is reset.
-    code: `[nrate 1]`
-      // some builtin procedures
-      // + ` { .5* .5+ } norm= `
-      // + ` { at= p= sp= 1 [inc sp co* at] clip - p^ } dec= `
-      + ` [zero] `
-  }))
-
-  const postTokens = Array.from(tokenize({
-    code: `@`
-  }))
 
   function getTrackContext(track: Track) {
     const { view } = $.of(info)
@@ -477,7 +464,7 @@ export function createDspNode(ctx: AudioContext) {
     const { tracks, currTrack, nextTrack } = $.of(info)
     let track = tracks[currTrack]
 
-    const tokens = Array.from(tokenize({ code }))
+    const tokens = Array.from(tokenize({ code: code.replaceAll('\n', '\r\n') }))
 
     // fix invisible tokens bounds to the
     // last visible token for errors
@@ -489,14 +476,14 @@ export function createDspNode(ctx: AudioContext) {
       x.right = last.right
       x.bottom = last.bottom
       x.index = last.index
-      x.length = last.length
+      x.length = -1
       return x
     }
 
     const tokensCopy = [
-      ...preTokens.map(fixToken),
+      ...preTokens, //.map(fixToken),
       ...tokens,
-      ...postTokens.map(fixToken),
+      ...postTokens, //.map(fixToken),
     ].filter(t => t.type !== Token.Type.Comment).map(shallowCopy)
 
     // create hash id from tokens. We compare this afterwards to determine

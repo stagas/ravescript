@@ -4,6 +4,7 @@ import path from 'node:path'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import externalize from "vite-plugin-externalize-dependencies"
 import { VitePWA } from 'vite-plugin-pwa'
+import { watchAndRun } from 'vite-plugin-watch-and-run'
 import TsConfigPaths from 'vite-tsconfig-paths'
 import { ViteAssemblyScript } from './vendor/vite-plugin-assemblyscript.ts'
 import { ViteBundleUrl } from './vendor/vite-plugin-bundle-url.ts'
@@ -12,7 +13,6 @@ import { ViteHexLoader } from './vendor/vite-plugin-hex-loader.ts'
 import { ViteOpenInEditor } from './vendor/vite-plugin-open-in-editor.ts'
 import { VitePrintAddress } from './vendor/vite-plugin-print-address.ts'
 import { ViteUsing } from './vendor/vite-plugin-using.ts'
-import { watchAndRun } from 'vite-plugin-watch-and-run'
 
 const root = process.cwd()
 const homedir = os.homedir()

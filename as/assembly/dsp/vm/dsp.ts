@@ -5,7 +5,7 @@ import { Gen } from '../gen/gen'
 import { fill } from '../graph/fill'
 import { BinOpAudioAudio, BinOpAudioScalar, BinOpScalarAudio, BinOpScalarScalar } from './bin-op'
 import { DspBinaryOp, SoundValueKind } from './dsp-shared'
-import { Sound, SoundValue } from './sound'
+import { Sound } from './sound'
 
 export { DspBinaryOp }
 
@@ -36,9 +36,9 @@ export class Dsp {
   }
   @inline
   CreateValues(snd: Sound, count: i32): void {
-    for (let x = 0; x < count; x++) {
-      snd.values.push(new SoundValue(SoundValueKind.Null, 0))
-    }
+    // for (let x = 0; x < count; x++) {
+    //   snd.values.push(new SoundValue(SoundValueKind.Null, 0))
+    // }
   }
   @inline
   AudioToScalar(snd: Sound, audio$: i32, scalar$: i32): void {
