@@ -61,6 +61,22 @@ export function fillSound(
   )
 }
 
+export function fillTrack(
+  sound$: usize,
+  track$: usize,
+  begin: u32,
+  end: u32,
+  out$: usize
+): void {
+  const sound = changetype<Sound>(sound$)
+  sound.fillTrack(
+    track$,
+    begin,
+    end,
+    out$
+  )
+}
+
 export function getSoundAudio(sound$: usize, index: i32): usize {
   return changetype<usize>(changetype<Sound>(sound$).audios[index])
 }

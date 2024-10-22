@@ -11,7 +11,7 @@ import { screen } from '~/src/screen.ts'
 import { state } from '~/src/state.ts'
 import { Button } from '~/src/ui/Button.tsx'
 import { Canvas } from '~/src/ui/Canvas.tsx'
-import { WaveGlDecoWidget, RmsDecoWidget, ListMarkWidget } from '~/src/ui/editor/widgets/index.ts'
+import { ListMarkWidget, RmsDecoWidget, WaveGlDecoWidget } from '~/src/ui/editor/widgets/index.ts'
 import { copyRingInto } from '~/src/util/copy-ring-into.ts'
 
 /*
@@ -99,8 +99,8 @@ export function DspNodeDemo() {
   $.fx(() => {
     const { dsp, view } = $.of(dspNode.info)
     $()
-    info.audios = dsp?.player_audios$$.map(ptr => view.getF32(ptr, BUFFER_SIZE))
-    info.values = dsp?.player_values$$.map(ptr => SoundValue(view.memory.buffer, ptr))
+    info.audios = dsp.player_audios$$.map(ptr => view.getF32(ptr, BUFFER_SIZE))
+    info.values = dsp.player_values$$.map(ptr => SoundValue(view.memory.buffer, ptr))
   })
 
   $.fx(() => {
@@ -167,16 +167,16 @@ export function DspNodeDemo() {
   const listWidgets: ListMarkWidget[] = []
 
   $.fx(() => {
-    const { isReady, view: previewView } = $.of(preview.info)
-    $().then(async () => {
-      const result = await preview.service.createSound()
-      $.batch(() => {
-        info.previewSound$ = result.sound$
-        info.previewAudios = result.audios$$.map(ptr => previewView.getF32(ptr, BUFFER_SIZE))
-        info.previewValues = result.values$$.map(ptr => SoundValue(previewView.memory.buffer, ptr))
-        info.previewScalars = result.scalars
-      })
-    })
+    const { isReady, dsp, view: previewView } = $.of(preview.info)
+    $() //.then(async () => {
+    // const result = await preview.service.createSound()
+    // $.batch(() => {
+    info.previewSound$ = dsp.sound$
+    info.previewAudios = dsp.audios$$.map(ptr => previewView.getF32(ptr, BUFFER_SIZE))
+    info.previewValues = dsp.values$$.map(ptr => SoundValue(previewView.memory.buffer, ptr))
+    info.previewScalars = dsp.scalars
+    // })
+    // })
   })
 
   async function build() {
@@ -206,7 +206,7 @@ export function DspNodeDemo() {
     let listCount = 0
 
     try {
-      result = await preview.service.renderSource(previewSound$, code)
+      result = await preview.service.renderSource(code)
 
       const { isPlaying } = dspNode.info
 
@@ -216,9 +216,9 @@ export function DspNodeDemo() {
       if (result.error) {
         throw new Error(result.error.message, { cause: result.error.cause })
       }
-      if (!result?.floats) {
-        throw new Error('Could not render.')
-      }
+      // if (!result?.floats) {
+      //   throw new Error('Could not render.')
+      // }
 
       $.batch(() => {
         info.error = null

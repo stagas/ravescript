@@ -9,7 +9,6 @@ export const enum DspWorkletMode {
 }
 
 export type Clock = typeof Clock.type
-
 export const Clock = Struct({
   time: 'f64',
   timeStep: 'f64',
@@ -29,7 +28,6 @@ export const Clock = Struct({
 })
 
 export type Track = typeof Track.type
-
 export const Track = Struct({
   run_ops$: 'usize',
   setup_ops$: 'usize',
@@ -38,13 +36,13 @@ export const Track = Struct({
   audio_LR$: 'i32',
 })
 
+export type Out = typeof Out.type
 export const Out = Struct({
   L$: 'usize',
   R$: 'usize',
 })
 
 export type SoundValue = typeof SoundValue.type
-
 export const SoundValue = Struct({
   kind: 'i32',
   ptr: 'i32',

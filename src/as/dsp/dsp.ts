@@ -12,7 +12,6 @@ import { Clock } from './shared.ts'
 import { getAllProps } from './util.ts'
 import { Value } from './value.ts'
 import { wasm } from './wasm.ts'
-import type { DspApi } from '~/src/as/dsp/dsp-node.ts'
 import { postTokens, preTokens } from '~/src/as/dsp/pre-post.ts'
 
 const DEBUG = false

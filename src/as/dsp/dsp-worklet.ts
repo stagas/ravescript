@@ -1,9 +1,9 @@
-import { getMemoryView, omit, rpc, toRing, wasmSourceMap } from 'utils'
-import { BUFFER_SIZE, MAX_AUDIOS, MAX_SCALARS, MAX_TRACKS, MAX_VALUES } from '~/as/assembly/dsp/constants.ts'
+import { omit, rpc, toRing, wasmSourceMap } from 'utils'
 import type { __AdaptedExports as WasmExports } from '~/as/build/dsp-nort.d.ts'
 import hex from '~/as/build/dsp-nort.wasm?raw-hex'
 import dspConfig from '~/asconfig-dsp-nort.json'
-import { Clock, DspWorkletMode, Out } from '~/src/as/dsp/shared.ts'
+import { createDspWasm } from '~/src/as/dsp/dsp-wasm.ts'
+import { Clock, DspWorkletMode } from '~/src/as/dsp/shared.ts'
 
 type AudioProcess = (inputs: Float32Array[], outputs: Float32Array[]) => void
 
@@ -62,51 +62,12 @@ async function setup({ sourcemapUrl }: SetupOptions) {
 
   const wasm: typeof WasmExports = instance.exports as any
 
-  const view = getMemoryView(memory)
+  const dsp = createDspWasm(sampleRate, wasm, memory)
 
-  const core$ = wasm.createCore(sampleRate)
-  const engine$ = wasm.createEngine(sampleRate, core$)
-  const clock$ = wasm.getEngineClock(engine$)
-
-  const sound$ = wasm.createSound(engine$)
-
-  const out$ = wasm.createOut()
-  const out = Out(memory.buffer, out$)
-  const L$ = wasm.allocF32(BUFFER_SIZE)
-  const R$ = wasm.allocF32(BUFFER_SIZE)
-  out.L$ = L$
-  out.R$ = R$
-  const L = view.getF32(out.L$, BUFFER_SIZE)
-  const R = view.getF32(out.R$, BUFFER_SIZE)
-
-  const player$ = wasm.createPlayer(sound$, out$)
-  const player_track$ = player$ + wasm.getPlayerTrackOffset()
-  const player_audios$$ = Array.from({ length: MAX_AUDIOS }, (_, index) => wasm.getSoundAudio(sound$, index))
-  const player_values$$ = Array.from({ length: MAX_VALUES }, (_, index) => wasm.getSoundValue(sound$, index))
-  const player_scalars = view.getF32(wasm.getSoundScalars(sound$), MAX_SCALARS)
-  const tracks$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createTrack())
-  const run_ops$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createOps())
-  const setup_ops$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createOps())
-  const literals$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createLiterals())
-  const lists$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createLists())
-
-  // TODO: preallocate audios and return here their pointers
   return {
     wasm,
     memory,
-    clock$,
-    L,
-    R,
-    player$,
-    player_track$,
-    player_audios$$,
-    player_values$$,
-    player_scalars,
-    tracks$$,
-    run_ops$$,
-    setup_ops$$,
-    literals$$,
-    lists$$,
+    ...dsp,
   }
 }
 

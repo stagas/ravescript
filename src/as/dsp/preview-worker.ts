@@ -4,15 +4,17 @@ self.document = {
   baseURI: location.origin
 }
 
-import { Dsp, Sound, Value, wasm } from 'dsp'
-import { assign, getMemoryView, Lru, rpc } from 'utils'
-import { BUFFER_SIZE, MAX_AUDIOS, MAX_SCALARS, MAX_VALUES } from '~/as/assembly/dsp/constants.ts'
+import { Value, wasm } from 'dsp'
+import { assign, getMemoryView, Lru, rpc, type MemoryView } from 'utils'
+import { BUFFER_SIZE } from '~/as/assembly/dsp/constants.ts'
+import type { __AdaptedExports as WasmExports } from '~/as/build/dsp-nort.d.ts'
+import { builds, getTokens, setupTracks } from '~/src/as/dsp/dsp-build.ts'
+import { createDspWasm } from '~/src/as/dsp/dsp-wasm.ts'
+import { Clock, Out, type Track } from '~/src/as/dsp/shared.ts'
 import { AstNode } from '~/src/lang/interpreter.ts'
-import { Token, tokenize } from '~/src/lang/tokenize.ts'
+import { Token } from '~/src/lang/tokenize.ts'
 
 export type PreviewWorker = typeof worker
-
-const sounds = new Map<number, Sound>()
 
 const getFloats = Lru(10, (_key: string, length: number) => wasm.alloc(Float32Array, length), item => item.fill(0), item => item.free())
 
@@ -34,37 +36,59 @@ const rmsWidgets: WidgetInfo[] = []
 const listWidgets: ListInfo[] = []
 
 const worker = {
-  dsp: null as null | Dsp,
+  dsp: null as null | ReturnType<typeof createDspWasm>,
+  view: null as null | MemoryView,
+  out$: null as null | number,
+  clock: null as null | Clock,
+  tracks: null as null | Track[],
+  track: null as null | Track,
   error: null as null | Error,
   async createDsp(sampleRate: number) {
-    this.dsp = Dsp({ sampleRate })
+    const dsp = this.dsp = createDspWasm(sampleRate, wasm as unknown as typeof WasmExports, wasm.memory)
+    const view = this.view = getMemoryView(wasm.memory)
+    this.clock = Clock(wasm.memory.buffer, dsp.clock$)
+    this.tracks = setupTracks(
+      view,
+      dsp.tracks$$,
+      dsp.run_ops$$,
+      dsp.setup_ops$$,
+      dsp.literals$$,
+      dsp.lists$$,
+    )
+    this.track = this.tracks[0]
     return {
       memory: wasm.memory,
+      L: dsp.L,
+      R: dsp.R,
+      sound$: dsp.sound$,
+      audios$$: dsp.player_audios$$,
+      values$$: dsp.player_values$$,
+      scalars: dsp.player_scalars,
     }
   },
-  async createSound() {
-    const dsp = this.dsp
-    if (!dsp) throw new Error('Dsp not ready.')
+  // async createSound() {
+  //   const dsp = this.dsp
+  //   if (!dsp) throw new Error('Dsp not ready.')
 
-    const sound = dsp.Sound()
-    sounds.set(sound.sound$, sound)
+  //   const sound = dsp.Sound()
+  //   sounds.set(sound.sound$, sound)
 
-    const audios$$ = Array.from({ length: MAX_AUDIOS }, (_, index) => wasm.getSoundAudio(sound.sound$, index))
-    const values$$ = Array.from({ length: MAX_VALUES }, (_, index) => wasm.getSoundValue(sound.sound$, index))
-    const scalars = getMemoryView(wasm.memory).getF32(wasm.getSoundScalars(sound.sound$), MAX_SCALARS)
+  //   const audios$$ = Array.from({ length: MAX_AUDIOS }, (_, index) => wasm.getSoundAudio(sound.sound$, index))
+  //   const values$$ = Array.from({ length: MAX_VALUES }, (_, index) => wasm.getSoundValue(sound.sound$, index))
+  //   const scalars = getMemoryView(wasm.memory).getF32(wasm.getSoundScalars(sound.sound$), MAX_SCALARS)
 
-    return { sound$: sound.sound$, audios$$, values$$, scalars }
-  },
-  async build(sound$: number, code: string) {
-    const dsp = this.dsp
-    if (!dsp) throw new Error('Dsp not ready.')
+  //   return { sound$: sound.sound$, audios$$, values$$, scalars }
+  // },
+  async build(code: string) {
+    const { dsp, track } = this
+    if (!dsp || !track) throw new Error('Dsp not ready.')
 
-    const sound = sounds.get(sound$)
-    if (!sound) throw new Error('Sound not found, id: ' + sound$)
+    const { tokens } = getTokens(code.replaceAll('\n', '\r\n'))
 
-    const tokens = Array.from(tokenize({ code: code.replaceAll('\n', '\r\n') }))
+    const buildTrack = builds.get(track)!
 
-    const { program, out } = sound.process(tokens)
+    const { program, out } = buildTrack(tokens)
+
     if (!out.LR) throw new Error('No audio in the stack.', { cause: { nodes: [] } })
 
     program.value.results.sort(({ result: { bounds: a } }, { result: { bounds: b } }) =>
@@ -134,31 +158,25 @@ const worker = {
 
     const LR = out.LR.getAudio()
 
-    const length = BUFFER_SIZE
-    const key = `${sound$}:${length}:${epoch++}`
-    const floats = getFloats(key, length)
-
     return {
-      ops$: sound.ops.ptr,
       LR,
-      floats,
       waves: waveWidgets as WidgetInfo[],
       rmss: rmsWidgets as WidgetInfo[],
       lists: listWidgets as ListInfo[],
     }
   },
-  async renderSource(sound$: number, code: string) {
-    const dsp = this.dsp
-    if (!dsp) throw new Error('Dsp not ready.')
+  async renderSource(code: string) {
+    const { dsp, view, clock, track } = this
+    if (!dsp || !view || !clock || !track) throw new Error('Dsp not ready.')
 
-    const sound = sounds.get(sound$)
-    if (!sound) throw new Error('Sound not found, id: ' + sound$)
+    // const sound = sounds.get(sound$)
+    // if (!sound) throw new Error('Sound not found, id: ' + sound$)
 
-    const { clock } = dsp
     const info = this
 
     try {
-      sound.reset()
+      wasm.resetSound(dsp.sound$)
+      wasm.clearSound(dsp.sound$)
 
       clock.time = 0
       clock.barTime = 0
@@ -166,17 +184,17 @@ const worker = {
 
       wasm.clockUpdate(clock.ptr)
 
-      const { LR, floats, waves, rmss, lists } = await this.build(sound$, code)
-
-      wasm.fillSound(
-        sound.sound$,
-        sound.ops.ptr,
-        LR,
+      const { LR, waves, rmss, lists } = await this.build(code)
+      console.log(dsp.sound$, track.ptr, dsp.out$)
+      wasm.fillTrack(
+        dsp.sound$,
+        track.ptr,
         0,
-        floats.length,
-        floats.ptr,
+        BUFFER_SIZE,
+        dsp.out$,
       )
 
+      const floats = dsp.L
       return { LR, floats, waves, rmss, lists }
     }
     catch (e) {
