@@ -23,7 +23,7 @@ export function ListMarkWidget(pane: Pane) {
   box.view.color = hexToInt(info.color)
   box.view.alpha = .2
 
-  function update(audios: Float32Array[], values: SoundValue[], scalars: Float32Array) {
+  function update(values: SoundValue[], audios: Float32Array[], scalars: Float32Array) {
     const value = values[info.indexValue$]
     if (value.kind === SoundValueKind.Scalar) {
       info.value = scalars[value.ptr]

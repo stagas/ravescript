@@ -28,7 +28,7 @@ export function Home() {
           <Link href="/canvas">Canvas</Link>
           <Link href="/webgl">WebGL</Link>
           <Link href="/editor">Editor</Link>
-          <Link href="/dsp-node">Dsp Node</Link>
+          <Link href="/dsp">Dsp</Link>
           <Link href="/worker-worklet">Worker-Worklet</Link>
           <Link href="/asc">AssemblyScript</Link>
           <Link href="/qrcode">QrCode</Link>

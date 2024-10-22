@@ -43,6 +43,12 @@
     "allowJs": true,
     "strict": true,
     "paths": {
+      "ui": [
+        "./src/ui/index.ts"
+      ],
+      "lang": [
+        "./src/lang/index.ts"
+      ],
       "editor": [
         "./src/ui/editor/index.ts"
       ],

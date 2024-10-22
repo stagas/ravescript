@@ -42,7 +42,7 @@ export function App() {
     '!/canvas': () => <CanvasDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/webgl': () => <WebGLDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/editor': () => <EditorDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
-    '/dsp-node': () => <DspNodeDemo />,
+    '/dsp': () => <DspNodeDemo />,
     '/worker-worklet': () => <WorkerWorkletDemo />,
     '/asc': () => <AssemblyScript />,
     '/qrcode': () => <QrCode />,

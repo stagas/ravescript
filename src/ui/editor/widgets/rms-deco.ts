@@ -46,7 +46,7 @@ export function RmsDecoWidget(shapes: Shapes) {
     rect.y = y + h - rect.h
   })
 
-  function update(audios: Float32Array[], values: SoundValue[], scalars: Float32Array) {
+  function update(values: SoundValue[], audios: Float32Array[], scalars: Float32Array) {
     const value = values[info.value$]
     if (value.kind === SoundValueKind.Scalar) {
       rmsFloats.fill(scalars[value.ptr])

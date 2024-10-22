@@ -1,16 +1,12 @@
+import { BUFFER_SIZE, createDspNode, PreviewService, SoundValue } from 'dsp'
 import { Gfx, Matrix, Rect, wasm as wasmGfx } from 'gfx'
+import type { Token } from 'lang'
 import { Sigui } from 'sigui'
+import { Button, Canvas } from 'ui'
 import { assign, Lru, throttle } from 'utils'
-import { BUFFER_SIZE } from '~/as/assembly/dsp/constants.ts'
-import { createDspNode } from '~/src/as/dsp/dsp-node.ts'
-import { PreviewService } from '~/src/as/dsp/preview-service.ts'
-import { SoundValue } from '~/src/as/dsp/shared.ts'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
-import type { Token } from '~/src/lang/tokenize.ts'
 import { screen } from '~/src/screen.ts'
 import { state } from '~/src/state.ts'
-import { Button } from '~/src/ui/Button.tsx'
-import { Canvas } from '~/src/ui/Canvas.tsx'
 import { ListMarkWidget, RmsDecoWidget, WaveGlDecoWidget } from '~/src/ui/editor/widgets/index.ts'
 import { copyRingInto } from '~/src/util/copy-ring-into.ts'
 
@@ -92,13 +88,13 @@ export function DspNodeDemo() {
   $.fx(() => {
     const { dsp, view } = $.of(dspNode.info)
     $()
-    info.audios = dsp.player_audios$$.map(ptr => view.getF32(ptr, BUFFER_SIZE))
-    info.values = dsp.player_values$$.map(ptr => SoundValue(view.memory.buffer, ptr))
+    info.audios = dsp.audios$$.map(ptr => view.getF32(ptr, BUFFER_SIZE))
+    info.values = dsp.values$$.map(ptr => SoundValue(view.memory.buffer, ptr))
   })
 
   $.fx(() => {
     const { audios, values } = $.of(info)
-    const { isPlaying, clock, dsp: { player_scalars } } = $.of(dspNode.info)
+    const { isPlaying, clock, dsp: { scalars } } = $.of(dspNode.info)
     $()
     if (isPlaying) {
       const { pane } = dspEditor.editor.info
@@ -118,11 +114,11 @@ export function DspNodeDemo() {
         }
 
         for (const rms of rmsWidgets) {
-          rms.update(audios, values, player_scalars)
+          rms.update(values, audios, scalars)
         }
 
         for (const list of listWidgets) {
-          list.update(audios, values, player_scalars)
+          list.update(values, audios, scalars)
         }
 
         pane.view.anim.info.epoch++
@@ -246,7 +242,7 @@ export function DspNodeDemo() {
 
         rms.info.index = previewValues[rmsInfo.value$].ptr
         rms.info.value$ = rmsInfo.value$
-        if (!isPlaying) rms.update(previewAudios, previewValues, previewScalars)
+        if (!isPlaying) rms.update(previewValues, previewAudios, previewScalars)
 
         assign(rms.widget.bounds, fixBounds(rmsInfo.bounds))
         pane.draw.widgets.deco.add(rms.widget)

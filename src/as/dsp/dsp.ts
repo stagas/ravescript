@@ -24,9 +24,9 @@ export function createDsp(sampleRate: number, wasm: typeof WasmExports, memory: 
   const player$ = wasm.createPlayer(sound$, out$)
   const player_track$ = player$ + wasm.getPlayerTrackOffset()
 
-  const player_audios$$ = Array.from({ length: MAX_AUDIOS }, (_, index) => wasm.getSoundAudio(sound$, index))
-  const player_values$$ = Array.from({ length: MAX_VALUES }, (_, index) => wasm.getSoundValue(sound$, index))
-  const player_scalars = view.getF32(wasm.getSoundScalars(sound$), MAX_SCALARS)
+  const audios$$ = Array.from({ length: MAX_AUDIOS }, (_, index) => wasm.getSoundAudio(sound$, index))
+  const values$$ = Array.from({ length: MAX_VALUES }, (_, index) => wasm.getSoundValue(sound$, index))
+  const scalars = view.getF32(wasm.getSoundScalars(sound$), MAX_SCALARS)
 
   const tracks$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createTrack())
   const run_ops$$ = Array.from({ length: MAX_TRACKS }, () => wasm.createOps())
@@ -42,9 +42,9 @@ export function createDsp(sampleRate: number, wasm: typeof WasmExports, memory: 
     R,
     player$,
     player_track$,
-    player_audios$$,
-    player_values$$,
-    player_scalars,
+    audios$$,
+    values$$,
+    scalars,
     tracks$$,
     run_ops$$,
     setup_ops$$,

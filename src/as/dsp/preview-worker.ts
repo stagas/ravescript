@@ -4,21 +4,18 @@ self.document = {
   baseURI: location.origin
 }
 
-import { Value, wasm } from 'dsp'
-import { assign, getMemoryView, Lru, rpc, type MemoryView } from 'utils'
+import { assign, getMemoryView, rpc, type MemoryView } from 'utils'
 import { BUFFER_SIZE } from '~/as/assembly/dsp/constants.ts'
 import type { __AdaptedExports as WasmExports } from '~/as/build/dsp-nort.d.ts'
-import { builds, getTokens, setupTracks } from '~/src/as/dsp/dsp-build.ts'
-import { createDsp } from '~/src/as/dsp/dsp-wasm.ts'
-import { Clock, Out, type Track } from '~/src/as/dsp/shared.ts'
+import { builds, getTokens, setupTracks } from '~/src/as/dsp/build.ts'
+import { createDsp } from '~/src/as/dsp/dsp.ts'
+import { Clock, type Track } from '~/src/as/dsp/shared.ts'
+import { Value } from '~/src/as/dsp/value.ts'
+import { wasm } from '~/src/as/dsp/wasm.ts'
 import { AstNode } from '~/src/lang/interpreter.ts'
 import { Token } from '~/src/lang/tokenize.ts'
 
 export type PreviewWorker = typeof worker
-
-const getFloats = Lru(10, (_key: string, length: number) => wasm.alloc(Float32Array, length), item => item.fill(0), item => item.free())
-
-let epoch = 0
 
 interface WidgetInfo {
   value$: number
@@ -61,25 +58,12 @@ const worker = {
       L: dsp.L,
       R: dsp.R,
       sound$: dsp.sound$,
-      audios$$: dsp.player_audios$$,
-      values$$: dsp.player_values$$,
-      scalars: dsp.player_scalars,
+      audios$$: dsp.audios$$,
+      values$$: dsp.values$$,
+      scalars: dsp.scalars,
     }
   },
-  // async createSound() {
-  //   const dsp = this.dsp
-  //   if (!dsp) throw new Error('Dsp not ready.')
-
-  //   const sound = dsp.Sound()
-  //   sounds.set(sound.sound$, sound)
-
-  //   const audios$$ = Array.from({ length: MAX_AUDIOS }, (_, index) => wasm.getSoundAudio(sound.sound$, index))
-  //   const values$$ = Array.from({ length: MAX_VALUES }, (_, index) => wasm.getSoundValue(sound.sound$, index))
-  //   const scalars = getMemoryView(wasm.memory).getF32(wasm.getSoundScalars(sound.sound$), MAX_SCALARS)
-
-  //   return { sound$: sound.sound$, audios$$, values$$, scalars }
-  // },
-  async build(code: string) {
+  build(code: string) {
     const { dsp, track } = this
     if (!dsp || !track) throw new Error('Dsp not ready.')
 
@@ -180,7 +164,7 @@ const worker = {
 
       wasm.clockUpdate(clock.ptr)
 
-      const { LR, waves, rmss, lists } = await this.build(code)
+      const { LR, waves, rmss, lists } = this.build(code)
 
       wasm.soundSetupTrack(dsp.sound$, track.ptr)
 

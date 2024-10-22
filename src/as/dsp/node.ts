@@ -1,9 +1,9 @@
 import { Sigui } from 'sigui'
 import { getMemoryView, rpc, type MemoryView } from 'utils'
-import { builds, getTokens, setupTracks } from '~/src/as/dsp/dsp-build.ts'
-import { DspWorklet, type DspProcessorOptions } from '~/src/as/dsp/dsp-worklet.ts'
-import dspWorkletUrl from '~/src/as/dsp/dsp-worklet.ts?url'
+import { builds, getTokens, setupTracks } from '~/src/as/dsp/build.ts'
 import { Clock, DspWorkletMode, Track } from '~/src/as/dsp/shared.ts'
+import { DspWorklet, type DspProcessorOptions } from '~/src/as/dsp/worklet.ts'
+import dspWorkletUrl from '~/src/as/dsp/worklet.ts?url'
 
 export class DspNode extends AudioWorkletNode {
   constructor(

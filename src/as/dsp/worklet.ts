@@ -2,7 +2,7 @@ import { omit, rpc, toRing, wasmSourceMap } from 'utils'
 import type { __AdaptedExports as WasmExports } from '~/as/build/dsp-nort.d.ts'
 import hex from '~/as/build/dsp-nort.wasm?raw-hex'
 import dspConfig from '~/asconfig-dsp-nort.json'
-import { createDsp } from '~/src/as/dsp/dsp-wasm.ts'
+import { createDsp } from '~/src/as/dsp/dsp.ts'
 import { Clock, DspWorkletMode } from '~/src/as/dsp/shared.ts'
 
 type AudioProcess = (inputs: Float32Array[], outputs: Float32Array[]) => void

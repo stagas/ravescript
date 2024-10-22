@@ -1,6 +1,6 @@
 import { SoundValueKind } from '~/as/assembly/dsp/vm/dsp-shared.ts'
 import { DspVm } from '~/generated/typescript/dsp-vm.ts'
-import type { TrackContext } from '~/src/as/dsp/dsp-build.ts'
+import type { TrackContext } from '~/src/as/dsp/build.ts'
 
 type SoundPartial = { context: TrackContext, vm: DspVm }
 
