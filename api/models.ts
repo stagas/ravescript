@@ -48,6 +48,27 @@ export interface Messages {
   type: string;
 }
 
+export const Profiles = z.object({
+  owner: z.string(),
+  nick: z.string(),
+  displayName: z.string(),
+  bio: z.string().nullish(),
+  avatar: z.string().nullish(),
+  banner: z.string().nullish(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+export interface Profiles {
+  avatar: string | null;
+  banner: string | null;
+  bio: string | null;
+  createdAt: Generated<Timestamp>;
+  displayName: string;
+  nick: string;
+  owner: string;
+  updatedAt: Generated<Timestamp>;
+}
+
 export const Users = z.object({
   nick: z.string(),
   email: z.string(),
@@ -71,11 +92,13 @@ export const DB = z.object({
   channels: Channels,
   channelUser: ChannelUser,
   messages: Messages,
+  profiles: Profiles,
   users: Users,
 })
 export interface DB {
   channels: Channels;
   channelUser: ChannelUser;
   messages: Messages;
+  profiles: Profiles;
   users: Users;
 }
