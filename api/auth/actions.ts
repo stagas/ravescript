@@ -45,6 +45,14 @@ export async function getUserByNick(nick: string) {
     .executeTakeFirst()
 }
 
+export async function getUserByNickOrThrow(nick: string) {
+  return await db
+    .selectFrom('users')
+    .selectAll()
+    .where('nick', '=', nick)
+    .executeTakeFirstOrThrow()
+}
+
 export async function getUserByEmail(email: string) {
   return await db
     .selectFrom('users')
@@ -69,7 +77,13 @@ export async function loginUser(ctx: Context, nick: string) {
   expires.setUTCFullYear(expires.getUTCFullYear() + 1)
 
   const isAdmin = ADMINS.includes(nick)
-  const session: UserSession = { nick, expires, isAdmin }
+  const user = await getUserByNickOrThrow(nick)
+  const session: UserSession = {
+    nick,
+    expires,
+    isAdmin,
+    defaultProfile: user.defaultProfile ?? '(unset)'
+  }
   await kv.set(sessionKey, session, {
     expireIn: expires.getTime() - now.getTime()
   })

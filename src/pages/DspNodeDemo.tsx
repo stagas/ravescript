@@ -2,9 +2,10 @@ import { BUFFER_SIZE, createDspNode, PreviewService, SoundValue } from 'dsp'
 import { Gfx, Matrix, Rect, wasm as wasmGfx } from 'gfx'
 import type { Token } from 'lang'
 import { Sigui } from 'sigui'
-import { Button, Canvas } from 'ui'
+import { Button, Canvas, go, Link } from 'ui'
 import { assign, Lru, throttle } from 'utils'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
+import { getSound, publishSound } from '~/src/rpc/sounds.ts'
 import { screen } from '~/src/screen.ts'
 import { state } from '~/src/state.ts'
 import { ListMarkWidget, RmsDecoWidget, WaveGlDecoWidget } from '~/src/ui/editor/widgets/index.ts'
@@ -54,8 +55,10 @@ export function DspNodeDemo() {
   using $ = Sigui()
 
   const info = $({
-    get width() { return screen.lg ? state.containerWidth / 2 : state.containerWidth },
-    get height() { return screen.lg ? state.containerHeight : state.containerHeight / 2 },
+    width: 500,
+    height: 500,
+    // get width() { return screen.lg ? state.containerWidth / 2 : state.containerWidth },
+    // get height() { return screen.lg ? state.containerHeight : state.containerHeight / 2 },
     code: `t 4* y=
 [saw (35 38 42 40) 4 [sin 1 co* t 4/]* ? ntof] [exp .25 y 8 /] [lp 9.15] .5^  * .27 * [slp 616 9453 [exp .4 y 4/ ] [lp 88.91] 1.35^ * + .9]
 `,
@@ -68,6 +71,42 @@ export function DspNodeDemo() {
     previewValues: [] as SoundValue[],
     previewScalars: new Float32Array(),
     error: null as null | Error,
+    creatorNick: null as null | string,
+    creatorName: '',
+    title: '(unsaved)',
+    isPublished: false,
+    isLoadingSound: false,
+  })
+
+  $.fx(() => {
+    const { searchParams } = state
+    $().then(async () => {
+      if (searchParams.has('sound')) {
+        $.batch(() => {
+          info.isPublished = false
+          info.isLoadingSound = true
+          info.title = ''
+          info.codeWorking = null
+        })
+        const { sound: soundId } = Object.fromEntries(searchParams)
+        const { sound, creator } = await getSound(soundId)
+        $.batch(() => {
+          info.isLoadingSound = false
+          info.isPublished = true
+          info.title = sound.title
+          info.code = sound.code
+          info.creatorNick = creator.nick
+          info.creatorName = creator.displayName
+        })
+      }
+      else {
+        $.batch(() => {
+          info.isPublished = false
+          info.creatorNick = null
+          info.title = ''
+        })
+      }
+    })
   })
 
   const ctx = new AudioContext({ sampleRate: 48000, latencyHint: 0.00001 })
@@ -313,11 +352,32 @@ export function DspNodeDemo() {
     return () => dspEditor.info.error = null
   })
 
-  return <div class="flex flex-col md:flex-row flex-nowrap">
-    <Button class="fixed z-50 right-5" onpointerdown={() => {
-      dspNode.info.isPlaying ? dspNode.stop() : dspNode.play()
-    }}>{() => dspNode.info.isPlaying ? 'Stop' : 'Play'}</Button>
-    {dspEditor}
-    {canvas}
+  return <div>
+    {() => info.isLoadingSound && !info.codeWorking
+      ? <div>Loading...</div>
+      : <div class="flex flex-col-reverse md:flex-row flex-nowrap">
+        <div class="fixed z-50 top-14 right-5 flex flex-row items-center gap-2">{() => [
+          <div>{
+            () => info.creatorNick && <span>
+              <Link href={`/${info.creatorNick}`}>{info.creatorName}</Link> /
+            </span>} {
+              () => info.isPublished && info.title
+            }</div>,
+
+          !info.isPublished && <Button onclick={async () => {
+            const title = prompt('Enter a title:')
+            if (!title) return
+            const { id } = await publishSound(title, info.code)
+            go(`/dsp?sound=${encodeURIComponent(id)}`)
+          }}>Publish</Button>,
+
+          <Button onpointerdown={() => {
+            dspNode.info.isPlaying ? dspNode.stop() : dspNode.play()
+          }}>{() => dspNode.info.isPlaying ? 'Stop' : 'Play'}</Button>
+        ]}</div>
+        {dspEditor}
+        {canvas}
+      </div>
+    }
   </div>
 }

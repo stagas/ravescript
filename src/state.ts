@@ -2,7 +2,7 @@ import { $, storage } from 'sigui'
 import type { z } from 'zod'
 import type { UserSession } from '~/api/auth/types.ts'
 import type { UiChannel } from '~/api/chat/types.ts'
-import type { Channels } from '~/api/models.ts'
+import type { Channels, Profiles } from '~/api/models.ts'
 import { lorem, loremRandomWord } from '~/lib/lorem.ts'
 import { AnimMode } from '~/src/as/gfx/anim.ts'
 import { env } from '~/src/env.ts'
@@ -63,7 +63,7 @@ class State {
   }
 
   // app
-  user?: UserSession | null
+  user?: $<UserSession> | null
 
   channelsList: Pick<z.infer<typeof Channels>, 'name'>[] = []
   channels: UiChannel[] = []

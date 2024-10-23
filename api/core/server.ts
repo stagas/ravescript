@@ -1,16 +1,19 @@
 import os from 'https://deno.land/x/os_paths@v7.4.0/src/mod.deno.ts'
 import { parseArgs } from 'jsr:@std/cli/parse-args'
 import * as path from 'jsr:@std/path'
-import '~/api/chat/actions.ts'
 import * as chat from '~/api/chat/routes.ts'
 import { app } from '~/api/core/app.ts'
 import { IS_DEV } from "~/api/core/constants.ts"
 import { cors, files, logger, session, watcher } from "~/api/core/middleware.ts"
-import '~/api/oauth/actions.ts'
 import * as oauthCommon from '~/api/oauth/routes/common.ts'
 import * as oauthGitHub from '~/api/oauth/routes/github.ts'
 import * as rpc from '~/api/rpc/routes.ts'
 import * as ws from '~/api/ws/routes.ts'
+
+import '~/api/chat/actions.ts'
+import '~/api/oauth/actions.ts'
+import '~/api/profiles/actions.ts'
+import '~/api/sounds/actions.ts'
 
 const dist = 'dist'
 const home = os.home() ?? '~'

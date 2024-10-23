@@ -43,6 +43,8 @@ const worker = {
   async createDsp(sampleRate: number) {
     const dsp = this.dsp = createDsp(sampleRate, wasm as unknown as typeof WasmExports, wasm.memory)
     const view = this.view = getMemoryView(wasm.memory)
+    wasm.__pin(dsp.sound$)
+    wasm.__pin(dsp.player$)
     this.clock = Clock(wasm.memory.buffer, dsp.clock$)
     this.tracks = setupTracks(
       view,

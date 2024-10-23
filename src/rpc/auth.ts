@@ -1,3 +1,4 @@
+import { $ } from 'sigui'
 import type * as actions from '~/api/auth/actions.ts'
 import type { UserSession } from '~/api/auth/types.ts'
 import { rpc } from '~/lib/rpc.ts'
@@ -16,6 +17,20 @@ export const forgotPassword = rpc<typeof actions.forgotPassword>('POST', 'forgot
 export const getResetPasswordUserNick = rpc<typeof actions.getResetPasswordUserNick>('GET', 'getResetPasswordUserNick')
 export const changePassword = rpc<typeof actions.changePassword>('POST', 'changePassword')
 
-export function loginUser(session: UserSession) {
-  state.user = session
+export function loginUserSession(userSession: UserSession | null) {
+  if (!userSession) throw new Error('No user session')
+  state.user = userSession ? $(userSession) : userSession
+}
+
+export async function maybeLogin(orRedirect?: string) {
+  if (state.user) return
+  try {
+    const userSession = await whoami()
+    return loginUserSession(userSession)
+  }
+  catch (error) {
+    console.warn(error)
+    state.user = null
+    if (orRedirect) location.href = orRedirect
+  }
 }

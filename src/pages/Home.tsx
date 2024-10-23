@@ -32,6 +32,7 @@ export function Home() {
           <Link href="/worker-worklet">Worker-Worklet</Link>
           <Link href="/asc">AssemblyScript</Link>
           <Link href="/qrcode">QrCode</Link>
+          <Link href="/create-profile">Create Profile</Link>
           <Link href="/about">About</Link>
         </div>
     }

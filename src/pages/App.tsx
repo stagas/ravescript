@@ -10,23 +10,26 @@ import { About } from '~/src/pages/About.tsx'
 import { AssemblyScript } from '~/src/pages/AssemblyScript.tsx'
 import { CanvasDemo } from '~/src/pages/CanvasDemo'
 import { Chat } from '~/src/pages/Chat/Chat.tsx'
+import { CreateProfile } from '~/src/pages/CreateProfile.tsx'
 import { DspNodeDemo } from '~/src/pages/DspNodeDemo.tsx'
 import { EditorDemo } from '~/src/pages/EditorDemo.tsx'
 import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
+import { Profile } from '~/src/pages/Profile.tsx'
 import { QrCode } from '~/src/pages/QrCode.tsx'
+import { Settings } from '~/src/pages/Settings.tsx'
 import { UiShowcase } from '~/src/pages/UiShowcase.tsx'
 import { WebGLDemo } from '~/src/pages/WebGLDemo.tsx'
 import { WebSockets } from '~/src/pages/WebSockets.tsx'
 import { WorkerWorkletDemo } from '~/src/pages/WorkerWorklet/WorkerWorkletDemo'
-import { whoami } from '~/src/rpc/auth.ts'
+import { maybeLogin } from '~/src/rpc/auth.ts'
 import { state, triggers } from '~/src/state.ts'
 import { go, Link } from '~/src/ui/Link.tsx'
 
 export function App() {
   using $ = Sigui()
 
-  if (!state.user) whoami().then(user => state.user = user)
+  maybeLogin()
 
   const info = $({
     bg: 'transparent',
@@ -47,6 +50,8 @@ export function App() {
     '/asc': () => <AssemblyScript />,
     '/qrcode': () => <QrCode />,
     '/about': () => <About />,
+    '!/settings': () => <Settings />,
+    '/create-profile': () => <CreateProfile />,
     '/verify-email': () => <VerifyEmail />,
     '/reset-password': () => <ResetPassword />,
     '/oauth/popup': () => {
@@ -104,7 +109,8 @@ export function App() {
       </div>
 
       <div class="flex items-center gap-2">
-        <Link href={() => `/${state.user?.nick ?? ''}`}>{() => state.user?.nick}</Link>
+        <Link href={() => `/${state.user?.defaultProfile}`}>Profile</Link>
+        <Link href="/settings">{() => state.user?.nick}</Link>
         {() => state.user ? <Logout then={() => go('/')} /> : <div />}
       </div>
     </Header>
@@ -116,7 +122,28 @@ export function App() {
         const el = router(state.pathname)
         if (el) return el
 
-        return <div>404 Not found</div>
+        return <Profile />
+
+        // const loading = <div>Loading...</div> as HTMLDivElement
+        // const notFound = <div>404 Not found</div> as HTMLDivElement
+
+        // const profileNick = state.pathname.slice(1)
+
+        // if (!state.profile || state.profile.nick !== profileNick) {
+        //   state.isFetchingProfile = true
+        //   getProfile(profileNick)
+        //     .then(profile => {
+        //       state.profile = profile
+        //     })
+        //     .catch(error => {
+        //       console.warn(error)
+        //       state.isFetchingProfile = false
+        //     })
+        //   return state.isFetchingProfile ? loading : notFound
+        // }
+        // else {
+        //   return <Profile />
+        // }
       }}
     </article>
   </main>

@@ -5,35 +5,28 @@ export async function up(db: Kysely<any>): Promise<void> {
 	// note: up migrations are mandatory. you must implement this function.
 	// For more info, see: https://kysely.dev/docs/migrations
 	await db.schema
-		.createTable('profiles')
+		.createTable('sounds')
 		.ifNotExists()
-		.addColumn('ownerNick', 'text', col => col.references('users.nick').notNull())
-		.addColumn('nick', 'text', col => col.primaryKey())
-		.addColumn('displayName', 'text', col => col.notNull())
-		.addColumn('bio', 'text')
-		.addColumn('avatar', 'text')
-		.addColumn('banner', 'text')
+		.addColumn('id', 'uuid', col => col.primaryKey().defaultTo(sql`gen_random_uuid()`))
+		.addColumn('ownerProfileNick', 'text', col => col.references('profiles.nick').notNull())
+		.addColumn('title', 'text', col => col.notNull())
+		.addColumn('code', 'text', col => col.notNull())
 		.addColumn('createdAt', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
 		.addColumn('updatedAt', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
 		.execute()
 
 	await db.schema
-		.createIndex('profiles_ownerNick_index')
+		.createIndex('sounds_ownerProfileNick_index')
 		.ifNotExists()
-		.on('profiles')
-		.column('ownerNick')
+		.on('sounds')
+		.column('ownerProfileNick')
 		.execute()
 
 	await db.schema
-		.createIndex('profiles_displayName_index')
+		.createIndex('sounds_title_index')
 		.ifNotExists()
-		.on('profiles')
-		.column('displayName')
-		.execute()
-
-	await db.schema
-		.alterTable('users')
-		.addColumn('defaultProfile', 'text', col => col.references('profiles.nick'))
+		.on('sounds')
+		.column('title')
 		.execute()
 }
 
@@ -42,13 +35,8 @@ export async function down(db: Kysely<any>): Promise<void> {
 	// note: down migrations are optional. you can safely delete this function.
 	// For more info, see: https://kysely.dev/docs/migrations
 	await db.schema
-		.dropTable('profiles')
+		.dropTable('sounds')
 		.ifExists()
 		.cascade()
-		.execute()
-
-	await db.schema
-		.alterTable('users')
-		.dropColumn('defaultProfile')
 		.execute()
 }

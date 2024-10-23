@@ -19,7 +19,7 @@ export function ResetPassword() {
       .changePassword(token, password)
       .then(session => {
         go('/')
-        actions.loginUser(session)
+        actions.loginUserSession(session)
       })
       .catch(err => info.error = err.message)
     return false

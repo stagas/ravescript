@@ -49,7 +49,7 @@ export interface Messages {
 }
 
 export const Profiles = z.object({
-  owner: z.string(),
+  ownerNick: z.string(),
   nick: z.string(),
   displayName: z.string(),
   bio: z.string().nullish(),
@@ -65,7 +65,24 @@ export interface Profiles {
   createdAt: Generated<Timestamp>;
   displayName: string;
   nick: string;
-  owner: string;
+  ownerNick: string;
+  updatedAt: Generated<Timestamp>;
+}
+
+export const Sounds = z.object({
+  id: z.string(),
+  ownerProfileNick: z.string(),
+  title: z.string(),
+  code: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+export interface Sounds {
+  code: string;
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  ownerProfileNick: string;
+  title: string;
   updatedAt: Generated<Timestamp>;
 }
 
@@ -77,9 +94,11 @@ export const Users = z.object({
   oauthGithub: z.boolean().nullish(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
+  defaultProfile: z.string().nullish(),
 })
 export interface Users {
   createdAt: Generated<Timestamp>;
+  defaultProfile: string | null;
   email: string;
   emailVerified: Generated<boolean | null>;
   nick: string;
@@ -93,6 +112,7 @@ export const DB = z.object({
   channelUser: ChannelUser,
   messages: Messages,
   profiles: Profiles,
+  sounds: Sounds,
   users: Users,
 })
 export interface DB {
@@ -100,5 +120,6 @@ export interface DB {
   channelUser: ChannelUser;
   messages: Messages;
   profiles: Profiles;
+  sounds: Sounds;
   users: Users;
 }
