@@ -3,6 +3,7 @@ import asc from 'assemblyscript/dist/asc'
 import fs from 'fs'
 import type { SourceMapPayload } from 'module'
 import { join, resolve } from 'path'
+import { createConcurrentQueue } from 'utils'
 import type { Plugin } from 'vite'
 
 interface AssemblyScriptPluginOptions {
@@ -54,6 +55,21 @@ async function compile(entryFile: string, mode: 'debug' | 'release', options: As
   }
 }
 
+const queue: (() => Promise<void>)[] = []
+let promise: Promise<void> | null = null
+async function flush() {
+  if (promise) return promise
+  async function run() {
+    let task: (() => Promise<void>) | undefined
+    while (task = queue.pop()) {
+      await task()
+    }
+  }
+  promise = run()
+  await promise
+  promise = null
+}
+
 export function ViteAssemblyScript(
   userOptions: Partial<AssemblyScriptPluginOptions> = defaultOptions
 ): Plugin {
@@ -74,13 +90,19 @@ export function ViteAssemblyScript(
       if (file.startsWith(matchPath)) {
         if (timestamp === handledTimestamp) return
         handledTimestamp = timestamp
-        await compile(entryFile, 'debug', options)
+        queue.push(async () => {
+          await compile(entryFile, 'debug', options)
+        })
+        await flush()
       }
     },
     async buildStart() {
       if (didBuild) return
       didBuild = true
-      await compile(entryFile, 'release', options)
+      queue.push(async () => {
+        await compile(entryFile, 'release', options)
+      })
+      await flush()
     },
   }
 }
