@@ -48,14 +48,18 @@ export function Widgets({ c }: {
     })
   }
 
-  function draw() {
+  function drawDecoMark() {
     update()
     deco.forEach(widgetDraw)
-    subs.forEach(widgetDraw)
     mark.forEach(widgetDraw)
   }
 
-  const widgets = { update, draw, deco, subs, mark, heights, lines }
+  function drawSubs() {
+    update()
+    subs.forEach(widgetDraw)
+  }
+
+  const widgets = { update, drawDecoMark, drawSubs, deco, subs, mark, heights, lines }
 
   return widgets
 }

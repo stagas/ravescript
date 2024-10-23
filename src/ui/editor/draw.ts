@@ -429,15 +429,16 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
       drawClear()
       drawActiveLine()
       drawSelection()
-      widgets.draw()
+      widgets.drawDecoMark()
       drawCode()
+      widgets.drawSubs()
       drawCaret()
       c.restore()
       drawScrollbars()
       info.shouldRedraw = false
     }
     else {
-      widgets.draw()
+      widgets.drawDecoMark()
     }
   }
 
