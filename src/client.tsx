@@ -1,3 +1,5 @@
+import '~/lib/watcher.ts'
+
 import { cleanup, hmr, mount } from 'sigui'
 import { App } from '~/src/pages/App.tsx'
 import { setState, state } from '~/src/state.ts'

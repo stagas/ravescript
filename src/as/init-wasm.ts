@@ -40,7 +40,7 @@ export function initWasm(wasm: Wasm) {
 
   let lru = new Set<number>()
   const TRIES = 16
-  const GC_EVERY = 1024000
+  const GC_EVERY = 819200
   let allocs = 0
 
   const funcs = new Map([
@@ -102,7 +102,7 @@ export function initWasm(wasm: Wasm) {
     //  Might not be ideal in all situations.
     // We shouldn't refresh if the failure is right after a new refresh,
     // otherwise we enter into infinite refreshes loop.
-    if (+new Date() - +new Date(performance.timeOrigin) > 2_000) {
+    if (+new Date() - +new Date(performance.timeOrigin) > 5_000) {
       location.href = location.href
     }
 

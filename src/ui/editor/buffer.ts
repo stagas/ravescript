@@ -16,21 +16,23 @@ export interface WordWrapProcessor {
   pre(s: string): string
   post(s: string): string
 }
+
 export type Buffer = ReturnType<typeof Buffer>
 
 function identity(x: any) { return x }
 
-export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identity, post: identity } }: {
+export function Buffer({ dims, code, tokenize, wordWrapProcessor: { pre = identity, post = identity } = {} }: {
   dims: Dims
   code: Signal<string>
   tokenize: (source: Source) => Generator<Token, void, unknown>
-  wordWrapProcessor?: WordWrapProcessor
+  wordWrapProcessor?: Partial<WordWrapProcessor>
 }) {
   using $ = Sigui()
 
   const info = $({
     maxColumns: dims.info.$.pageWidth,
     wordWrapEnabled: true,
+    breakWords: true,
     code,
     lines: [] as string[],
     get length() {
@@ -72,18 +74,18 @@ export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identi
   })
 
   function wordWrap(): Line[] {
-    let { code, maxColumns } = info
+    let { code, maxColumns, breakWords } = info
 
     const wrapped: Line[] = []
     let line = ''
     let word = ''
     let x = 0
 
-    code = wordWrapProcessor.pre(code)
+    code = pre(code)
 
     function push() {
       const joined = line + word
-      if (joined.length > maxColumns) {
+      if (joined.length > maxColumns && breakWords) {
         wrapped.push({ text: line })
         if (word.length) wrapped.push({ text: word })
       }
@@ -105,15 +107,21 @@ export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identi
       }
       else if (c === ' ') {
         if (x >= maxColumns) {
-          push()
-          word = c
+          if (breakWords) {
+            push()
+            word = c
+          }
+          else {
+            word += c
+            push()
+          }
         }
         else {
           line += word + c
           word = ''
         }
       }
-      else {
+      else if (breakWords) {
         if (word.length >= maxColumns) {
           wrapped.push({ text: word })
           word = ''
@@ -126,15 +134,18 @@ export function Buffer({ dims, code, tokenize, wordWrapProcessor = { pre: identi
           x = 0
         }
       }
+      else {
+        word += c
+      }
       x++
     }
 
-    if (line.length || word.length || word.length === code.length) {
-      push()
-    }
+    // if (line.length || word.length || word.length === code.length) {
+    push()
+    // }
 
     return wrapped.map(line => {
-      line.text = wordWrapProcessor.post(line.text)
+      line.text = post(line.text)
       return line
     })
   }

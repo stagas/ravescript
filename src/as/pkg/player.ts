@@ -83,9 +83,9 @@ export function Player(ctx: AudioContext) {
   }
 
   if (!registeredContexts.has(ctx)) {
+    registeredContexts.add(ctx)
     ctx.audioWorklet
       .addModule(playerWorkletUrl)
-      .then(() => registeredContexts.add(ctx))
       .then(createNode)
   }
   else {

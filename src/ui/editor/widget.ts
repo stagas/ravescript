@@ -48,23 +48,27 @@ export function Widgets({ c }: {
     })
   }
 
-  function draw() {
+  function drawDecoMark() {
     update()
     deco.forEach(widgetDraw)
-    subs.forEach(widgetDraw)
     mark.forEach(widgetDraw)
   }
 
-  const widgets = { update, draw, deco, subs, mark, heights, lines }
+  function drawSubs() {
+    update()
+    subs.forEach(widgetDraw)
+  }
+
+  const widgets = { update, drawDecoMark, drawSubs, deco, subs, mark, heights, lines }
 
   return widgets
 }
 
 export type Widget = ReturnType<typeof Widget>
 
-export function Widget() {
-  const rect = Rect(0, 0, 1, 1)
+export function Widget(rect = Rect(0, 0, 1, 1)) {
+  using $ = Sigui()
   const bounds = Bounds()
   function draw(c: CanvasRenderingContext2D) { }
-  return { rect, bounds, draw }
+  return $({ rect, bounds, draw })
 }

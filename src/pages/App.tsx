@@ -10,6 +10,7 @@ import { About } from '~/src/pages/About.tsx'
 import { AssemblyScript } from '~/src/pages/AssemblyScript.tsx'
 import { CanvasDemo } from '~/src/pages/CanvasDemo'
 import { Chat } from '~/src/pages/Chat/Chat.tsx'
+import { DspNodeDemo } from '~/src/pages/DspNodeDemo.tsx'
 import { EditorDemo } from '~/src/pages/EditorDemo.tsx'
 import { Home } from '~/src/pages/Home.tsx'
 import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
@@ -17,8 +18,9 @@ import { QrCode } from '~/src/pages/QrCode.tsx'
 import { UiShowcase } from '~/src/pages/UiShowcase.tsx'
 import { WebGLDemo } from '~/src/pages/WebGLDemo.tsx'
 import { WebSockets } from '~/src/pages/WebSockets.tsx'
+import { WorkerWorkletDemo } from '~/src/pages/WorkerWorklet/WorkerWorkletDemo'
 import { whoami } from '~/src/rpc/auth.ts'
-import { state } from '~/src/state.ts'
+import { state, triggers } from '~/src/state.ts'
 import { go, Link } from '~/src/ui/Link.tsx'
 
 export function App() {
@@ -29,7 +31,7 @@ export function App() {
   const info = $({
     bg: 'transparent',
     canvasWidth: state.$.containerWidth,
-    canvasHeight: 800,
+    canvasHeight: state.$.containerHeight,
   })
 
   const router = CachingRouter({
@@ -40,6 +42,8 @@ export function App() {
     '!/canvas': () => <CanvasDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/webgl': () => <WebGLDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
     '/editor': () => <EditorDemo width={info.$.canvasWidth} height={info.$.canvasHeight} />,
+    '/dsp': () => <DspNodeDemo />,
+    '/worker-worklet': () => <WorkerWorkletDemo />,
     '/asc': () => <AssemblyScript />,
     '/qrcode': () => <QrCode />,
     '/about': () => <About />,
@@ -77,6 +81,14 @@ export function App() {
       state.toastMessages = [...state.toastMessages, (ev as unknown as PromiseRejectionEvent).reason]
     }),
   ])
+
+  $.fx(() => {
+    const { user } = state
+    $()
+    $.flush()
+    triggers.resize++
+    requestAnimationFrame(() => triggers.resize++)
+  })
 
   return <main
     class="flex flex-col relative"

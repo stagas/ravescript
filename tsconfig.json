@@ -1,7 +1,9 @@
 {
   "include": [
     "admin",
+    "generated/typescript",
     "lib",
+    "scripts",
     "src",
     "vendor"
   ],
@@ -41,8 +43,20 @@
     "allowJs": true,
     "strict": true,
     "paths": {
+      "ui": [
+        "./src/ui/index.ts"
+      ],
+      "lang": [
+        "./src/lang/index.ts"
+      ],
       "editor": [
         "./src/ui/editor/index.ts"
+      ],
+      "dsp": [
+        "src/as/dsp/index.ts"
+      ],
+      "rms": [
+        "src/as/dsp/rms.ts"
       ],
       "gfx": [
         "./src/as/gfx/index.ts"

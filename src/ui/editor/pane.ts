@@ -37,7 +37,7 @@ export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProce
 
   const dims = Dims({ rect })
   const buffer = Buffer({ dims, code, tokenize, wordWrapProcessor })
-  const caret = Caret({ paneInfo: info, buffer })
+  const caret = Caret({ buffer })
   const selection = Selection({ buffer, caret })
   const history = History({ selection, buffer, caret })
   const kbd = Kbd({ paneInfo: info, misc, dims, selection, buffer, caret, history })

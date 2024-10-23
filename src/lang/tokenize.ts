@@ -120,6 +120,10 @@ export namespace Token {
       if (t.right > right) right = t.right
     }
 
+    line = isFinite(line) ? line : 0
+    col = isFinite(col) ? col : 0
+    index = isFinite(index) ? index : 0
+
     return { line, col, right, bottom, index, length: end - index }
   }
 }

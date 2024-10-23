@@ -23,6 +23,7 @@ export function ViteBundleUrl({ plugins }: { plugins: (Plugin | Plugin[])[] }): 
         configFile: false,
         clearScreen: false,
         customLogger: quietLogger,
+        plugins: [],
         build: {
           ...viteConfig?.build,
           lib: {

@@ -23,7 +23,7 @@ export function View({ width, height }: {
 
   const glCanvas = <Canvas width={width} height={height} class="absolute top-0 left-0" /> as HTMLCanvasElement
 
-  const svg = <svg width={width} height={height} class="absolute top-0 left-0" >
+  const svg = <svg width={() => info.width} height={() => info.height} class="absolute top-0 left-0" >
     {() => [...info.svgs]}
   </svg> as SVGSVGElement
 
@@ -42,10 +42,14 @@ export function View({ width, height }: {
     "
   /> as HTMLTextAreaElement
 
-  const el = <div class="editor relative touch-none" style={() => ({ cursor: info.cursor })}>
-    {canvas}
+  const el = <div class="editor relative touch-none" style={() => ({
+    cursor: info.cursor,
+    width: `${info.width}px`,
+    height: `${info.height}px`,
+  })}>
     {glCanvas}
     {svg}
+    {canvas}
     {textarea}
   </div> as HTMLDivElement
 

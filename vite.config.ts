@@ -4,6 +4,7 @@ import path from 'node:path'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import externalize from "vite-plugin-externalize-dependencies"
 import { VitePWA } from 'vite-plugin-pwa'
+import { watchAndRun } from 'vite-plugin-watch-and-run'
 import TsConfigPaths from 'vite-tsconfig-paths'
 import { ViteAssemblyScript } from './vendor/vite-plugin-assemblyscript.ts'
 import { ViteBundleUrl } from './vendor/vite-plugin-bundle-url.ts'
@@ -22,7 +23,9 @@ type Plugins = (Plugin | Plugin[])[]
 export default ({ mode }) => {
   loadEnv(mode, root)
 
-  const https = mode === 'development' ? {
+  const IS_DEV = mode === 'development'
+
+  const https = IS_DEV ? {
     key: fs.readFileSync(path.join(homedir, '.ssl-certs', 'devito.test-key.pem')),
     cert: fs.readFileSync(path.join(homedir, '.ssl-certs', 'devito.test.pem')),
   } : undefined
@@ -98,6 +101,27 @@ export default ({ mode }) => {
       ],
     }),
     ViteAssemblyScript({
+      configFile: 'asconfig-dsp.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/dsp',
+      srcEntryFile: 'as/assembly/dsp/index.ts',
+      mapFile: './as/build/dsp.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+        '--transform', './vendor/as-transform-update-dsp-gens.js',
+      ]
+    }),
+    ViteAssemblyScript({
+      configFile: 'asconfig-dsp-nort.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/dsp',
+      srcEntryFile: 'as/assembly/dsp/index.ts',
+      mapFile: './as/build/dsp.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+      ]
+    }),
+    ViteAssemblyScript({
       configFile: 'asconfig-pkg.json',
       projectRoot: '.',
       srcMatch: 'as/assembly/pkg',
@@ -118,6 +142,16 @@ export default ({ mode }) => {
       ]
     }),
     ViteAssemblyScript({
+      configFile: 'asconfig-rms.json',
+      projectRoot: '.',
+      srcMatch: 'as/assembly/dsp',
+      srcEntryFile: 'as/assembly/rms.ts',
+      mapFile: './as/build/rms.wasm.map',
+      extra: [
+        '--transform', './vendor/as-transform-unroll.js',
+      ]
+    }),
+    ViteAssemblyScript({
       configFile: 'asconfig-gfx.json',
       projectRoot: '.',
       srcMatch: 'as/assembly/gfx',
@@ -127,10 +161,20 @@ export default ({ mode }) => {
         '--transform', './vendor/as-transform-unroll.js',
       ]
     }),
-  ]
+    IS_DEV && watchAndRun([
+      {
+        name: 'scripts',
+        watchKind: ['add', 'change', 'unlink'],
+        watch: path.resolve('scripts/**.ts'),
+        run: 'pnpm scripts',
+        delay: 100
+      }
+    ]) as Plugin,
+  ].filter(Boolean) as Plugins
 
   return defineConfig({
     clearScreen: false,
+    publicDir: './public',
     server: {
       watch: {
         // KEEP: this option fixes hmr for an unknown reason
@@ -166,7 +210,7 @@ export default ({ mode }) => {
           admin: path.join(root, 'admin/index.html'),
         },
         treeshake: { propertyReadSideEffects: 'always' },
-        plugins: buildPlugins
+        plugins //: buildPlugins
       },
     },
   })

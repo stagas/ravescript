@@ -1,6 +1,6 @@
-import { logf, logf2, logf3, logf4, logf6, logi } from '../env'
+import { clamp11 } from '../util'
 import { Sketch } from './sketch'
-import { Box, Line, Matrix, Notes, Shape, ShapeOpts, WAVE_MIPMAPS, Wave, Note, Params, ParamValue } from './sketch-shared'
+import { Box, Line, Matrix, Note, Notes, Params, ParamValue, Shape, ShapeOpts, Wave } from './sketch-shared'
 import { lineIntersectsRect } from './util'
 
 const MAX_ZOOM: f32 = 0.5
@@ -589,7 +589,7 @@ export function draw(
         let p = i32(wave.floats$)
 
         let x_step: f32 = .5
-        let s: f32 = f32.load(p + (i32(nx) << 2))
+        let s: f32 = clamp11(f32.load(p + (i32(nx) << 2)))
         let n_step = wave.coeff / (1.0 / x_step)
 
         let cx = x
@@ -608,7 +608,7 @@ export function draw(
           nx += n_step
           if (cx >= right) break
 
-          s = f32.load(p + (i32(nx) << 2))
+          s = clamp11(f32.load(p + (i32(nx) << 2)))
 
           x1 = cx
           y1 = y + h * (s * 0.5 + 0.5)

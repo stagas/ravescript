@@ -6,10 +6,10 @@ export const screen = $({
   width: window.visualViewport!.width,
   height: window.visualViewport!.height,
   get sm() {
-    return screen.width < 640
+    return screen.width < 680
   },
   get md() {
-    return screen.width >= 640
+    return screen.width >= 680
   },
   get lg() {
     return screen.width >= 768
@@ -23,8 +23,4 @@ $.fx(() => [
     screen.width = viewport.width
     screen.height = viewport.height
   }), { unsafeInitial: true }),
-
-  dom.on(document, 'focus', () => {
-    console.log('trigger focus')
-  })
 ])

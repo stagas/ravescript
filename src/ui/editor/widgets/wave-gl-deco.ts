@@ -1,17 +1,26 @@
 import { Widget } from 'editor'
-import { wasm, type Shapes } from 'gfx'
+import { wasm, type Rect, type Shapes } from 'gfx'
 import { Sigui } from 'sigui'
+import type { SoundValue } from '~/src/as/dsp/shared.ts'
 import { hexToInt } from '~/src/ui/editor/util/rgb.ts'
+import { Stabilizer } from '~/src/util/stabilizer.ts'
 
-export function WaveGlWidget(shapes: Shapes) {
+export type WaveGlDecoWidget = ReturnType<typeof WaveGlDecoWidget>
+
+export function WaveGlDecoWidget(shapes: Shapes, rect?: Rect) {
   using $ = Sigui()
 
   const info = $({
+    index: -1,
+    resultValue: null as null | SoundValue,
+    previewFloats: wasm.alloc(Float32Array, 0),
     floats: wasm.alloc(Float32Array, 0),
-    color: '#f09',
+    stabilizer: new Stabilizer(),
+    stabilizerTemp: wasm.alloc(Float32Array, 0),
+    color: '#fff',
   })
 
-  const widget = Widget()
+  const widget = Widget(rect)
   const wave = shapes.Wave(widget.rect)
 
   $.fx(() => {

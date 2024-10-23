@@ -9,8 +9,8 @@ import { theme } from '~/src/theme.ts'
 import { Editor } from '~/src/ui/Editor.tsx'
 import { makeWaveform, waveform } from '~/src/ui/editor/util/waveform.ts'
 import { HoverMarkWidget, WaveCanvasWidget } from '~/src/ui/editor/widgets/index.ts'
-import { WaveGlWidget } from '~/src/ui/editor/widgets/wave-gl.ts'
-import { WaveSvgWidget } from '~/src/ui/editor/widgets/wave-svg.tsx'
+import { WaveGlDecoWidget } from '~/src/ui/editor/widgets/wave-gl-deco'
+import { WaveSvgWidget } from '~/src/ui/editor/widgets/wave-svg-deco'
 import { H2 } from '~/src/ui/Heading.tsx'
 
 export function EditorDemo({ width, height }: {
@@ -40,7 +40,6 @@ export function EditorDemo({ width, height }: {
   let value: number
   let digits: number
   let isDot = false
-  const hoverMark = HoverMarkWidget()
 
   function getHoveringNumber(pane: Pane) {
     const word = pane.buffer.wordUnderLinecol(pane.mouse.info.linecol)
@@ -244,6 +243,8 @@ export function EditorDemo({ width, height }: {
     inputHandlers,
   })
 
+  const hoverMark = HoverMarkWidget(editor.info.pane.draw.shapes)
+
   //   const pane2Info = $({
   //     code: `[hello]
   // [world]
@@ -301,7 +302,7 @@ export function EditorDemo({ width, height }: {
     Object.assign(d.widget.bounds, Token.bounds(gens[0]))
     pane.draw.widgets.deco.add(d.widget)
 
-    const d2 = WaveGlWidget(pane.draw.shapes)
+    const d2 = WaveGlDecoWidget(pane.draw.shapes)
     d2.info.floats = floats
     Object.assign(d2.widget.bounds, Token.bounds(gens[1]))
     pane.draw.widgets.deco.add(d2.widget)
@@ -314,8 +315,8 @@ export function EditorDemo({ width, height }: {
     const paneSvg = <svg
       x={pane.dims.info.rect.x}
       y={pane.dims.info.rect.y}
-      width={pane.dims.info.rect.w}
-      height={pane.dims.info.rect.h}
+      width={() => pane.dims.info.rect.w}
+      height={() => pane.dims.info.rect.h}
       viewBox={() => `${-pane.dims.info.scrollX} ${-pane.dims.info.scrollY} ${pane.dims.info.rect.w} ${pane.dims.info.rect.h}`}
 
     /> as SVGSVGElement

@@ -66,6 +66,7 @@ export function ViteAssemblyScript(
   const matchPath = resolve(join(options.projectRoot, options.srcMatch))
 
   let handledTimestamp: any
+  let didBuild = false
 
   return {
     name: 'vite-plugin-assemblyscript',
@@ -77,6 +78,8 @@ export function ViteAssemblyScript(
       }
     },
     async buildStart() {
+      if (didBuild) return
+      didBuild = true
       await compile(entryFile, 'release', options)
     },
   }

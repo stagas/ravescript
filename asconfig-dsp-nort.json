@@ -1,0 +1,35 @@
+{
+  "targets": {
+    "debug": {
+      "outFile": "./as/build/dsp-nort.wasm",
+      "textFile": "./as/build/dsp-nort.wat",
+      "sourceMap": true,
+      "debug": true,
+      "noAssert": true
+    },
+    "release": {
+      "outFile": "./as/build/dsp-nort.wasm",
+      "textFile": "./as/build/dsp-nort.wat",
+      "sourceMap": true,
+      "debug": false,
+      "optimizeLevel": 0,
+      "shrinkLevel": 0,
+      "converge": false,
+      "noAssert": true
+    }
+  },
+  "options": {
+    "enable": [
+      "simd",
+      "relaxed-simd",
+      "threads"
+    ],
+    "sharedMemory": true,
+    "importMemory": true,
+    "initialMemory": 2000,
+    "maximumMemory": 2000,
+    "bindings": "raw",
+    "runtime": false,
+    "exportRuntime": false
+  }
+}

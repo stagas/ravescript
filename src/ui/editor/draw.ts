@@ -1,4 +1,4 @@
-import { Point, Widgets, type Buffer, type Caret, type Dims, type Linecol, type PaneInfo, type Selection, type View } from 'editor'
+import { Point, pointToLinecol, Widgets, type Buffer, type Caret, type Dims, type Linecol, type PaneInfo, type Selection, type View, type Widget } from 'editor'
 import { Matrix, Rect } from 'gfx'
 import { Sigui } from 'sigui'
 import { assign, clamp, drawText, randomHex } from 'utils'
@@ -32,6 +32,8 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     c: null as null | CanvasRenderingContext2D,
     pr: screen.$.pr,
     rect,
+
+    shouldRedraw: false,
 
     triggerUpdateTokenDrawInfo: 0,
 
@@ -135,7 +137,7 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     return p
   }
 
-  function linecolFromViewPoint({ x, y }: Point): Linecol {
+  function linecolFromViewPoint({ x, y }: Point): Linecol & { hoverLine: boolean } {
     const { charWidth, lineHeight } = dims.info
     const { linesVisual } = buffer.info
 
@@ -143,27 +145,39 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     x -= textPadding
 
     let top = 0
+    let ty = 0
+    let hoverLine = false
     out: {
       for (let i = 0; i <= linesVisual.length; i++) {
         if (y < top) {
-          y = i - 1
+          ty = i - 1
           break out
         }
 
         let l = widgets.lines.get(i)
-        if (l) {
-          top += l.deco
-          if (l.subs) top += l.subs + 2
-        }
+        if (l) top += l.deco
+        hoverLine = y > top
         top += lineHeight
+        if (l?.subs) top += l.subs + 2
       }
-      y = linesVisual.length - 1
+      ty = linesVisual.length - 1
+      hoverLine = false
     }
 
-    const line = clamp(0, linesVisual.length - 1, y)
-    const col = clamp(0, linesVisual[y]?.text.length ?? 0, Math.round((x - 3) / charWidth))
+    const line = clamp(0, linesVisual.length - 1, ty)
+    const col = clamp(0, linesVisual[ty]?.text.length ?? 0, Math.round((x - 3) / charWidth))
 
-    return { line, col }
+    return { line, col, hoverLine }
+  }
+
+  function updateMarkRect(w: Widget) {
+    const { charWidth, lineHeight } = dims.info
+    const b = w.bounds
+    const p = viewPointFromLinecol(b)
+    w.rect.x = p.x - 1
+    w.rect.y = p.y - 1
+    w.rect.w = (((b.right - b.col) * charWidth) | 0) + 2.75
+    w.rect.h = (lineHeight) - .5
   }
 
   // update token draw info
@@ -204,14 +218,7 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
       w.rect.h = widgets.heights.subs
     })
 
-    widgets.mark.forEach(w => {
-      const b = w.bounds
-      const p = viewPointFromLinecol(b)
-      w.rect.x = p.x - 1
-      w.rect.y = p.y - 1
-      w.rect.w = (((b.right - b.col) * charWidth) | 0) + 2.75
-      w.rect.h = (lineHeight) - .5
-    })
+    widgets.mark.forEach(updateMarkRect)
 
     tokens.forEach(token => {
       const point = viewPointFromLinecol(token)
@@ -223,19 +230,17 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
         stroke,
       })
     })
+
+    info.shouldRedraw = true
   })
 
   // update caret view point
   $.fx(() => {
+    const { triggerUpdateTokenDrawInfo } = info
     const { tokens } = buffer.info
     const { x, y } = caret.visual
     $()
-    // NOTE: bugfix while toggling block comments caret wasn't updated.
-    //  there must be a real solution to this but for now this works.
-    assign(caretViewPoint, viewPointFromLinecol({ line: y, col: x }))
-    queueMicrotask(() => {
-      assign(caretViewPoint, viewPointFromLinecol({ line: y, col: x }))
-    })
+    assign(caretViewPoint, viewPointFromLinecol(pointToLinecol(caret.visual)))
   })
 
   // wait for fonts to load
@@ -250,6 +255,7 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
 
   // update inner size
   $.fx(() => {
+    const { triggerUpdateTokenDrawInfo } = info
     const { w, h } = info.rect
     const { linesVisual } = buffer.info
     const { charWidth, lineHeight, innerSize } = dims.info
@@ -328,6 +334,7 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
 
   // trigger draw
   $.fx(() => {
+    const { width, height } = view.info
     const { c, pr, rect: { x, y, w, h }, showScrollbars } = $.of(info)
     const {
       isHovering,
@@ -340,6 +347,7 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     const { x: cx, y: cy } = caret.visual
     const { start: { line: sl, col: sc }, end: { line: el, col: ec } } = selection.info
     $()
+    info.shouldRedraw = true
     view.anim.info.epoch++
   })
 
@@ -353,9 +361,9 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     c.clearRect(x, y, w + 1, h + 1)
 
     // TODO: temp remove this
-    c.translate(x, y)
-    c.fillStyle = '#' + color
-    c.fillRect(0, 0, w, h)
+    // c.translate(x, y)
+    // c.fillStyle = '#' + color
+    // c.fillRect(0, 0, w, h)
 
     c.translate(dims.info.scrollX, dims.info.scrollY)
   }
@@ -417,14 +425,21 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
 
   function draw() {
     c.save()
-    drawClear()
-    drawActiveLine()
-    drawSelection()
-    widgets.draw()
-    drawCode()
-    drawCaret()
-    c.restore()
-    drawScrollbars()
+    if (info.shouldRedraw) {
+      drawClear()
+      drawActiveLine()
+      drawSelection()
+      widgets.drawDecoMark()
+      drawCode()
+      widgets.drawSubs()
+      drawCaret()
+      c.restore()
+      drawScrollbars()
+      info.shouldRedraw = false
+    }
+    else {
+      widgets.drawDecoMark()
+    }
   }
 
   return {
@@ -433,6 +448,8 @@ export function Draw({ paneInfo, view, selection, caret, dims, buffer, colorize 
     webgl,
     shapes: webglShapes,
     widgets,
-    linecolFromViewPoint
+    linecolFromViewPoint,
+    viewPointFromLinecol,
+    updateMarkRect,
   }
 }

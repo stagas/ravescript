@@ -4,13 +4,14 @@ import { Buffer } from '~/src/ui/editor/buffer.ts'
 import { Dims } from '~/src/ui/editor/dims.ts'
 import { Rect } from '~/src/ui/editor/util/types.ts'
 
-function B(code: string, maxWidth: number) {
+function B(code: string, maxWidth: number, breakWords = true) {
   const info = $({ code, width: maxWidth, height: 300 })
   const rect = $(Rect(), { w: 100 })
   const dims = Dims({ rect })
   dims.info.charWidth = 100 / maxWidth
   const b = Buffer({ dims, code: info.$.code, tokenize })
   b.info.maxColumns = maxWidth
+  b.info.breakWords = breakWords
   return b
 }
 
@@ -56,13 +57,22 @@ describe('TextBuffer', () => {
       ])
     })
 
-    it('splits words', () => {
+    it('breaks words', () => {
       const b = B('helloworld loremipsum', 8)
       expect(b.info.linesVisual).toEqual([
         { text: 'hellowor' },
         { text: 'ld ' },
         { text: 'loremips' },
         { text: 'um' },
+      ])
+    })
+
+    it('does not break words when breakWords=false', () => {
+      const b = B('helloworld loremipsum', 8, false)
+      b.info.breakWords = false
+      expect(b.info.linesVisual).toEqual([
+        { text: 'helloworld ' },
+        { text: 'loremipsum' },
       ])
     })
 

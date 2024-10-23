@@ -1,4 +1,3 @@
-import { randomHash } from 'utils'
 import { z } from 'zod'
 import { getUserByEmail, loginUser } from '~/api/auth/actions.ts'
 import { kv } from '~/api/core/app.ts'
@@ -49,7 +48,7 @@ const OAuthUser = z.union([
 
 const headers = {
   'content-type': 'application/json',
-  'user-agent': 'cfw-oauth-login',
+  'user-agent': 'oauth-login',
   accept: 'application/json',
 }
 
@@ -104,7 +103,7 @@ export function mount(app: Router) {
     }
 
     // create oauth session
-    const id = randomHash()
+    const id = crypto.randomUUID()
     const now = new Date()
     const expires = new Date(now)
     expires.setMinutes(expires.getMinutes() + 30)
@@ -121,15 +120,6 @@ export function mount(app: Router) {
     const url = new URL(`${origin}/oauth/register`)
     url.searchParams.set('id', id)
     const res = ctx.redirect(302, url.href)
-
-    // res.headers.set('set-cookie', createCookie(
-    //   'oauth',
-    //   id,
-    //   expires,
-    //   'HttpOnly',
-    //   'Secure',
-    //   'SameSite=Strict'
-    // ))
 
     return res
   }])
