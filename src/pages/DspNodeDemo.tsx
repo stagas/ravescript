@@ -3,7 +3,7 @@ import { Gfx, Matrix, Rect, wasm as wasmGfx } from 'gfx'
 import type { Token } from 'lang'
 import { Sigui } from 'sigui'
 import { Button, Canvas, go, Link } from 'ui'
-import { assign, Lru, throttle } from 'utils'
+import { assign, dom, Lru, throttle } from 'utils'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
 import { getSound, publishSound } from '~/src/rpc/sounds.ts'
 import { screen } from '~/src/screen.ts'
@@ -55,8 +55,24 @@ export function DspNodeDemo() {
   using $ = Sigui()
 
   const info = $({
-    width: 500,
-    height: 500,
+    el: null as null | HTMLDivElement,
+    resized: 0,
+    get editorWidth() {
+      info.resized
+      return info.el ? info.el.clientWidth * (screen.lg ? 0.5 : 1) : 100
+    },
+    get editorHeight() {
+      info.resized
+      return info.el ? info.el.clientHeight * (screen.lg ? 1 : 0.7) : 100
+    },
+    get canvasWidth() {
+      info.resized
+      return info.el ? info.el.clientWidth * (screen.lg ? 0.5 : 1) : 100
+    },
+    get canvasHeight() {
+      info.resized
+      return info.el ? info.el.clientHeight * (screen.lg ? 1 : 0.3) : 100
+    },
     // get width() { return screen.lg ? state.containerWidth / 2 : state.containerWidth },
     // get height() { return screen.lg ? state.containerHeight : state.containerHeight / 2 },
     code: `t 4* y=
@@ -174,15 +190,15 @@ export function DspNodeDemo() {
     }
   })
 
-  const canvas = <Canvas width={info.$.width} height={info.$.height} /> as HTMLCanvasElement
+  const canvas = <Canvas width={info.$.canvasWidth} height={info.$.canvasHeight} /> as HTMLCanvasElement
   const gfx = Gfx({ canvas })
-  const view = Rect(0, 0, info.$.width, info.$.height)
+  const view = Rect(0, 0, info.$.canvasWidth, info.$.canvasHeight)
   const matrix = Matrix()
   const c = gfx.createContext(view, matrix)
   const shapes = c.createShapes()
   c.sketch.scene.add(shapes)
 
-  const widgetRect = Rect(0, 0, info.$.width, info.$.height)
+  const widgetRect = Rect(0, 0, info.$.canvasWidth, info.$.canvasHeight)
   const plot = WaveGlDecoWidget(shapes, widgetRect)
   plot.info.stabilizerTemp = getFloatsGfx('s:LR', BUFFER_SIZE)
   plot.info.previewFloats = getFloatsGfx('p:LR', BUFFER_SIZE)
@@ -339,8 +355,8 @@ export function DspNodeDemo() {
   })
 
   const dspEditor = DspEditor({
-    width: info.$.width,
-    height: info.$.height,
+    width: info.$.editorWidth,
+    height: info.$.editorHeight,
     code: info.$.code,
   })
 
@@ -352,32 +368,36 @@ export function DspNodeDemo() {
     return () => dspEditor.info.error = null
   })
 
-  return <div>
-    {() => info.isLoadingSound && !info.codeWorking
-      ? <div>Loading...</div>
-      : <div class="flex flex-col-reverse md:flex-row flex-nowrap">
-        <div class="fixed z-50 top-14 right-5 flex flex-row items-center gap-2">{() => [
-          <div>{
-            () => info.creatorNick && <span>
-              <Link href={`/${info.creatorNick}`}>{info.creatorName}</Link> /
-            </span>} {
-              () => info.isPublished && info.title
-            }</div>,
+  info.el = <div class="overflow-hidden w-full h-full">
+    <div class="flex flex-col md:flex-row flex-nowrap">
+      <div class="fixed z-50 top-14 right-5 flex flex-row items-center gap-2">{() => info.isLoadingSound ? [] : [
+        <div>{
+          () => info.creatorNick && <span>
+            <Link href={`/${info.creatorNick}`}>{info.creatorName}</Link> /
+          </span>} {
+            () => info.isPublished && info.title
+          }</div>,
 
-          !info.isPublished && <Button onclick={async () => {
-            const title = prompt('Enter a title:')
-            if (!title) return
-            const { id } = await publishSound(title, info.code)
-            go(`/dsp?sound=${encodeURIComponent(id)}`)
-          }}>Publish</Button>,
+        !info.isPublished && <Button onclick={async () => {
+          const title = prompt('Enter a title:')
+          if (!title) return
+          const { id } = await publishSound(title, info.code)
+          go(`/dsp?sound=${encodeURIComponent(id)}`)
+        }}>Publish</Button>,
 
-          <Button onpointerdown={() => {
-            dspNode.info.isPlaying ? dspNode.stop() : dspNode.play()
-          }}>{() => dspNode.info.isPlaying ? 'Stop' : 'Play'}</Button>
-        ]}</div>
-        {dspEditor}
-        {canvas}
-      </div>
-    }
-  </div>
+        <Button onpointerdown={() => {
+          dspNode.info.isPlaying ? dspNode.stop() : dspNode.play()
+        }}>{() => dspNode.info.isPlaying ? 'Stop' : 'Play'}</Button>
+      ]}</div>
+      {dspEditor}
+      {canvas}
+    </div>
+
+  </div> as HTMLDivElement
+
+  dom.observe.resize(info.el, () => {
+    info.resized++
+  })
+
+  return info.el
 }
