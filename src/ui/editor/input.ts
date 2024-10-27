@@ -258,7 +258,8 @@ export function Input({ view, pane, panes }: {
 
   function preventAndFocus(ev: Event) {
     ev.preventDefault()
-    if (performance.now() - inputMouse.downTime < CLICK_TIMEOUT) {
+    if (performance.now() - inputMouse.downTime < CLICK_TIMEOUT
+      || info.pane.selection.isActive) {
       focus()
     }
   }

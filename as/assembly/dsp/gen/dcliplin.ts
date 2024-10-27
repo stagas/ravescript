@@ -1,6 +1,7 @@
 import { Gen } from './gen'
 
 export class Dcliplin extends Gen {
+  _name: string = 'Dcliplin';
   threshold: f32 = 0.5;
   factor: f32 = 0.5;
   in: u32 = 0

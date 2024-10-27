@@ -1,11 +1,12 @@
 import { BUFFER_SIZE, createDspNode, PreviewService, SoundValue } from 'dsp'
+import type { Pane } from 'editor'
 import { Gfx, Matrix, Rect, wasm as wasmGfx } from 'gfx'
 import type { Token } from 'lang'
-import { Sigui } from 'sigui'
-import { Button, Canvas, go, Link } from 'ui'
+import { $, dispose, Sigui } from 'sigui'
+import { Canvas } from 'ui'
 import { assign, dom, Lru, throttle } from 'utils'
+import { cn } from '~/lib/cn.ts'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
-import { getSound, publishSound } from '~/src/rpc/sounds.ts'
 import { screen } from '~/src/screen.ts'
 import { state } from '~/src/state.ts'
 import { ListMarkWidget, RmsDecoWidget, WaveGlDecoWidget } from '~/src/ui/editor/widgets/index.ts'
@@ -51,7 +52,13 @@ t 4* y=
 */
 const getFloatsGfx = Lru(1024, (key: string, length: number) => wasmGfx.alloc(Float32Array, length), item => item.fill(0), item => item.free())
 
-export function DspNodeDemo() {
+let _dspEditorUi: ReturnType<typeof DspEditorUi>
+export function dspEditorUi() {
+  _dspEditorUi ??= DspEditorUi()
+  return _dspEditorUi
+}
+
+export function DspEditorUi() {
   using $ = Sigui()
 
   const info = $({
@@ -59,26 +66,29 @@ export function DspNodeDemo() {
     resized: 0,
     get editorWidth() {
       info.resized
-      return info.el ? info.el.clientWidth * (screen.lg ? 0.5 : 1) : 100
+      return info.el?.clientWidth ? info.el.clientWidth * (screen.lg ? 0.5 : 1) : 100
     },
     get editorHeight() {
       info.resized
-      return info.el ? info.el.clientHeight * (screen.lg ? 1 : 0.7) : 100
+      return info.el?.clientHeight ? info.el.clientHeight * (screen.lg ? 1 : 0.7) : 100
     },
     get canvasWidth() {
       info.resized
-      return info.el ? info.el.clientWidth * (screen.lg ? 0.5 : 1) : 100
+      return info.el?.clientWidth ? info.el.clientWidth * (screen.lg ? 0.5 : 1) : 100
     },
     get canvasHeight() {
       info.resized
-      return info.el ? info.el.clientHeight * (screen.lg ? 1 : 0.3) : 100
+      return info.el?.clientHeight ? info.el.clientHeight * (screen.lg ? 1 : 0.3) : 100
     },
-    // get width() { return screen.lg ? state.containerWidth / 2 : state.containerWidth },
-    // get height() { return screen.lg ? state.containerHeight : state.containerHeight / 2 },
     code: `t 4* y=
 [saw (35 38 42 40) 4 [sin 1 co* t 4/]* ? ntof] [exp .25 y 8 /] [lp 9.15] .5^  * .27 * [slp 616 9453 [exp .4 y 4/ ] [lp 88.91] 1.35^ * + .9]
 `,
     codeWorking: null as null | string,
+    lastBuildPane: null as null | Pane,
+    get didBuildPane() {
+      const { pane } = dspEditor.editor.info
+      return info.lastBuildPane === pane
+    },
     audios: [] as Float32Array[],
     values: [] as SoundValue[],
     floats: new Float32Array(),
@@ -87,42 +97,6 @@ export function DspNodeDemo() {
     previewValues: [] as SoundValue[],
     previewScalars: new Float32Array(),
     error: null as null | Error,
-    creatorNick: null as null | string,
-    creatorName: '',
-    title: '(unsaved)',
-    isPublished: false,
-    isLoadingSound: false,
-  })
-
-  $.fx(() => {
-    const { searchParams } = state
-    $().then(async () => {
-      if (searchParams.has('sound')) {
-        $.batch(() => {
-          info.isPublished = false
-          info.isLoadingSound = true
-          info.title = ''
-          info.codeWorking = null
-        })
-        const { sound: soundId } = Object.fromEntries(searchParams)
-        const { sound, creator } = await getSound(soundId)
-        $.batch(() => {
-          info.isLoadingSound = false
-          info.isPublished = true
-          info.title = sound.title
-          info.code = sound.code
-          info.creatorNick = creator.nick
-          info.creatorName = creator.displayName
-        })
-      }
-      else {
-        $.batch(() => {
-          info.isPublished = false
-          info.creatorNick = null
-          info.title = ''
-        })
-      }
-    })
   })
 
   const ctx = new AudioContext({ sampleRate: 48000, latencyHint: 0.00001 })
@@ -150,9 +124,10 @@ export function DspNodeDemo() {
   $.fx(() => {
     const { audios, values } = $.of(info)
     const { isPlaying, clock, dsp: { scalars } } = $.of(dspNode.info)
+    const { pane } = dspEditor.editor.info
     $()
     if (isPlaying) {
-      const { pane } = dspEditor.editor.info
+      const { wave: waveWidgets, rms: rmsWidgets, list: listWidgets } = getPaneWidgets(pane)
       let animFrame: any
       const tick = () => {
         for (const wave of [...waveWidgets, plot]) {
@@ -161,7 +136,7 @@ export function DspNodeDemo() {
             audios[wave.info.index],
             clock.ringPos,
             wave.info.stabilizerTemp.length,
-            15
+            BUFFER_SIZE / 128 - 1
           )
           const startIndex = wave.info.stabilizer.findStartingPoint(wave.info.stabilizerTemp)
           wave.info.floats.set(wave.info.stabilizerTemp.subarray(startIndex))
@@ -204,9 +179,17 @@ export function DspNodeDemo() {
   plot.info.previewFloats = getFloatsGfx('p:LR', BUFFER_SIZE)
   plot.info.floats = getFloatsGfx(`LR`, BUFFER_SIZE)
 
-  const waveWidgets: WaveGlDecoWidget[] = []
-  const rmsWidgets: RmsDecoWidget[] = []
-  const listWidgets: ListMarkWidget[] = []
+  const paneWidgets = new Map<Pane, { wave: WaveGlDecoWidget[], rms: RmsDecoWidget[], list: ListMarkWidget[] }>()
+
+  function getPaneWidgets(pane: Pane) {
+    let widgets = paneWidgets.get(pane)
+    if (!widgets) paneWidgets.set(pane, widgets = {
+      wave: [],
+      rms: [],
+      list: [],
+    })
+    return widgets
+  }
 
   $.fx(() => {
     const { isReady, dsp, view: previewView } = $.of(preview.info)
@@ -223,6 +206,7 @@ export function DspNodeDemo() {
 
     const { pane } = dspEditor.editor.info
     const { code } = pane.buffer.info
+    const { wave: waveWidgets, rms: rmsWidgets, list: listWidgets } = getPaneWidgets(pane)
 
     function fixBounds(bounds: Token.Bounds) {
       let newBounds = { ...bounds }
@@ -339,20 +323,24 @@ export function DspNodeDemo() {
     pane.view.anim.ticks.add(c.meshes.draw)
     pane.view.anim.info.epoch++
     pane.draw.widgets.update()
+    requestAnimationFrame(() => {
+      info.lastBuildPane = pane
+    })
   }
 
   const buildThrottled = throttle(16, build)
 
-  queueMicrotask(() => {
-    $.fx(() => {
-      const { previewSound$ } = $.of(info)
-      const { pane } = dspEditor.editor.info
-      const { codeVisual } = pane.buffer.info
-      const { isPlaying } = dspNode.info
-      $()
-      queueMicrotask(isPlaying ? buildThrottled : build)
-    })
+  // queueMicrotask(() => {
+  $.fx(() => {
+    const { previewSound$ } = $.of(info)
+    const { pane } = dspEditor.editor.info
+    const { codeVisual } = pane.buffer.info
+    const { isPlaying } = dspNode.info
+    $()
+    queueMicrotask(buildThrottled)
+    // queueMicrotask(isPlaying ? buildThrottled : build)
   })
+  // })
 
   const dspEditor = DspEditor({
     width: info.$.editorWidth,
@@ -368,36 +356,22 @@ export function DspNodeDemo() {
     return () => dspEditor.info.error = null
   })
 
-  info.el = <div class="overflow-hidden w-full h-full">
-    <div class="flex flex-col md:flex-row flex-nowrap">
-      <div class="fixed z-50 top-14 right-5 flex flex-row items-center gap-2">{() => info.isLoadingSound ? [] : [
-        <div>{
-          () => info.creatorNick && <span>
-            <Link href={`/${info.creatorNick}`}>{info.creatorName}</Link> /
-          </span>} {
-            () => info.isPublished && info.title
-          }</div>,
-
-        !info.isPublished && <Button onclick={async () => {
-          const title = prompt('Enter a title:')
-          if (!title) return
-          const { id } = await publishSound(title, info.code)
-          go(`/dsp?sound=${encodeURIComponent(id)}`)
-        }}>Publish</Button>,
-
-        <Button onpointerdown={() => {
-          dspNode.info.isPlaying ? dspNode.stop() : dspNode.play()
-        }}>{() => dspNode.info.isPlaying ? 'Stop' : 'Play'}</Button>
-      ]}</div>
-      {dspEditor}
-      {canvas}
+  info.el = <div class="flex flex-1">
+    <div class="w-full h-[calc(100vh-87px)] pt-2">
+      <div class="relative flex w-full h-full">
+        {() => info.didBuildPane && <div class="absolute left-0 top-0 w-full h-full flex flex-row">
+          {dspEditor}
+          {canvas}
+        </div>}
+      </div>
     </div>
-
   </div> as HTMLDivElement
 
   dom.observe.resize(info.el, () => {
-    info.resized++
+    requestAnimationFrame(() => {
+      info.resized++
+    })
   })
 
-  return info.el
+  return { el: info.el, info, dspEditor, dspNode }
 }

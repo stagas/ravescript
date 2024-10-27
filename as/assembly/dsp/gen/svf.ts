@@ -2,6 +2,7 @@ import { paramClamp } from '../../util'
 import { Gen } from './gen'
 
 export class Svf extends Gen {
+  _name: string = 'Svf';
   in: u32 = 0
 
   _c1: f64 = 0

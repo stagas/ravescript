@@ -14,6 +14,7 @@ function clamp(min: f32, max: f32, value: f32): f32 {
 @inline const PI2 = Mathf.PI * 2.0
 
 export class Diode extends Gen {
+  _name: string = 'Diode'
   cut: f32 = 500;
   hpf: f32 = 1000;
   sat: f32 = 1.0;

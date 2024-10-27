@@ -3,6 +3,7 @@ import { DELAY_MAX_SIZE } from '../core/constants'
 import { Gen } from './gen'
 
 export class Delay extends Gen {
+  _name: string = 'Delay'
   ms: f32 = 200;
   fb: f32 = 0.5;
 

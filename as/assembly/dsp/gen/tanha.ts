@@ -1,6 +1,7 @@
 import { Gen } from './gen'
 
 export class Tanha extends Gen {
+  _name: string = 'Tanha';
   in: u32 = 0
 
   _gainv: v128 = f32x4.splat(1.0)

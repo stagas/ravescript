@@ -1,21 +1,16 @@
 import { Sigui } from 'sigui'
+import { AnimMode } from '~/src/constants.ts'
 import { state } from '~/src/state.ts'
 
 const DEBUG = false //true
-
-export enum AnimMode {
-  Auto = 'auto',
-  On = 'on',
-  Off = 'off',
-}
-
-const Modes = Object.values(AnimMode)
 
 export type Anim = ReturnType<typeof Anim>
 
 export function Anim() {
   DEBUG && console.log('[anim] create')
   using $ = Sigui()
+
+  const Modes = Object.values(AnimMode)
 
   const info = $({
     isRunning: false,

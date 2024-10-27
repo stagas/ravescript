@@ -9,6 +9,7 @@ function tanha(x: f32): f32 {
 
 // https://github.com/mixxxdj/mixxx/blob/main/src/engine/filters/enginefiltermoogladder4.h
 export class Moog extends Gen {
+  _name: string = 'Moog';
   in: u32 = 0
 
   _m_azt1: f32 = 0
@@ -65,25 +66,25 @@ export class Moog extends Gen {
   }
 
   @inline _process(x0: f32): void {
-    this._x1 = x0 - this._m_amf * this._m_kacr;
-    const az1: f32 = this._m_azt1 + this._m_k2vg * tanha(this._x1 / this._v2);
-    const at1: f32 = this._m_k2vg * tanha(az1 / this._v2);
+    this._x1 = x0 - this._m_amf * this._m_kacr
+    const az1: f32 = this._m_azt1 + this._m_k2vg * tanha(this._x1 / this._v2)
+    const at1: f32 = this._m_k2vg * tanha(az1 / this._v2)
     this._m_azt1 = az1 - at1
 
     const az2 = this._m_azt2 + at1
     const at2 = this._m_k2vg * tanha(az2 / this._v2)
     this._m_azt2 = az2 - at2
 
-    this._az3 = this._m_azt3 + at2;
-    const at3 = this._m_k2vg * tanha(this._az3 / this._v2);
+    this._az3 = this._m_azt3 + at2
+    const at3 = this._m_k2vg * tanha(this._az3 / this._v2)
     this._m_azt3 = this._az3 - at3
 
-    this._az4 = this._m_azt4 + at3;
-    const at4 = this._m_k2vg * tanha(this._az4 / this._v2);
-    this._m_azt4 = this._az4 - at4;
+    this._az4 = this._m_azt4 + at3
+    const at4 = this._m_k2vg * tanha(this._az4 / this._v2)
+    this._m_azt4 = this._az4 - at4
 
     // this is for oversampling but we're not doing it here yet, see link
-    this._m_amf = this._az4;
+    this._m_amf = this._az4
   }
 
   @inline _lowpass(): f32 {

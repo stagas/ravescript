@@ -273,7 +273,13 @@ export function DspEditor({ code, width, height }: {
     inputHandlers,
   })
 
-  const hoverMark = HoverMarkWidget(editor.info.pane.draw.shapes)
+  let hoverMark: HoverMarkWidget
+  $.fx(() => {
+    const { pane } = editor.info
+    $()
+    hoverMark?.dispose()
+    hoverMark = HoverMarkWidget(pane.draw.shapes)
+  })
 
   const errorSub = ErrorSubWidget()
   $.fx(() => {

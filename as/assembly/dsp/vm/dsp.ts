@@ -1,4 +1,4 @@
-import { Factory } from '../../../../generated/assembly/dsp-factory'
+import { Ctors, Factory } from '../../../../generated/assembly/dsp-factory'
 import { Offsets } from '../../../../generated/assembly/dsp-offsets'
 import { modWrap } from '../../util'
 import { Gen } from '../gen/gen'
@@ -14,16 +14,24 @@ export class Dsp {
 
   @inline
   CreateGen(snd: Sound, kind_index: i32): void {
+    // TODO: we need to generate code for Gen pools
     const Gen = Factory[kind_index]
-    let gen = Gen(snd.engine)
+    const genName = Ctors[kind_index]
+    // TODO: use pool to get gen
+    let gen: Gen | null = null //Gen(snd.engine)
+
     for (let i = 0; i < snd.prevGens.length; i++) {
       const prevGen: Gen = snd.prevGens[i]
-      const isSameClass: boolean = prevGen._name === gen._name
+      const isSameClass: boolean = prevGen._name === genName
       if (isSameClass) {
         gen = prevGen
+        // TODO: put prev gens in pool
         snd.prevGens.splice(i, 1)
         break
       }
+    }
+    if (gen === null) {
+      gen = Gen(snd.engine)
     }
     snd.gens.push(gen)
     snd.offsets.push(Offsets[kind_index])

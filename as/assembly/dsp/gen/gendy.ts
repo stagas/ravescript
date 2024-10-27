@@ -2,6 +2,7 @@ import { rnd } from '../../util'
 import { Gen } from './gen'
 
 export class Gendy extends Gen {
+  _name: string = 'Gendy'
   step: f32 = 0.00001
 
   _audio(begin: u32, end: u32, out: usize): void {

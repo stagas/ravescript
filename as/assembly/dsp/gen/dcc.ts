@@ -1,6 +1,7 @@
 import { Gen } from './gen'
 
 export class Dcc extends Gen {
+  _name: string = 'Dcc'
   ceil: f32 = 0.2;
   in: u32 = 0
 

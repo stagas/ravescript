@@ -1,6 +1,7 @@
 import { Svf } from './svf'
 
 export class Sap extends Svf {
+  _name: string = 'Sap'
   cut: f32 = 500
   q: f32 = 0.5
 

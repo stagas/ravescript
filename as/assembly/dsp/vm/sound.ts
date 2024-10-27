@@ -13,20 +13,6 @@ const enum Globals {
   co,
 }
 
-export function ntof(n: f32): f32 {
-  return 440 * 2 ** ((n - 69) / 12)
-}
-
-// { n= 2 n 69 - 12 / ^ 440 * } ntof=
-// export class SoundValue {
-//   constructor(
-//     public kind: SoundValueKind,
-//     public ptr: i32,
-//   ) { }
-//   scalar$: i32 = 0
-//   audio$: i32 = 0
-// }
-
 export class Sound {
   constructor(public engine: Engine) { }
 
@@ -61,11 +47,10 @@ export class Sound {
 
   @inline
   clear(): void {
-    this.prevGens = this.gens
-    this.gens = []
+    while (this.gens.length) {
+      this.prevGens.push(this.gens.shift())
+    }
     this.offsets = []
-    // this.values = []
-    // this.audios = []
   }
 
   @inline

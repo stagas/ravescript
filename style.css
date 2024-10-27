@@ -18,14 +18,8 @@
   legend {
     @apply text-xl;
   }
-  button, input {
+  input {
     @apply min-h-8 pl-2 pr-2 bg-neutral-700;
-  }
-  button {
-    @apply cursor-default border-2 border-neutral-500 border-b-neutral-800
-      border-r-neutral-800 hover:border-neutral-400 hover:border-b-neutral-600
-      hover:border-r-neutral-600 hover:active:border-neutral-500
-      hover:active:border-t-neutral-700 hover:active:border-l-neutral-700;
   }
   input {
     @apply border-2 border-neutral-500 border-t-neutral-800 border-l-neutral-800
@@ -33,7 +27,7 @@
       hover:border-l-neutral-600 placeholder-neutral-500;
   }
   a {
-    @apply text-sky-600 hover:text-sky-400 hover:underline;
+    @apply text-orange-600 hover:text-neutral-100 hover:underline;
   }
   table {
     @apply border-collapse text-xs bg-neutral-900;

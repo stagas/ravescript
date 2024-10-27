@@ -31,6 +31,17 @@ export interface ChannelUser {
   nick: string;
 }
 
+export const Favorites = z.object({
+  profileNick: z.string(),
+  soundId: z.string(),
+  createdAt: z.coerce.date(),
+})
+export interface Favorites {
+  createdAt: Generated<Timestamp>;
+  profileNick: string;
+  soundId: string;
+}
+
 export const Messages = z.object({
   id: z.string(),
   channel: z.string(),
@@ -76,12 +87,14 @@ export const Sounds = z.object({
   code: z.string(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
+  remixOf: z.string().nullish(),
 })
 export interface Sounds {
   code: string;
   createdAt: Generated<Timestamp>;
   id: Generated<string>;
   ownerProfileNick: string;
+  remixOf: string | null;
   title: string;
   updatedAt: Generated<Timestamp>;
 }
@@ -110,6 +123,7 @@ export interface Users {
 export const DB = z.object({
   channels: Channels,
   channelUser: ChannelUser,
+  favorites: Favorites,
   messages: Messages,
   profiles: Profiles,
   sounds: Sounds,
@@ -118,6 +132,7 @@ export const DB = z.object({
 export interface DB {
   channels: Channels;
   channelUser: ChannelUser;
+  favorites: Favorites;
   messages: Messages;
   profiles: Profiles;
   sounds: Sounds;

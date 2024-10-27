@@ -1,6 +1,7 @@
 import { Smp } from './smp'
 
 export class Freesound extends Smp {
+  _name: string = 'Freesound';
   id: i32 = 0
 
   _update(): void {

@@ -26,7 +26,7 @@ export async function maybeLogin(orRedirect?: string) {
   if (state.user) return
   try {
     const userSession = await whoami()
-    return loginUserSession(userSession)
+    loginUserSession(userSession)
   }
   catch (error) {
     console.warn(error)

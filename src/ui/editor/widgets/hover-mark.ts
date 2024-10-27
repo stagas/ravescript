@@ -2,6 +2,8 @@ import { hexToInt, Widget } from 'editor'
 import type { Shapes } from 'gfx'
 import { Sigui } from 'sigui'
 
+export type HoverMarkWidget = ReturnType<typeof HoverMarkWidget>
+
 export function HoverMarkWidget(shapes: Shapes) {
   using $ = Sigui()
 

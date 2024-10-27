@@ -2,6 +2,7 @@ import { Gen } from './gen'
 import { rnd } from '../../util'
 
 export class Grain extends Gen {
+  _name: string = 'Grain'
   amt: f32 = 1.0;
 
   _audio(begin: u32, end: u32, out: usize): void {

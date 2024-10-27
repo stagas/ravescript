@@ -3,6 +3,7 @@ import { Engine } from '../core/engine'
 import { Gen } from './gen'
 
 export class Rate extends Gen {
+  _name: string = 'Rate'
   samples: f32
   constructor(public _engine: Engine) {
     super(_engine)

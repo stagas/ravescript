@@ -1,6 +1,6 @@
 import { getMemoryView } from 'utils'
 import { BUFFER_SIZE, MAX_AUDIOS, MAX_SCALARS, MAX_TRACKS, MAX_VALUES } from '~/as/assembly/dsp/constants.ts'
-import type { __AdaptedExports as WasmExports } from '~/as/build/dsp-nort.d.ts'
+import type { __AdaptedExports as WasmExports } from '~/as/build/dsp.d.ts'
 import { Out } from '~/src/as/dsp/shared.ts'
 
 export function createDsp(sampleRate: number, wasm: typeof WasmExports, memory: WebAssembly.Memory) {

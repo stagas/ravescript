@@ -3,6 +3,7 @@ import { DELAY_MAX_SIZE } from '../core/constants'
 import { Gen } from './gen'
 
 export class Tap extends Gen {
+  _name: string = 'Tap'
   ms: f32 = 200;
   in: u32 = 0;
 

@@ -2,6 +2,7 @@ import { clamp, clamp64, cubicMod } from '../../util'
 import { Gen } from './gen'
 
 export class Smp extends Gen {
+  _name: string = 'Smp'
   offset: f32 = 0
   length: f32 = 1
 
@@ -44,7 +45,7 @@ export class Smp extends Gen {
     const floats: StaticArray<f32> | null = this._floats
     if (!floats) return
 
-    const length: u32 = u32(Math.floor(f64(clamp(0, 1, 1, this.length) ) * f64(floats.length)))
+    const length: u32 = u32(Math.floor(f64(clamp(0, 1, 1, this.length)) * f64(floats.length)))
     let offsetCurrent: f64 = f64(clamp64(0, 1, 0, this._offsetCurrent))
     const offsetTarget: f64 = f64(clamp64(0, 1, 0, this._offsetTarget))
 

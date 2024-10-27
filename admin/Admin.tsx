@@ -4,7 +4,7 @@ import * as actions from '~/admin/rpc/admin.ts'
 import { state } from '~/admin/state.ts'
 import { icon } from '~/lib/icon.ts'
 import { Header } from '~/src/comp/Header.tsx'
-import { Logout } from '~/src/comp/Logout.tsx'
+import { Logout } from '~/src/pages/Logout'
 import { loginUserSession, maybeLogin, whoami } from '~/src/rpc/auth.ts'
 
 const EDITABLE = new Set(['nick', 'email'])

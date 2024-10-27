@@ -1,6 +1,7 @@
 import { Gen } from './gen'
 
 export class Zero extends Gen {
+  _name: string = 'Zero'
   _audio(begin: u32, end: u32, out: usize): void {
     const zerov: v128 = f32x4.splat(0)
 

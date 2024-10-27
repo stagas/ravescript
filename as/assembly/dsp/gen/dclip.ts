@@ -1,6 +1,7 @@
 import { Gen } from './gen'
 
 export class Dclip extends Gen {
+  _name: string = 'Dclip';
   in: u32 = 0
 
   _audio(begin: u32, end: u32, out: usize): void {

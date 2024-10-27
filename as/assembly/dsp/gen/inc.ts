@@ -1,6 +1,7 @@
 import { Gen } from './gen'
 
 export class Inc extends Gen {
+  _name: string = 'Inc'
   amt: f32 = 1.0;
 
   /** Trigger phase sync when set to 0. */

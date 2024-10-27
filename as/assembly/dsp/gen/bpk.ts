@@ -1,6 +1,7 @@
 import { Biquad } from './biquad'
 
 export class Bpk extends Biquad {
+  _name: string = 'Bpk'
   cut: f32 = 500
   q: f32 = 0.5
   amt: f32 = 1
