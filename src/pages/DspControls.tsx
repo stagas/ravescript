@@ -3,6 +3,7 @@ import { Sigui } from 'sigui'
 import { Button, go, Link } from 'ui'
 import type { GetSoundResult } from '~/api/sounds/actions.ts'
 import { icon } from '~/lib/icon.ts'
+import { showAuthModal, wrapActionAuth } from '~/src/comp/AuthModal.tsx'
 import { dspEditorUi } from '~/src/comp/DspEditorUi.tsx'
 import { ICON_16, ICON_24, ICON_32 } from '~/src/constants.ts'
 import { addSoundToFavorites, deleteSound, getSound, overwriteSound, publishSound, removeSoundFromFavorites } from '~/src/rpc/sounds.ts'
@@ -79,20 +80,21 @@ export function DspControls() {
     go(`/${state.user!.defaultProfile}?sound=${encodeURIComponent(sound.id)}&kind=${sound.remixOf ? 'remixes' : 'sounds'}`)
   }}>{icon(SaveAll, ICON_16)}</Button>
 
-  const publishBtn = <Button bare title={() => info.isEdited && info.isPublished ? "Save remix" : "Save"} onclick={async () => {
+  const publishBtn = <Button bare title={() => info.isEdited && info.isPublished ? "Save remix" : "Save"} onclick={wrapActionAuth(async () => {
     const title = prompt('Enter a title:', info.title)
     if (!title) return
+    const { isPublished, isEdited } = info
     const { pane } = dspEditorUi().dspEditor.editor.info
-    const { id } = await publishSound(title, pane.buffer.code, info.isEdited && info.loadedSound ? info.loadedSound.sound.id : undefined)
+    const { id } = await publishSound(title, pane.buffer.code, isEdited && info.loadedSound ? info.loadedSound.sound.id : undefined)
     if (info.loadedSound) info.loadedSound.sound.title = title
     dspEditorUi().info.code = pane.buffer.code
     state.triggerReloadProfileSounds++
-    go(`/${state.user!.defaultProfile}?sound=${encodeURIComponent(id)}&kind=${info.isEdited ? 'remixes' : 'sounds'}`)
-  }}>{icon(Save, ICON_16)}</Button>
+    go(`/${state.user!.defaultProfile}?sound=${encodeURIComponent(id)}&kind=${isPublished && isEdited ? 'remixes' : 'sounds'}`)
+  })}>{icon(Save, ICON_16)}</Button>
 
-  const likeBtn = <Button bare title="Like" onclick={async () => {
-    if (!state.user) return
+  const likeBtn = <Button bare title="Like" onclick={wrapActionAuth(async () => {
     if (!info.loadedSound) return
+    if (!state.favorites) throw new Error('No favorites')
     const { sound } = info.loadedSound
     await addSoundToFavorites(sound.id)
     state.favorites.add(sound.id)
@@ -100,11 +102,12 @@ export function DspControls() {
     state.onNavigate.add(() => {
       state.triggerReloadProfileFavorites++
     })
-  }}>{icon(Heart, ICON_16)}</Button>
+  })}>{icon(Heart, ICON_16)}</Button>
 
   const unlikeBtn = <Button bare title="Unlike" onclick={async () => {
     if (!state.user) return
     if (!info.loadedSound) return
+    if (!state.favorites) return
     const { sound } = info.loadedSound
     await removeSoundFromFavorites(sound.id)
     state.favorites.delete(sound.id)
@@ -144,9 +147,9 @@ export function DspControls() {
     </div>
     <div class="flex flex-row items-center gap-2">{
       () => info.isLoadingSound ? [] : [
-        (!info.isPublished || info.isEdited) && state.user?.defaultProfile === info.loadedSound?.creator?.nick && overwriteBtn,
-        (!info.isPublished || info.isEdited) && state.user && publishBtn,
-        !info.isEdited && info.loadedSound && (state.favorites.has(info.loadedSound.sound.id) ? unlikeBtn : likeBtn),
+        (!info.isPublished || info.isEdited) && state.user && state.user.defaultProfile === info.loadedSound?.creator?.nick && overwriteBtn,
+        (!info.isPublished || info.isEdited) && publishBtn,
+        !info.isEdited && info.loadedSound && (state.favorites?.has(info.loadedSound.sound.id) ? unlikeBtn : likeBtn),
         (info.isPublished && !info.isEdited) && state.user?.defaultProfile === info.loadedSound?.creator?.nick && deleteBtn,
       ]}
     </div>

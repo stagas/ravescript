@@ -1,10 +1,12 @@
 import { logout } from '~/src/rpc/auth.ts'
 import { state } from '~/src/state.ts'
 
-export function Logout({ then }: { then?: () => void }) {
+export function logoutAction() {
   logout()
-    .then(() => state.user = null)
-    .then(() => then?.())
-
-  return <div>Logging you out...</div>
+    .then(() => {
+      state.user =
+        state.profile =
+        state.favorites =
+        null
+    })
 }

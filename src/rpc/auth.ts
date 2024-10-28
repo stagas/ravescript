@@ -34,3 +34,11 @@ export async function maybeLogin(orRedirect?: string) {
     if (orRedirect) location.href = orRedirect
   }
 }
+
+export async function logoutUser() {
+  await logout()
+  state.user =
+    state.profile =
+    state.favorites =
+    null
+}

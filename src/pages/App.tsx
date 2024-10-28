@@ -1,6 +1,6 @@
-import { AudioWaveform, Plus, UserCircle, UserCircle2 } from 'lucide'
+import { AudioWaveform, Plus, UserCircle, UserCircle2, X } from 'lucide'
 import { Sigui } from 'sigui'
-import { DropDown } from 'ui'
+import { Button, DropDown } from 'ui'
 import { dom } from 'utils'
 import type { z } from 'zod'
 import type { Profiles } from '~/api/models.ts'
@@ -10,11 +10,11 @@ import { dspEditorUi } from '~/src/comp/DspEditorUi.tsx'
 import { Toast } from '~/src/comp/Toast.tsx'
 import { ICON_24, ICON_32, ICON_48 } from '~/src/constants.ts'
 import { getDspControls } from '~/src/pages/DspControls.tsx'
-import { maybeLogin } from '~/src/rpc/auth.ts'
+import { logoutUser, maybeLogin } from '~/src/rpc/auth.ts'
 import { getProfile, listProfilesForNick, makeDefaultProfile } from '~/src/rpc/profiles.ts'
 import { listFavorites, listRecentSounds, listSounds } from '~/src/rpc/sounds.ts'
 import { state, triggers } from '~/src/state.ts'
-import { Link } from '~/src/ui/Link.tsx'
+import { go, Link } from '~/src/ui/Link.tsx'
 
 type SoundsKind = 'recent' | 'sounds' | 'remixes' | 'favorites'
 
@@ -55,7 +55,7 @@ export function App() {
   })
 
   const info = $({
-    bg: 'transparent',
+    code: '[sin 300] [exp 1] *',
     canvasWidth: state.$.containerWidth,
     canvasHeight: state.$.containerHeight,
     sounds: null as null | false | Awaited<ReturnType<typeof listRecentSounds>>,
@@ -169,7 +169,7 @@ export function App() {
     return <div class="md:min-w-40">
       <div class="mt-6 mb-4 mx-2 text-lg border-b border-b-neutral-700 flex flex-row justify-between items-center">
         <span>{kind === 'recent' ? 'Recent sounds' : kind}</span>
-        {() => kind === 'recent' && <Link class="flex flex-row items-center" title="New sound" href="/create-sound">
+        {() => kind === 'recent' && <Link class="flex flex-row items-center" title="New sound" onclick={createSound}>
           {icon(Plus, ICON_24)}
         </Link>}
       </div>
@@ -187,6 +187,23 @@ export function App() {
         showCreator={kind === 'recent' || kind === 'favorites'}
       />
     </div>
+  }
+
+  function createSound() {
+    state.url.search = ''
+    go(state.url.href)
+    info.code = '[sin 300] [exp 1] *'
+    const { info: controlsInfo, dspEditorUi } = getDspControls()
+    controlsInfo.loadedSound = null
+    controlsInfo.isLoadingSound = false
+    const { dspEditor: { editor } } = dspEditorUi()
+    const { pane } = editor.info
+    const newPane = editor.createPane({ rect: pane.rect, code: info.$.code })
+    dspEditorUi().info.code = info.code
+    editor.addPane(newPane)
+    editor.removePane(pane)
+    editor.info.pane = newPane
+    setTimeout(editor.focus, 500)
   }
 
   $.fx(() => [
@@ -208,47 +225,40 @@ export function App() {
     requestAnimationFrame(() => triggers.resize++)
   })
 
-  return <main
-    class="flex flex-col relative"
-    onmouseenter={() => info.bg = '#433'}
-    onmouseleave={() => info.bg = 'transparent'}
-  >
-    <Toast />
-
-    <div class="flex flex-row">
-      <div class="flex flex-col">
-        <div class="h-12 border-b border-b-neutral-500 text-xl flex items-center p-2 gap-1">
-          <Link href="/">{icon(AudioWaveform, ICON_32)}</Link>
-          <div class="leading-none">ravescript</div>
-        </div>
-        <div class=" h-[calc(100vh-80px)] overflow-y-scroll">
-          <div class="flex flex-col">{() => info.profile ? [
-            <div class="flex flex-col flex-nowrap justify-center items-center gap-1 mt-6 mx-2">
-              <Link
-                class="text-lg"
-                href={() => info.profile && `/${info.profile.nick}` || ''}><span class="text-neutral-400">{icon(UserCircle2, ICON_48)}</span> {() => info.profile && info.profile.displayName}</Link>
-            </div>,
-            SoundsListOfKind({ kind: 'sounds' }),
-            SoundsListOfKind({ kind: 'remixes' }),
-            SoundsListOfKind({ kind: 'favorites' }),
-          ] : [SoundsListOfKind({ kind: 'recent' })]}</div>
-        </div>
+  const Home = () => <div class="flex flex-row">
+    <div class="flex flex-col">
+      <div class="h-12 border-b border-b-neutral-500 text-xl flex items-center p-2 gap-1">
+        <Link href="/">{icon(AudioWaveform, ICON_32)}</Link>
+        <div class="leading-none">ravescript</div>
       </div>
-      <div class="flex flex-col flex-1">
-        <div class="flex flex-row items-center justify-between border-b border-b-neutral-500 h-12 pr-2">
-          <div class="flex flex-row items-center gap-2">
-            <div class="flex items-center">{() => state.heading}</div>
-            <div class="flex items-center">{() => getDspControls().el}</div>
-          </div>
-          <div class="flex items-center gap-2">
-            <Link class="flex flex-row items-center text-lg mr-16" href="/create-sound">
-              {icon(Plus, ICON_32)} <span>New sound</span>
-            </Link>
-
-            <Link href={() => `/${state.user?.defaultProfile}`}>{() => state.profile?.displayName}</Link>
+      <div class=" h-[calc(100vh-80px)] overflow-y-scroll">
+        <div class="flex flex-col">{() => info.profile ? [
+          <div class="flex flex-col flex-nowrap justify-center items-center gap-1 mt-6 mx-2">
+            <Link
+              class="text-lg"
+              href={() => info.profile && `/${info.profile.nick}` || ''}><span class="text-neutral-400">{icon(UserCircle2, ICON_48)}</span> {() => info.profile && info.profile.displayName}</Link>
+          </div>,
+          SoundsListOfKind({ kind: 'sounds' }),
+          SoundsListOfKind({ kind: 'remixes' }),
+          SoundsListOfKind({ kind: 'favorites' }),
+        ] : [SoundsListOfKind({ kind: 'recent' })]}</div>
+      </div>
+    </div>
+    <div class="flex flex-col flex-1">
+      <div class="flex flex-row items-center justify-between border-b border-b-neutral-500 h-12 pr-2">
+        <div class="flex flex-row items-center gap-2">
+          <div class="flex items-center">{() => state.heading}</div>
+          <div class="flex items-center">{() => getDspControls().el}</div>
+        </div>
+        <div class="flex items-center gap-2">{() => [
+          <Link class="flex flex-row items-center text-lg mr-1" onclick={createSound}>
+            {icon(Plus, ICON_32)} <span>New sound</span>
+          </Link>,
+          ...(() => !state.user ? [] : [
+            <Link class="ml-16" href={() => `/${state.user?.defaultProfile}`}>{() => state.profile?.displayName}</Link>,
             <DropDown right handle={icon(UserCircle, ICON_24)} items={() => [
-              [<Link class="px-2 py-1 hover:no-underline flex items-center justify-end" href="/settings">Settings</Link>, () => { }],
-              [state.user ? <Link class="px-2 py-1 hover:no-underline flex items-center justify-end" href="/logout">Logout</Link> : <div />, () => { }],
+              // [<Link class="px-2 py-1 hover:no-underline flex items-center justify-end" href="/settings">Settings</Link>, () => { }],
+              [state.user ? <Link class="px-2 py-1 hover:no-underline flex items-center justify-end" onclick={logoutUser}>Logout</Link> : <div />, () => { }],
               ...state.profiles
                 .filter(p => p.nick !== state.user?.defaultProfile)
                 .map(p =>
@@ -262,12 +272,35 @@ export function App() {
                   >{p.displayName} {icon(UserCircle, ICON_24)}</Link>, () => { }],
                 ) as any,
             ]} />
-          </div>
-        </div>
-        <div class="flex flex-1">{() => dspEditorUi().el}</div>
+          ])()
+        ]}</div>
       </div>
+      <div class="flex flex-1">{() => dspEditorUi().el}</div>
     </div>
-  </main>
+  </div>
+
+  const Modal = () => state.modalIsOpen && <div class="fixed w-full h-full flex items-center justify-center bg-[#111a] z-30" onpointermove={dom.prevent.stop}>
+    <div class="bg-neutral-700 p-6 border-4 border-[#000] relative">
+      <Button bare class="absolute top-0 right-0 m-1" onclick={() => {
+        state.modalIsOpen = false
+        state.modalIsCancelled = true
+      }}>{icon(X, ICON_24)}</Button>
+      {state.modal}
+    </div>
+  </div>
+
+  return <main class="flex flex-col relative">{() => [
+    <Toast />,
+    Modal(),
+    (() => {
+      const { pathname } = state
+      $()
+      switch (pathname) {
+        default:
+          return <Home />
+      }
+    })(),
+  ]}</main>
 }
 
 /*

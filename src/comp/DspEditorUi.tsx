@@ -50,6 +50,13 @@ t 4* y=
 [saw (35 38 42 40) 4 [sin 1 co* t 4/]* ? ntof] [exp .25 y 8 /] [lp 9.15] .5^  * .27 * [slp 616 9453 [exp .4 y 4/ ] [lp 88.91] 1.35^ * + .9]
 
 */
+
+const demo = `t 4* x= [sin 100.00 352 [exp 1.00 x] 31.88^ * + x] [exp 1.00 x] 6.26^ * [sno 83 .9] [dclipexp 1.088] [clip .40]
+[saw (92 353 50 218 50 50 50 50) t 1* ? [sin 1 x] 9^ 61* + x] [clip .4] .7* [slp 156 22k [exp 8 x [sin .24 x] .15* +] 4.7^ * +  .86] [exp 8 x] .5^ * [sno 516 2181 [sin .2 co * t .5 -] * + ] [delay 15 .73] .59*
+[noi 4.23] [adsr .03 100 .3 48 x 3* on= x 3* .012 - off=] 2 [sin .3] 1.0 + .9^ * ^ [sin 2 x] * * [shp 7090 .7] .21*
+[noi 14.23] [adsr .03 10 .3 248 x 4* on= x 4* .012 - off=] 2 [sin .3] 1.0 + .9^ * ^ [sin 8 x] * * [sbp 3790 .17 .60 [sin .5 co* t 2 /]*+ ] .16*
+`
+
 const getFloatsGfx = Lru(1024, (key: string, length: number) => wasmGfx.alloc(Float32Array, length), item => item.fill(0), item => item.free())
 
 let _dspEditorUi: ReturnType<typeof DspEditorUi>
@@ -80,9 +87,7 @@ export function DspEditorUi() {
       info.resized
       return info.el?.clientHeight ? info.el.clientHeight * (screen.lg ? 1 : 0.3) : 100
     },
-    code: `t 4* y=
-[saw (35 38 42 40) 4 [sin 1 co* t 4/]* ? ntof] [exp .25 y 8 /] [lp 9.15] .5^  * .27 * [slp 616 9453 [exp .4 y 4/ ] [lp 88.91] 1.35^ * + .9]
-`,
+    code: demo,
     codeWorking: null as null | string,
     lastBuildPane: null as null | Pane,
     get didBuildPane() {

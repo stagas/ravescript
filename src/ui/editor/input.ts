@@ -253,6 +253,7 @@ export function Input({ view, pane, panes }: {
 
   // focus/blur
   function focus() {
+    textarea.blur()
     textarea.focus({ preventScroll: true })
   }
 

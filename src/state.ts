@@ -74,10 +74,14 @@ class State {
   triggerReloadProfileSounds = 0
   triggerReloadProfileFavorites = 0
 
-  favorites: Set<string> = new Set()
+  favorites: Set<string> | null = null
 
   heading: JSX.Element | null = null
   heading2: () => JSX.Element | null = () => null
+
+  modal: JSX.Element | null = null
+  modalIsOpen = false
+  modalIsCancelled = false
 
   get loadedSound() {
     return this.searchParams.get('sound')
