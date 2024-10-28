@@ -4,7 +4,7 @@ import { cn } from '~/lib/cn.ts'
 
 type Items = ([any, () => void] | [any])[]
 
-export function DropDown({ right, handle, items }: { right?: boolean, handle: JSX.Element, items: Items | (() => Items) }) {
+export function DropDown({ right, handle, items }: { right?: boolean, handle: JSX.Element | string, items: Items | (() => Items) }) {
   using $ = Sigui()
 
   const info = $({ isOpen: false })
@@ -30,20 +30,30 @@ export function DropDown({ right, handle, items }: { right?: boolean, handle: JS
     const { isOpen } = info
     $()
     if (isOpen) {
-      return dom.on(window, 'pointerdown', e => {
-        if (e.composedPath().includes(dropDown)) {
-          return
-        }
-        e.preventDefault()
-        e.stopPropagation()
-        e.stopImmediatePropagation()
-        info.isOpen = false
-        dom.on(window, 'click', e => {
+      return [
+        dom.on(window, 'keydown', e => {
+          if (e.key === 'Escape') {
+            e.preventDefault()
+            e.stopPropagation()
+            e.stopImmediatePropagation()
+            info.isOpen = false
+          }
+        }),
+        dom.on(window, 'pointerdown', e => {
+          if (e.composedPath().includes(dropDown)) {
+            return
+          }
           e.preventDefault()
           e.stopPropagation()
           e.stopImmediatePropagation()
-        }, { once: true, capture: true })
-      }, { capture: true })
+          info.isOpen = false
+          dom.on(window, 'click', e => {
+            e.preventDefault()
+            e.stopPropagation()
+            e.stopImmediatePropagation()
+          }, { once: true, capture: true })
+        }, { capture: true }),
+      ]
     }
   })
 

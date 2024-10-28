@@ -52,6 +52,7 @@ export async function listSounds(_ctx: Context, nick: string) {
     .innerJoin('profiles', 'sounds.ownerProfileNick', 'profiles.nick')
     .select(['sounds.id', 'sounds.title', 'sounds.remixOf', 'sounds.ownerProfileNick as profileNick', 'profiles.displayName as profileDisplayName'])
     .where('sounds.ownerProfileNick', '=', nick)
+    .orderBy('sounds.createdAt', 'desc')
     .execute()
 }
 
@@ -138,5 +139,6 @@ export async function listFavorites(ctx: Context, nick?: string) {
       'profiles.displayName as profileDisplayName'
     ])
     .where('favorites.profileNick', '=', nick)
+    .orderBy('favorites.createdAt', 'desc')
     .execute()
 }

@@ -1,42 +1,20 @@
 import { AudioWaveform, Plus, UserCircle, UserCircle2 } from 'lucide'
-import { dispose, Sigui } from 'sigui'
-import { DropDown, H2, H3, Layout } from 'ui'
+import { Sigui } from 'sigui'
+import { DropDown } from 'ui'
 import { dom } from 'utils'
 import type { z } from 'zod'
 import type { Profiles } from '~/api/models.ts'
-import { CachingRouter } from '~/lib/caching-router.ts'
 import { cn } from '~/lib/cn.ts'
 import { icon } from '~/lib/icon.ts'
 import { dspEditorUi } from '~/src/comp/DspEditorUi.tsx'
-import { Header } from '~/src/comp/Header.tsx'
-import { ResetPassword } from '~/src/comp/ResetPassword.tsx'
 import { Toast } from '~/src/comp/Toast.tsx'
-import { VerifyEmail } from '~/src/comp/VerifyEmail.tsx'
 import { ICON_24, ICON_32, ICON_48 } from '~/src/constants.ts'
-import { About } from '~/src/pages/About.tsx'
-import { AssemblyScript } from '~/src/pages/AssemblyScript.tsx'
-import { CanvasDemo } from '~/src/pages/CanvasDemo'
-import { Chat } from '~/src/pages/Chat/Chat.tsx'
-import { CreateProfile } from '~/src/pages/CreateProfile.tsx'
-import { CreateSound } from '~/src/pages/CreateSound.tsx'
 import { getDspControls } from '~/src/pages/DspControls.tsx'
-import { EditorDemo } from '~/src/pages/EditorDemo.tsx'
-import { Home } from '~/src/pages/Home.tsx'
-import { Logout } from '~/src/pages/Logout'
-import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
-import { Profile } from '~/src/pages/Profile.tsx'
-import { QrCode } from '~/src/pages/QrCode.tsx'
-import { Settings } from '~/src/pages/Settings.tsx'
-import { Showcase } from '~/src/pages/Showcase'
-import { UiShowcase } from '~/src/pages/UiShowcase.tsx'
-import { WebGLDemo } from '~/src/pages/WebGLDemo.tsx'
-import { WebSockets } from '~/src/pages/WebSockets.tsx'
-import { WorkerWorkletDemo } from '~/src/pages/WorkerWorklet/WorkerWorkletDemo'
 import { maybeLogin } from '~/src/rpc/auth.ts'
-import { getProfile } from '~/src/rpc/profiles.ts'
+import { getProfile, listProfilesForNick, makeDefaultProfile } from '~/src/rpc/profiles.ts'
 import { listFavorites, listRecentSounds, listSounds } from '~/src/rpc/sounds.ts'
 import { state, triggers } from '~/src/state.ts'
-import { go, Link } from '~/src/ui/Link.tsx'
+import { Link } from '~/src/ui/Link.tsx'
 
 type SoundsKind = 'recent' | 'sounds' | 'remixes' | 'favorites'
 
@@ -68,6 +46,14 @@ export function App() {
     })
   })
 
+  $.fx(() => {
+    const { user } = $.of(state)
+    const { nick } = user
+    $().then(async () => {
+      state.profiles = await listProfilesForNick(nick)
+    })
+  })
+
   const info = $({
     bg: 'transparent',
     canvasWidth: state.$.containerWidth,
@@ -77,6 +63,9 @@ export function App() {
     profile: null as null | false | z.infer<typeof Profiles>,
     get profileNick() {
       return state.pathname.slice(1)
+    },
+    get soundsKind(): null | SoundsKind {
+      return state.searchParams.get('kind') as null | SoundsKind
     },
   })
 
@@ -148,7 +137,7 @@ export function App() {
       return <div class="flex flex-col md:min-w-48 md:w-48 whitespace-nowrap">
         <div class="flex flex-col">
           {!sounds.length ? <div class="mx-2">No {soundsKind} yet.</div> : sounds.map(sound => {
-            const isSelected = sound.id === state.loadedSound
+            const isSelected = soundsKind === info.soundsKind && sound.id === state.loadedSound
             const el = <Link
               class={cn(
                 { 'bg-neutral-700': () => isSelected },
@@ -156,6 +145,7 @@ export function App() {
               )}
               href={info.profile
                 ? `/${info.profile.nick}?sound=${encodeURIComponent(sound.id)}`
+                + `&kind=${soundsKind}`
                 + (info.profile.nick === sound.profileNick ? '' : '&creator=' + encodeURIComponent(sound.profileNick))
                 : `/?sound=${sound.id}`
               }
@@ -233,9 +223,11 @@ export function App() {
         </div>
         <div class=" h-[calc(100vh-80px)] overflow-y-scroll">
           <div class="flex flex-col">{() => info.profile ? [
-            <Link
-              class="text-lg flex flex-col flex-nowrap justify-center items-center gap-1 mt-6 mx-2"
-              href={() => info.profile && `/${info.profile.nick}` || ''}>{icon(UserCircle2, ICON_48)} {() => info.profile && info.profile.displayName}</Link>,
+            <div class="flex flex-col flex-nowrap justify-center items-center gap-1 mt-6 mx-2">
+              <Link
+                class="text-lg"
+                href={() => info.profile && `/${info.profile.nick}` || ''}><span class="text-neutral-400">{icon(UserCircle2, ICON_48)}</span> {() => info.profile && info.profile.displayName}</Link>
+            </div>,
             SoundsListOfKind({ kind: 'sounds' }),
             SoundsListOfKind({ kind: 'remixes' }),
             SoundsListOfKind({ kind: 'favorites' }),
@@ -252,10 +244,23 @@ export function App() {
             <Link class="flex flex-row items-center text-lg mr-16" href="/create-sound">
               {icon(Plus, ICON_32)} <span>New sound</span>
             </Link>
+
             <Link href={() => `/${state.user?.defaultProfile}`}>{() => state.profile?.displayName}</Link>
             <DropDown right handle={icon(UserCircle, ICON_24)} items={() => [
-              [<Link class="px-4 py-0.5" href="/settings">Settings</Link>, () => { }],
-              [state.user ? <Link class="px-4 py-0.5" href="/logout">Logout</Link> : <div />, () => { }],
+              [<Link class="px-2 py-1 hover:no-underline flex items-center justify-end" href="/settings">Settings</Link>, () => { }],
+              [state.user ? <Link class="px-2 py-1 hover:no-underline flex items-center justify-end" href="/logout">Logout</Link> : <div />, () => { }],
+              ...state.profiles
+                .filter(p => p.nick !== state.user?.defaultProfile)
+                .map(p =>
+                  [<Link class="w-32 px-2 py-1 hover:no-underline flex flex-row items-center justify-end flex-nowrap gap-1.5"
+                    onclick={async () => {
+                      const { user } = state
+                      if (!user) return
+                      await makeDefaultProfile(p.nick)
+                      user.defaultProfile = p.nick
+                    }}
+                  >{p.displayName} {icon(UserCircle, ICON_24)}</Link>, () => { }],
+                ) as any,
             ]} />
           </div>
         </div>

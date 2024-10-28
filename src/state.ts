@@ -2,7 +2,7 @@ import { $, storage } from 'sigui'
 import type { z } from 'zod'
 import type { UserSession } from '~/api/auth/types.ts'
 import type { UiChannel } from '~/api/chat/types.ts'
-import type { Channels } from '~/api/models.ts'
+import type { Channels, Profiles } from '~/api/models.ts'
 import { lorem, loremRandomWord } from '~/lib/lorem.ts'
 import type { DspEditorUi } from '~/src/comp/DspEditorUi.tsx'
 import { AnimMode } from '~/src/constants.ts'
@@ -67,6 +67,8 @@ class State {
 
   // app
   user?: $<UserSession> | null
+
+  profiles: z.infer<typeof Profiles>[] = []
 
   profile?: $<Awaited<ReturnType<typeof getProfile>>> | null
   triggerReloadProfileSounds = 0
