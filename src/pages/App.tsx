@@ -9,6 +9,7 @@ import { icon } from '~/lib/icon.ts'
 import { dspEditorUi } from '~/src/comp/DspEditorUi.tsx'
 import { Toast } from '~/src/comp/Toast.tsx'
 import { ICON_24, ICON_32, ICON_48 } from '~/src/constants.ts'
+import { CreateProfile } from '~/src/pages/CreateProfile.tsx'
 import { getDspControls } from '~/src/pages/DspControls.tsx'
 import { logoutUser, maybeLogin } from '~/src/rpc/auth.ts'
 import { getProfile, listProfilesForNick, makeDefaultProfile } from '~/src/rpc/profiles.ts'
@@ -259,6 +260,7 @@ export function App() {
             <DropDown right handle={icon(UserCircle, ICON_24)} items={() => [
               // [<Link class="px-2 py-1 hover:no-underline flex items-center justify-end" href="/settings">Settings</Link>, () => { }],
               [state.user ? <Link class="px-2 py-1 hover:no-underline flex items-center justify-end" onclick={logoutUser}>Logout</Link> : <div />, () => { }],
+              [<Link class="px-2 py-1 hover:no-underline flex items-center justify-end" href="/new-profile">New profile</Link>, () => { }],
               ...state.profiles
                 .filter(p => p.nick !== state.user?.defaultProfile)
                 .map(p =>
@@ -296,6 +298,9 @@ export function App() {
       const { pathname } = state
       $()
       switch (pathname) {
+        case '/new-profile':
+          return <CreateProfile />
+
         default:
           return <Home />
       }
