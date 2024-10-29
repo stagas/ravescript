@@ -74,6 +74,7 @@ const ro5: u32 = u32(0.011256342 * 48000)
 const ro6: u32 = u32(0.004065724 * 48000)
 
 export class Daverb extends Gen {
+  _name: string = 'Daverb';
   in: u32 = 0
 
   pd: f32 = 0.03

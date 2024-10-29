@@ -2,6 +2,7 @@ import { defer } from 'utils'
 import { z } from 'zod'
 import { RouteError, type Router } from '~/api/core/router.ts'
 import { sessions } from '~/api/core/sessions.ts'
+import { Kysely } from 'kysely'
 
 const DEBUG = false
 
@@ -83,7 +84,11 @@ export function mount(app: Router) {
         })
       }
       else {
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({
+          error: (error instanceof Error)
+            ? (error as unknown as { detail?: string })?.detail ?? error.message
+            : 'Unknown error'
+        }), {
           status: 500,
           headers
         })

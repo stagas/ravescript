@@ -79,6 +79,8 @@ export function Selection({ buffer, caret }: {
     buffer.code = code.slice(0, startIndex) + code.slice(endIndex)
     reset()
     $.flush()
+    // somehow caret.visual is not updated correctly, so we apply it here again
+    assign(caret.visual, buffer.indexToVisualPoint(startIndex))
   }
 
   function selectAll() {

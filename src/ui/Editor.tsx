@@ -38,7 +38,7 @@ export function Editor({ code, width, height, colorize, tokenize, wordWrapProces
   function createPane({ rect, code }: {
     rect: $<Rect>
     code: Signal<string>
-  }) {
+  }): Pane {
     return Pane({
       misc,
       view,

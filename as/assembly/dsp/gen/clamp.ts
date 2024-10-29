@@ -1,6 +1,7 @@
 import { Gen } from './gen'
 
 export class Clamp extends Gen {
+  _name: string = 'Clamp'
   min: f32 = -0.5;
   max: f32 = 0.5;
   in: u32 = 0

@@ -6,7 +6,6 @@ self.document = {
 
 import { assign, getMemoryView, rpc, type MemoryView } from 'utils'
 import { BUFFER_SIZE } from '~/as/assembly/dsp/constants.ts'
-import type { __AdaptedExports as WasmExports } from '~/as/build/dsp-nort.d.ts'
 import { builds, getTokens, setupTracks } from '~/src/as/dsp/build.ts'
 import { createDsp } from '~/src/as/dsp/dsp.ts'
 import { Clock, type Track } from '~/src/as/dsp/shared.ts'
@@ -41,8 +40,10 @@ const worker = {
   track: null as null | Track,
   error: null as null | Error,
   async createDsp(sampleRate: number) {
-    const dsp = this.dsp = createDsp(sampleRate, wasm as unknown as typeof WasmExports, wasm.memory)
+    const dsp = this.dsp = createDsp(sampleRate, wasm, wasm.memory)
     const view = this.view = getMemoryView(wasm.memory)
+    wasm.__pin(dsp.sound$)
+    wasm.__pin(dsp.player$)
     this.clock = Clock(wasm.memory.buffer, dsp.clock$)
     this.tracks = setupTracks(
       view,
@@ -53,6 +54,7 @@ const worker = {
       dsp.lists$$,
     )
     this.track = this.tracks[0]
+    wasm.__pin(this.track.ptr)
     return {
       memory: wasm.memory,
       L: dsp.L,

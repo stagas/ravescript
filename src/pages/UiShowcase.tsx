@@ -1,4 +1,6 @@
-import { Button, Fieldset, H1, H2, H3, Input, Label, Link } from '~/src/ui/index.ts'
+import { Menu } from 'lucide'
+import { Button, DropDown, Fieldset, H1, H2, H3, Input, Label, Link } from 'ui'
+import { icon } from '~/lib/icon.ts'
 
 function UiGroup({ name, children }: { name: string, children?: any }) {
   return <div class="mb-10">
@@ -30,6 +32,21 @@ export function UiShowcase() {
         </Fieldset>
       </UiGroup>
 
+      <UiGroup name="DropDown">
+        <DropDown handle={icon(Menu)} items={[
+          ['Item 1', () => console.log('Item 1')],
+          ['Item 2', () => console.log('Item 2')],
+          ['Item 3', () => console.log('Item 3')],
+        ]} />
+        <div class="flex flex-row justify-end">
+          <DropDown right handle={icon(Menu)} items={[
+            ['Item 1', () => console.log('Item 1')],
+            ['Item 2', () => console.log('Item 2')],
+            ['Item 3', () => console.log('Item 3')],
+          ]} />
+        </div>
+      </UiGroup>
+      
       <UiGroup name="Button">
         <Button>Click me</Button>
       </UiGroup>
@@ -37,6 +54,7 @@ export function UiShowcase() {
       <UiGroup name="Link">
         <Link href="#">About</Link>
       </UiGroup>
+
 
     </div>
   )

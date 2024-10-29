@@ -94,7 +94,7 @@ ${v.props.map((x, i) => `    ${x}?: ${audioProps.includes(x) ? 'Value.Audio' : t
     const formatted = util.format('%O', dspGens)
     const date = new Date()
     const text = /*ts*/`//
-// auto-generated ${date.toDateString()} ${date.toTimeString()}
+// auto-generated
 
 import { Value } from '../../src/as/dsp/value.ts'
 

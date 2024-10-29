@@ -1,5 +1,9 @@
 export type Floats = StaticArray<f32>
 
+export function ntof(n: f32): f32 {
+  return 440 * 2 ** ((n - 69) / 12)
+}
+
 export function clamp255(x: f32): i32 {
   if (x > 255) x = 255
   else if (x < 0) x = 0

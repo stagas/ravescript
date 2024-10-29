@@ -15,16 +15,20 @@ export function go(href: string) {
 
 export function Link({
   href = '#',
-  onclick = go,
+  class: _class = '',
+  title,
   style,
+  onclick = go,
   children
 }: {
-  href?: string | (() => string),
-  onclick?: (href: string) => unknown,
-  style?: any,
+  href?: string | (() => string)
+  class?: string | (() => string)
+  title?: string
+  style?: any
+  onclick?: (href: string) => unknown
   children?: any
 }) {
-  return <a href={href} style={style} onclick={ev => {
+  return <a href={href} class={_class} title={title} style={style} onclick={ev => {
     ev.preventDefault()
     onclick(typeof href === 'function' ? href() : href)
   }}>{children}</a>

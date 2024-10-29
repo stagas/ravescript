@@ -37,6 +37,7 @@ export type UserSession = z.infer<typeof UserSession>
 export const UserSession = z.object({
   nick: z.string(),
   expires: z.date(),
+  defaultProfile: z.string().optional(),
   isAdmin: z.boolean().optional(),
 })
 

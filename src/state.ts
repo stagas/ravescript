@@ -2,10 +2,12 @@ import { $, storage } from 'sigui'
 import type { z } from 'zod'
 import type { UserSession } from '~/api/auth/types.ts'
 import type { UiChannel } from '~/api/chat/types.ts'
-import type { Channels } from '~/api/models.ts'
+import type { Channels, Profiles } from '~/api/models.ts'
 import { lorem, loremRandomWord } from '~/lib/lorem.ts'
-import { AnimMode } from '~/src/as/gfx/anim.ts'
+import type { DspEditorUi } from '~/src/comp/DspEditorUi.tsx'
+import { AnimMode } from '~/src/constants.ts'
 import { env } from '~/src/env.ts'
+import type { getProfile } from '~/src/rpc/profiles.ts'
 import { screen } from '~/src/screen.ts'
 import { link } from '~/src/ui/Link.tsx'
 
@@ -61,9 +63,32 @@ class State {
     }
     return url.href
   }
+  onNavigate = new Set<() => void>()
 
   // app
-  user?: UserSession | null
+  user?: $<UserSession> | null
+
+  profiles: z.infer<typeof Profiles>[] = []
+
+  profile?: $<Awaited<ReturnType<typeof getProfile>>> | null
+  triggerReloadProfileSounds = 0
+  triggerReloadProfileFavorites = 0
+
+  favorites: Set<string> | null = null
+
+  heading: JSX.Element | null = null
+  heading2: () => JSX.Element | null = () => null
+
+  modal: JSX.Element | null = null
+  modalIsOpen = false
+  modalIsCancelled = false
+
+  get loadedSound() {
+    return this.searchParams.get('sound')
+  }
+  get isLoadedSound() {
+    return !!this.loadedSound
+  }
 
   channelsList: Pick<z.infer<typeof Channels>, 'name'>[] = []
   channels: UiChannel[] = []

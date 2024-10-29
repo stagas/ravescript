@@ -9,7 +9,10 @@ export function cn(...args: any[]) {
         classes.push(arg())
       }
       else if (arg) {
-        classes.push(Object.keys(arg).filter(k => arg[k]).join(' '))
+        classes.push(Object.keys(arg).filter(k => {
+          const fnOrBooley = arg[k]
+          return typeof fnOrBooley === 'function' ? fnOrBooley() : fnOrBooley
+        }).join(' '))
       }
     }
     return classes.join(' ')

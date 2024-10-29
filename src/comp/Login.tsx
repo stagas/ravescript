@@ -18,7 +18,7 @@ export function Login() {
     const userLogin = parseForm(ev.target, UserLogin)
     actions
       .login(userLogin)
-      .then(actions.loginUser)
+      .then(actions.loginUserSession)
       .catch(err => info.error = err.message)
     return false
   }

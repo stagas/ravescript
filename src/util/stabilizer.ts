@@ -3,8 +3,8 @@ import { BUFFER_SIZE } from '~/as/assembly/dsp/constants.ts'
 // based on https://github.com/fenomas/webaudio-viz/blob/master/src/index.js
 export class Stabilizer {
   // overly magical ad-hoc routine to choose where to start drawing data
-  numOffsets = 32
-  offsetsSpan = 128
+  numOffsets = 64
+  offsetsSpan = 32
   offsets: Uint32Array = Uint32Array.from({ length: this.numOffsets }).map((_, i) =>
     ((this.offsetsSpan / this.numOffsets) * ((i / this.numOffsets) ** 9) * this.numOffsets) | 0
   )

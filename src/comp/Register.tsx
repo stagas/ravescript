@@ -15,7 +15,7 @@ export function Register() {
     ev.preventDefault()
     actions
       .register(parseForm(ev.target, UserRegister))
-      .then(actions.loginUser)
+      .then(actions.loginUserSession)
       .catch(err => info.error = err.message)
     return false
   }

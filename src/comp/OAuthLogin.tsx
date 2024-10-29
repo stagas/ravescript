@@ -1,6 +1,5 @@
 import { on } from 'utils'
-import { whoami } from '~/src/rpc/auth.ts'
-import { state } from '~/src/state.ts'
+import { loginUserSession, maybeLogin, whoami } from '~/src/rpc/auth.ts'
 import { Button } from '~/src/ui/index.ts'
 
 export function OAuthLogin() {
@@ -23,7 +22,7 @@ export function OAuthLogin() {
     on(window, 'storage', () => {
       popup!.close()
       if (localStorage.oauth?.startsWith('complete')) {
-        whoami().then(user => state.user = user)
+        maybeLogin()
       }
       else {
         alert('OAuth failed.\n\nTry logging in using a different method.')

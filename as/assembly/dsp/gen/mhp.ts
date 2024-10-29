@@ -1,6 +1,7 @@
 import { Moog } from './moog'
 
 export class Mhp extends Moog {
+  _name: string = 'Mhp'
   cut: f32 = 500
   q: f32 = 0.5
 

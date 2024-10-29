@@ -62,7 +62,7 @@ async function setup({ sourcemapUrl }: SetupOptions) {
 
   const wasm: typeof WasmExports = instance.exports as any
 
-  const dsp = createDsp(sampleRate, wasm, memory)
+  const dsp = createDsp(sampleRate, wasm as any, memory)
 
   return {
     wasm,

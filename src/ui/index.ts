@@ -1,8 +1,11 @@
 export * from './Button.tsx'
 export * from './Canvas.tsx'
+export * from './DropDown.tsx'
 export * from './Editor.tsx'
 export * from './Fieldset.tsx'
 export * from './Heading.tsx'
 export * from './Input.tsx'
 export * from './Label.tsx'
+export * from './Layout.tsx'
 export * from './Link.tsx'
+

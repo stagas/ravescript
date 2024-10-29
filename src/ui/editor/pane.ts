@@ -45,6 +45,7 @@ export function Pane({ misc, view, code, rect, colorize, tokenize, wordWrapProce
   const mouse = Mouse({ paneInfo: info, dims, selection, caret, draw })
   const pane = {
     info,
+    rect,
     view,
     dims,
     buffer,

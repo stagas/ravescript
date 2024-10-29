@@ -1,6 +1,7 @@
 import { Gen } from './gen'
 
 export class Comp extends Gen {
+  _name: string = 'Comp'
   threshold: f32 = 0.7
   ratio: f32 = 1 / 3
   attack: f32 = 0.01

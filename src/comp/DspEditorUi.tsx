@@ -1,9 +1,11 @@
 import { BUFFER_SIZE, createDspNode, PreviewService, SoundValue } from 'dsp'
+import type { Pane } from 'editor'
 import { Gfx, Matrix, Rect, wasm as wasmGfx } from 'gfx'
 import type { Token } from 'lang'
-import { Sigui } from 'sigui'
-import { Button, Canvas } from 'ui'
-import { assign, Lru, throttle } from 'utils'
+import { $, dispose, Sigui } from 'sigui'
+import { Canvas } from 'ui'
+import { assign, dom, Lru, throttle } from 'utils'
+import { cn } from '~/lib/cn.ts'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
 import { screen } from '~/src/screen.ts'
 import { state } from '~/src/state.ts'
@@ -48,18 +50,50 @@ t 4* y=
 [saw (35 38 42 40) 4 [sin 1 co* t 4/]* ? ntof] [exp .25 y 8 /] [lp 9.15] .5^  * .27 * [slp 616 9453 [exp .4 y 4/ ] [lp 88.91] 1.35^ * + .9]
 
 */
+
+const demo = `t 4* x= [sin 100.00 352 [exp 1.00 x] 31.88^ * + x] [exp 1.00 x] 6.26^ * [sno 83 .9] [dclipexp 1.088] [clip .40]
+[saw (92 353 50 218 50 50 50 50) t 1* ? [sin 1 x] 9^ 61* + x] [clip .4] .7* [slp 156 22k [exp 8 x [sin .24 x] .15* +] 4.7^ * +  .86] [exp 8 x] .5^ * [sno 516 2181 [sin .2 co * t .5 -] * + ] [delay 15 .73] .59*
+[noi 4.23] [adsr .03 100 .3 48 x 3* on= x 3* .012 - off=] 2 [sin .3] 1.0 + .9^ * ^ [sin 2 x] * * [shp 7090 .7] .21*
+[noi 14.23] [adsr .03 10 .3 248 x 4* on= x 4* .012 - off=] 2 [sin .3] 1.0 + .9^ * ^ [sin 8 x] * * [sbp 3790 .17 .60 [sin .5 co* t 2 /]*+ ] .16*
+`
+
 const getFloatsGfx = Lru(1024, (key: string, length: number) => wasmGfx.alloc(Float32Array, length), item => item.fill(0), item => item.free())
 
-export function DspNodeDemo() {
+let _dspEditorUi: ReturnType<typeof DspEditorUi>
+export function dspEditorUi() {
+  _dspEditorUi ??= DspEditorUi()
+  return _dspEditorUi
+}
+
+export function DspEditorUi() {
   using $ = Sigui()
 
   const info = $({
-    get width() { return screen.lg ? state.containerWidth / 2 : state.containerWidth },
-    get height() { return screen.lg ? state.containerHeight : state.containerHeight / 2 },
-    code: `t 4* y=
-[saw (35 38 42 40) 4 [sin 1 co* t 4/]* ? ntof] [exp .25 y 8 /] [lp 9.15] .5^  * .27 * [slp 616 9453 [exp .4 y 4/ ] [lp 88.91] 1.35^ * + .9]
-`,
+    el: null as null | HTMLDivElement,
+    resized: 0,
+    get editorWidth() {
+      info.resized
+      return info.el?.clientWidth ? info.el.clientWidth * (screen.lg ? 0.5 : 1) : 100
+    },
+    get editorHeight() {
+      info.resized
+      return info.el?.clientHeight ? info.el.clientHeight * (screen.lg ? 1 : 0.7) : 100
+    },
+    get canvasWidth() {
+      info.resized
+      return info.el?.clientWidth ? info.el.clientWidth * (screen.lg ? 0.5 : 1) : 100
+    },
+    get canvasHeight() {
+      info.resized
+      return info.el?.clientHeight ? info.el.clientHeight * (screen.lg ? 1 : 0.3) : 100
+    },
+    code: demo,
     codeWorking: null as null | string,
+    lastBuildPane: null as null | Pane,
+    get didBuildPane() {
+      const { pane } = dspEditor.editor.info
+      return info.lastBuildPane === pane
+    },
     audios: [] as Float32Array[],
     values: [] as SoundValue[],
     floats: new Float32Array(),
@@ -95,9 +129,10 @@ export function DspNodeDemo() {
   $.fx(() => {
     const { audios, values } = $.of(info)
     const { isPlaying, clock, dsp: { scalars } } = $.of(dspNode.info)
+    const { pane } = dspEditor.editor.info
     $()
     if (isPlaying) {
-      const { pane } = dspEditor.editor.info
+      const { wave: waveWidgets, rms: rmsWidgets, list: listWidgets } = getPaneWidgets(pane)
       let animFrame: any
       const tick = () => {
         for (const wave of [...waveWidgets, plot]) {
@@ -106,7 +141,7 @@ export function DspNodeDemo() {
             audios[wave.info.index],
             clock.ringPos,
             wave.info.stabilizerTemp.length,
-            15
+            BUFFER_SIZE / 128 - 1
           )
           const startIndex = wave.info.stabilizer.findStartingPoint(wave.info.stabilizerTemp)
           wave.info.floats.set(wave.info.stabilizerTemp.subarray(startIndex))
@@ -135,23 +170,31 @@ export function DspNodeDemo() {
     }
   })
 
-  const canvas = <Canvas width={info.$.width} height={info.$.height} /> as HTMLCanvasElement
+  const canvas = <Canvas width={info.$.canvasWidth} height={info.$.canvasHeight} /> as HTMLCanvasElement
   const gfx = Gfx({ canvas })
-  const view = Rect(0, 0, info.$.width, info.$.height)
+  const view = Rect(0, 0, info.$.canvasWidth, info.$.canvasHeight)
   const matrix = Matrix()
   const c = gfx.createContext(view, matrix)
   const shapes = c.createShapes()
   c.sketch.scene.add(shapes)
 
-  const widgetRect = Rect(0, 0, info.$.width, info.$.height)
+  const widgetRect = Rect(0, 0, info.$.canvasWidth, info.$.canvasHeight)
   const plot = WaveGlDecoWidget(shapes, widgetRect)
   plot.info.stabilizerTemp = getFloatsGfx('s:LR', BUFFER_SIZE)
   plot.info.previewFloats = getFloatsGfx('p:LR', BUFFER_SIZE)
   plot.info.floats = getFloatsGfx(`LR`, BUFFER_SIZE)
 
-  const waveWidgets: WaveGlDecoWidget[] = []
-  const rmsWidgets: RmsDecoWidget[] = []
-  const listWidgets: ListMarkWidget[] = []
+  const paneWidgets = new Map<Pane, { wave: WaveGlDecoWidget[], rms: RmsDecoWidget[], list: ListMarkWidget[] }>()
+
+  function getPaneWidgets(pane: Pane) {
+    let widgets = paneWidgets.get(pane)
+    if (!widgets) paneWidgets.set(pane, widgets = {
+      wave: [],
+      rms: [],
+      list: [],
+    })
+    return widgets
+  }
 
   $.fx(() => {
     const { isReady, dsp, view: previewView } = $.of(preview.info)
@@ -168,6 +211,7 @@ export function DspNodeDemo() {
 
     const { pane } = dspEditor.editor.info
     const { code } = pane.buffer.info
+    const { wave: waveWidgets, rms: rmsWidgets, list: listWidgets } = getPaneWidgets(pane)
 
     function fixBounds(bounds: Token.Bounds) {
       let newBounds = { ...bounds }
@@ -284,24 +328,28 @@ export function DspNodeDemo() {
     pane.view.anim.ticks.add(c.meshes.draw)
     pane.view.anim.info.epoch++
     pane.draw.widgets.update()
+    requestAnimationFrame(() => {
+      info.lastBuildPane = pane
+    })
   }
 
   const buildThrottled = throttle(16, build)
 
-  queueMicrotask(() => {
-    $.fx(() => {
-      const { previewSound$ } = $.of(info)
-      const { pane } = dspEditor.editor.info
-      const { codeVisual } = pane.buffer.info
-      const { isPlaying } = dspNode.info
-      $()
-      queueMicrotask(isPlaying ? buildThrottled : build)
-    })
+  // queueMicrotask(() => {
+  $.fx(() => {
+    const { previewSound$ } = $.of(info)
+    const { pane } = dspEditor.editor.info
+    const { codeVisual } = pane.buffer.info
+    const { isPlaying } = dspNode.info
+    $()
+    queueMicrotask(buildThrottled)
+    // queueMicrotask(isPlaying ? buildThrottled : build)
   })
+  // })
 
   const dspEditor = DspEditor({
-    width: info.$.width,
-    height: info.$.height,
+    width: info.$.editorWidth,
+    height: info.$.editorHeight,
     code: info.$.code,
   })
 
@@ -313,11 +361,22 @@ export function DspNodeDemo() {
     return () => dspEditor.info.error = null
   })
 
-  return <div class="flex flex-col md:flex-row flex-nowrap">
-    <Button class="fixed z-50 right-5" onpointerdown={() => {
-      dspNode.info.isPlaying ? dspNode.stop() : dspNode.play()
-    }}>{() => dspNode.info.isPlaying ? 'Stop' : 'Play'}</Button>
-    {dspEditor}
-    {canvas}
-  </div>
+  info.el = <div class="flex flex-1">
+    <div class="w-full h-[calc(100vh-87px)] pt-2">
+      <div class="relative flex w-full h-full">
+        {() => info.didBuildPane && <div class="absolute left-0 top-0 w-full h-full flex flex-row">
+          {dspEditor}
+          {canvas}
+        </div>}
+      </div>
+    </div>
+  </div> as HTMLDivElement
+
+  dom.observe.resize(info.el, () => {
+    requestAnimationFrame(() => {
+      info.resized++
+    })
+  })
+
+  return { el: info.el, info, dspEditor, dspNode }
 }

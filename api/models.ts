@@ -31,6 +31,17 @@ export interface ChannelUser {
   nick: string;
 }
 
+export const Favorites = z.object({
+  profileNick: z.string(),
+  soundId: z.string(),
+  createdAt: z.coerce.date(),
+})
+export interface Favorites {
+  createdAt: Generated<Timestamp>;
+  profileNick: string;
+  soundId: string;
+}
+
 export const Messages = z.object({
   id: z.string(),
   channel: z.string(),
@@ -48,6 +59,46 @@ export interface Messages {
   type: string;
 }
 
+export const Profiles = z.object({
+  ownerNick: z.string(),
+  nick: z.string(),
+  displayName: z.string(),
+  bio: z.string().nullish(),
+  avatar: z.string().nullish(),
+  banner: z.string().nullish(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+export interface Profiles {
+  avatar: string | null;
+  banner: string | null;
+  bio: string | null;
+  createdAt: Generated<Timestamp>;
+  displayName: string;
+  nick: string;
+  ownerNick: string;
+  updatedAt: Generated<Timestamp>;
+}
+
+export const Sounds = z.object({
+  id: z.string(),
+  ownerProfileNick: z.string(),
+  title: z.string(),
+  code: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  remixOf: z.string().nullish(),
+})
+export interface Sounds {
+  code: string;
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  ownerProfileNick: string;
+  remixOf: string | null;
+  title: string;
+  updatedAt: Generated<Timestamp>;
+}
+
 export const Users = z.object({
   nick: z.string(),
   email: z.string(),
@@ -56,9 +107,11 @@ export const Users = z.object({
   oauthGithub: z.boolean().nullish(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
+  defaultProfile: z.string().nullish(),
 })
 export interface Users {
   createdAt: Generated<Timestamp>;
+  defaultProfile: string | null;
   email: string;
   emailVerified: Generated<boolean | null>;
   nick: string;
@@ -70,12 +123,18 @@ export interface Users {
 export const DB = z.object({
   channels: Channels,
   channelUser: ChannelUser,
+  favorites: Favorites,
   messages: Messages,
+  profiles: Profiles,
+  sounds: Sounds,
   users: Users,
 })
 export interface DB {
   channels: Channels;
   channelUser: ChannelUser;
+  favorites: Favorites;
   messages: Messages;
+  profiles: Profiles;
+  sounds: Sounds;
   users: Users;
 }
