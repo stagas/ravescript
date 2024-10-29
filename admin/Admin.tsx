@@ -4,7 +4,6 @@ import * as actions from '~/admin/rpc/admin.ts'
 import { state } from '~/admin/state.ts'
 import { icon } from '~/lib/icon.ts'
 import { Header } from '~/src/comp/Header.tsx'
-import { Logout } from '~/src/pages/Logout'
 import { loginUserSession, maybeLogin, whoami } from '~/src/rpc/auth.ts'
 
 const EDITABLE = new Set(['nick', 'email'])
@@ -93,7 +92,7 @@ export function Admin() {
 
       <div class="flex items-center gap-2">
         <span>{state.user?.nick}</span>
-        <Logout then={() => location.href = '/'} />
+
       </div>
     </Header>
 
