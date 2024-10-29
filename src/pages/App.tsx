@@ -11,6 +11,7 @@ import { Toast } from '~/src/comp/Toast.tsx'
 import { ICON_24, ICON_32, ICON_48 } from '~/src/constants.ts'
 import { CreateProfile } from '~/src/pages/CreateProfile.tsx'
 import { getDspControls } from '~/src/pages/DspControls.tsx'
+import { OAuthRegister } from '~/src/pages/OAuthRegister.tsx'
 import { logoutUser, maybeLogin } from '~/src/rpc/auth.ts'
 import { getProfile, listProfilesForNick, makeDefaultProfile } from '~/src/rpc/profiles.ts'
 import { listFavorites, listRecentSounds, listSounds } from '~/src/rpc/sounds.ts'
@@ -298,6 +299,29 @@ export function App() {
       const { pathname } = state
       $()
       switch (pathname) {
+        case '/oauth/popup': {
+          const provider = state.url.searchParams.get('provider')!
+          const url = new URL(`${state.apiUrl}oauth/start`)
+          url.searchParams.set('provider', provider)
+          location.href = url.href
+          return <div />
+        }
+        case '/oauth/register': return <OAuthRegister />
+        case '/oauth/cancel': {
+          localStorage.oauth = 'cancel' + Math.random()
+          window.close()
+          return <div>OAuth login cancelled</div>
+        }
+        case '/oauth/complete': {
+          // hack: triggering a localStorage write is how we communicate
+          // to the parent window that we're done.
+          localStorage.oauth = 'complete' + Math.random()
+          window.close()
+          return <div>
+            Successfully logged in.
+            You may now <button onclick={() => window.close()}>close this window</button>.
+          </div>
+        }
         case '/new-profile':
           return <CreateProfile />
 
