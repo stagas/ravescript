@@ -11,6 +11,7 @@ export default {
   theme: {
     fontFamily: {
       sans: ['"Fustat"', 'sans-serif'],
+      mono: ['"IBM Plex Mono"', 'monospace'],
     },
     extend: {},
   },

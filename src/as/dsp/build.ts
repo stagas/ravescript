@@ -376,9 +376,24 @@ export function TrackBuild(track: Track) {
     setupVm.CreateValues(context.values)
     setupVm.End()
 
-    let L = program.scope.vars['L']
-    let R = program.scope.vars['R']
-    let LR = program.scope.vars['LR']
+    let L: AstNode | undefined = program.scope.vars['L']
+    let R: AstNode | undefined = program.scope.vars['R']
+    let LR: AstNode | undefined = program.scope.vars['LR']
+
+    // @ts-ignore
+    if (L?.value?.kind !== ValueBase.Kind.Audio && L?.value?.kind !== ValueBase.Kind.Dynamic) {
+      L = undefined
+    }
+
+    // @ts-ignore
+    if (R?.value?.kind !== ValueBase.Kind.Audio && R?.value?.kind !== ValueBase.Kind.Dynamic) {
+      R = undefined
+    }
+
+    // @ts-ignore
+    if (LR?.value?.kind !== ValueBase.Kind.Audio && LR?.value?.kind !== ValueBase.Kind.Dynamic) {
+      LR = undefined
+    }
 
     const slice = program.scope.stack.slice(-2)
     if (slice.length === 2) {
@@ -387,6 +402,33 @@ export function TrackBuild(track: Track) {
     }
     else if (slice.length === 1) {
       LR ??= slice.pop()!
+    }
+
+    // @ts-ignore
+    if (L?.value?.kind !== ValueBase.Kind.Audio && L?.value?.kind !== ValueBase.Kind.Dynamic) {
+      L = undefined
+    }
+
+    // @ts-ignore
+    if (R?.value?.kind !== ValueBase.Kind.Audio && R?.value?.kind !== ValueBase.Kind.Dynamic) {
+      R = undefined
+    }
+
+    // @ts-ignore
+    if (LR?.value?.kind !== ValueBase.Kind.Audio && LR?.value?.kind !== ValueBase.Kind.Dynamic) {
+      LR = undefined
+    }
+
+    if (!LR) {
+      if (L && R) { }
+      else if (L) {
+        LR = L
+        L = undefined
+      }
+      else if (R) {
+        LR = R
+        R = undefined
+      }
     }
 
     const out = {

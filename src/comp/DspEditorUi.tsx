@@ -2,13 +2,11 @@ import { BUFFER_SIZE, createDspNode, PreviewService, SoundValue } from 'dsp'
 import type { Pane } from 'editor'
 import { Gfx, Matrix, Rect, wasm as wasmGfx } from 'gfx'
 import type { Token } from 'lang'
-import { $, dispose, Sigui } from 'sigui'
+import { Sigui } from 'sigui'
 import { Canvas } from 'ui'
 import { assign, dom, Lru, throttle } from 'utils'
-import { cn } from '~/lib/cn.ts'
 import { DspEditor } from '~/src/comp/DspEditor.tsx'
 import { screen } from '~/src/screen.ts'
-import { state } from '~/src/state.ts'
 import { ListMarkWidget, RmsDecoWidget, WaveGlDecoWidget } from '~/src/ui/editor/widgets/index.ts'
 import { copyRingInto } from '~/src/util/copy-ring-into.ts'
 
@@ -364,7 +362,7 @@ export function DspEditorUi() {
   info.el = <div class="flex flex-1">
     <div class="w-full h-[calc(100vh-87px)] pt-2">
       <div class="relative flex w-full h-full">
-        {() => info.didBuildPane && <div class="absolute left-0 top-0 w-full h-full flex flex-row">
+        {() => info.didBuildPane && <div class="absolute left-0 top-0 w-full h-full flex flex-col md:flex-row">
           {dspEditor}
           {canvas}
         </div>}

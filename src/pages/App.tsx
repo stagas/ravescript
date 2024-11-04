@@ -1,4 +1,4 @@
-import { AudioWaveform, Plus, UserCircle, UserCircle2, X } from 'lucide'
+import { AudioWaveform, HelpCircle, LogIn, Plus, UserCircle, UserCircle2, X } from 'lucide'
 import { Sigui } from 'sigui'
 import { Button, DropDown } from 'ui'
 import { dom } from 'utils'
@@ -6,7 +6,9 @@ import type { z } from 'zod'
 import type { Profiles } from '~/api/models.ts'
 import { cn } from '~/lib/cn.ts'
 import { icon } from '~/lib/icon.ts'
+import { wrapActionAuth } from '~/src/comp/AuthModal.tsx'
 import { dspEditorUi } from '~/src/comp/DspEditorUi.tsx'
+import { showHelpModal } from '~/src/comp/HelpModal.tsx'
 import { Toast } from '~/src/comp/Toast.tsx'
 import { ICON_24, ICON_32, ICON_48 } from '~/src/constants.ts'
 import { CreateProfile } from '~/src/pages/CreateProfile.tsx'
@@ -230,8 +232,9 @@ export function App() {
   const Home = () => <div class="flex flex-row">
     <div class="flex flex-col">
       <div class="h-12 border-b border-b-neutral-500 text-xl flex items-center p-2 gap-1">
-        <Link href="/">{icon(AudioWaveform, ICON_32)}</Link>
-        <div class="leading-none">ravescript</div>
+        <Link href="/" class="flex flex-row flex-nowrap items-center gap-1 hover:no-underline">
+          {icon(AudioWaveform, ICON_32)} <div class="leading-none text-neutral-400">ravescript</div>
+        </Link>
       </div>
       <div class=" h-[calc(100vh-80px)] overflow-y-scroll">
         <div class="flex flex-col">{() => info.profile ? [
@@ -253,12 +256,21 @@ export function App() {
           <div class="flex items-center">{() => getDspControls().el}</div>
         </div>
         <div class="flex items-center gap-2">{() => [
-          <Link class="flex flex-row items-center text-lg mr-1" onclick={createSound}>
-            {icon(Plus, ICON_32)} <span>New sound</span>
+          <Link class="flex flex-row items-center mr-16 gap-1" onclick={showHelpModal}>
+            <span>help</span>
+            {icon(HelpCircle, { ...ICON_24, class: 'mb-0.5 text-neutral-400' })}
+          </Link>,
+          <Link class="flex flex-row items-center mr-16" onclick={createSound}>
+            <span>new sound</span>
+            {icon(Plus, { ...ICON_32, class: 'mb-0.5 text-neutral-400' })}
+          </Link>,
+          !state.user && <Link class="flex flex-row items-center gap-1" onclick={wrapActionAuth(() => { })}>
+            <span>Login</span>
+            {icon(LogIn, { ...ICON_24, class: 'mb-0.5 text-neutral-400' })}
           </Link>,
           ...(() => !state.user ? [] : [
-            <Link class="ml-16" href={() => `/${state.user?.defaultProfile}`}>{() => state.profile?.displayName}</Link>,
-            <DropDown right handle={icon(UserCircle, ICON_24)} items={() => [
+            <Link href={() => `/${state.user?.defaultProfile}`}>{() => state.profile?.displayName}</Link>,
+            <DropDown right handle={icon(UserCircle, { ...ICON_24, class: 'mb-0.5' })} items={() => [
               // [<Link class="px-2 py-1 hover:no-underline flex items-center justify-end" href="/settings">Settings</Link>, () => { }],
               [state.user ? <Link class="px-2 py-1 hover:no-underline flex items-center justify-end" onclick={logoutUser}>Logout</Link> : <div />, () => { }],
               [<Link class="px-2 py-1 hover:no-underline flex items-center justify-end" href="/new-profile">New profile</Link>, () => { }],
@@ -282,7 +294,7 @@ export function App() {
     </div>
   </div>
 
-  const Modal = () => state.modalIsOpen && <div class="fixed w-full h-full flex items-center justify-center bg-[#111a] z-30" onpointermove={dom.prevent.stop}>
+  const AuthModal = () => state.modalIsOpen && <div class="fixed w-full h-full flex items-center justify-center bg-[#111a] z-30" onpointermove={dom.prevent.stop}>
     <div class="bg-neutral-700 p-6 border-4 border-[#000] relative">
       <Button bare class="absolute top-0 right-0 m-1" onclick={() => {
         state.modalIsOpen = false
@@ -294,7 +306,7 @@ export function App() {
 
   return <main class="flex flex-col relative">{() => [
     <Toast />,
-    Modal(),
+    AuthModal(),
     (() => {
       const { pathname } = state
       $()
