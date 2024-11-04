@@ -362,7 +362,7 @@ export function DspEditorUi() {
   info.el = <div class="flex flex-1">
     <div class="w-full h-[calc(100vh-87px)] pt-2">
       <div class="relative flex w-full h-full">
-        {() => info.didBuildPane && <div class="absolute left-0 top-0 w-full h-full flex flex-row">
+        {() => info.didBuildPane && <div class="absolute left-0 top-0 w-full h-full flex flex-col md:flex-row">
           {dspEditor}
           {canvas}
         </div>}
