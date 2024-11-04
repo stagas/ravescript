@@ -1,7 +1,7 @@
 import { dspGens } from '~/generated/typescript/dsp-gens.ts'
 import type { DspApi } from '~/src/as/dsp/build'
 import { getAllPropsReverse } from '~/src/as/dsp/util.ts'
-import type { Value } from '~/src/as/dsp/value.ts'
+import { Value } from '~/src/as/dsp/value.ts'
 import { Token } from '~/src/lang/tokenize.ts'
 import { parseNumber, type NumberFormat, type NumberInfo } from '~/src/lang/util.ts'
 
@@ -343,7 +343,9 @@ export function interpret(g: DspApi, data: Record<string, any>, tokens: Token[])
           if (r == null) return
           while (scope.stack.length) {
             l = scope.stack.pop() as AstNode & { value: Value }
-            r = g.math.add(l.value, r)
+            if (l.value.kind === Value.Kind.Audio) {
+              r = g.math.add(l.value, r)
+            }
           }
           const node = new AstNode(AstNode.Type.Result, { value: r }, [t])
           return node
