@@ -343,9 +343,9 @@ export function interpret(g: DspApi, data: Record<string, any>, tokens: Token[])
           if (r == null) return
           while (scope.stack.length) {
             l = scope.stack.pop() as AstNode & { value: Value }
-            if (l.value.kind === Value.Kind.Audio) {
-              r = g.math.add(l.value, r)
-            }
+            // if (l.value.kind === Value.Kind.Audio) {
+            r = g.math.add(l.value, r)
+            // }
           }
           const node = new AstNode(AstNode.Type.Result, { value: r }, [t])
           return node
